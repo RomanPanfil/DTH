@@ -1,0 +1,28 @@
+{
+  "breadcrumbs": {
+    "home": "Главная",
+    "journal": "Журнал DTH"
+  },
+  "header": {
+    "account": "Личный кабинет",
+    "searchPlaceholder": "Введите запрос"
+  },
+  "footer": {
+    "development": "Разработка сайта —"
+  },
+  "journal": {
+    "title": "Журнал DTH"
+  },
+  "rubrics": {
+    "all": "Все материалы"
+  },
+  "news": {
+    "author": "Автор",
+    "share": "Поделиться",
+    "unknown": "Неизвестен",
+    "photo": "Фото"
+  },
+  "advantages": {
+    "title": "Отчеты о мероприятиях"
+  }
+}

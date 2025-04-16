@@ -1,0 +1,89 @@
+$bgc: #FFFFFF;
+$bgc-dark: #1D1D1D;
+$font: #242424;
+
+$font-black: #000;
+
+$font-grey: #858585;
+$font-white: #FFFFFF;
+$font-white-light: #FBFBFB;
+$font-white-dark: #D6D6D6;
+
+$placeholder: #858585;
+
+$primary: #009865;
+$primary_light: #D9F0E8;
+
+$title: #1F2839;
+$link: #2861CF;
+$link_hover: #1F4CA1;
+$border: #E2E5EC;
+$border_grey: #DEE4F1;
+
+$error: #E53B3B;
+
+$hover: #DA3C5A;
+
+$price: #31AAA5;
+$dashed: #26A577;
+
+$footer: #F5F8F9;
+$footer-line: #26A577;
+
+$warning: #2A2D33;
+
+$button_main: #2A2D33;
+
+// Layouts
+$base: 1651;
+$gutter: 40;
+$col_gutter: 15px;
+$block_margin: 0 0 25px;
+$content-size: 1651;
+
+$inner: $base + $gutter * 2;
+
+// Grid
+$breakpoints: (
+        "xl": 1440px,
+        "lg": 1260px,
+        "md": 1024px,
+        "nm": 961px,
+        "sm": 769px,
+        "xs": 599px,
+        "us": 320px
+);
+
+// Typography ---
+$fontsize: 16;
+$base-font-size: 16;
+$weight: 400;
+$basefont: "Inter", sans-serif;
+
+$lh: 1.4;
+$th: 1.4;
+$paragraph_margin: 0px 0px 26px;
+
+// Headings
+$headings_font_family: $basefont;
+$headings_margin: 0px 0px 24px;
+$headings_font_weight: 500;
+$headings_text_transform: none;
+
+$h1: 40;
+$h2: 32;
+$h3: 24;
+$h4: 20;
+$h5: 16;
+$h6: 14;
+
+$block_heading_font_size: 24;
+$block_heading_font_weight: 700;
+
+// Функция p2r
+@function p2r($size) {
+  @if ($size == 0) {
+    @return 0;
+  }
+  @return calc((($size / $base) * $content-size) / $base-font-size) + 0rem;
+}

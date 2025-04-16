@@ -1,0 +1,153 @@
+@use "variables" as *;
+@use "vars" as *;
+@use "grid" as *;
+@use "normalize" as *;
+@use "ui" as *;
+
+// Глобальные стили
+*,
+::after,
+::before {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: $basefont, sans-serif;
+  line-height: 1.42;
+  font-size: 16px;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  color: $font;
+  font-family: $basefont, sans-serif;
+  font-weight: $weight;
+  font-size: p2r($fontsize);
+  line-height: $lh;
+  background: $bgc;
+
+}
+a {
+  color: $link;
+  text-decoration: none;
+  &:hover {
+    color: $link_hover;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $headings_font_family;
+  font-weight: $headings_font_weight;
+  margin: $headings_margin;
+  text-transform: $headings_text_transform;
+}
+
+h1 {font-size: p2r($h1); }
+h2 { font-size: p2r($h2); }
+h3 { font-size: p2r($h3); }
+h4 { font-size: p2r($h4); }
+h5 { font-size: p2r($h5); }
+h6 { font-size: p2r($h6); }
+
+p {
+  margin: $paragraph_margin;
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-main {
+  margin-bottom: p2r(100);
+}
+
+.main-content {
+  flex: 1 0 auto;
+  //padding: #{$gutter}px;
+}
+
+footer {
+  flex-shrink: 0;
+}
+
+.nuxt-icon svg {
+  margin-bottom: 0 !important;
+  //width: auto !important; // Убираем фиксированную ширину
+  //height: auto !important; // Убираем фиксированную высоту
+}
+
+.news-gallery {
+  //margin-top: p2r(20);
+  //margin-right: p2r(-5);
+  //margin-left: p2r(-5);
+}
+.gallery {
+  &-images {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: p2r(-5);
+    margin-left: p2r(-5);
+
+    img {
+      display: block;
+      max-width: p2r(265);
+      height: auto;
+    }
+  }
+
+  &-item {
+    padding-left: p2r(5);
+    padding-right: p2r(5);
+    width: 25%;
+    flex: 0 0 25%;
+
+    &-image {
+      display: block;
+      border-radius: p2r(6);
+      overflow: hidden;
+      margin-bottom: p2r(10);
+      aspect-ratio: 1.325;
+    }
+  }
+}
+
+.article {
+  max-width: p2r(1370);
+  flex: 0 0 p2r(1370);
+
+  &-title {
+    margin-bottom: p2r(60);
+  }
+
+  &-content {
+    max-width: p2r(1090);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &-wrapper {
+    display: flex;
+  }
+}
+
+.block-quote {
+  font-size: p2r(24);
+  line-height: 1.35;
+}

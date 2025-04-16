@@ -1,0 +1,248 @@
+@use "sass:list";
+@use "sass:math";
+@use "sass:meta";
+@use "vars" as *;
+
+// Функция reverse для инверсии списка брейкпоинтов
+@function reverse($list, $recursive: false) {
+  $result: ();
+
+  @for $i from list.length($list) * -1 through -1 {
+    $item: list.nth($list, abs($i));
+    @if meta.type-of($item) == list and $recursive { // Исправляем type-of на meta.type-of
+      $result: list.append($result, reverse($item, $recursive));
+    } @else {
+      $result: list.append($result, $item);
+    }
+  }
+
+  @return $result;
+}
+
+// Контейнеры
+.inner,
+.container {
+  position: relative;
+  max-width: #{$inner}px; // Используем интерполяцию для переменной
+  padding-left: #{$gutter}px;
+  padding-right: #{$gutter}px;
+  margin-left: auto;
+  margin-right: auto;
+
+  &-fluid {
+    max-width: 100%;
+    padding-left: #{$gutter}px;
+    padding-right: #{$gutter}px;
+  }
+
+  @media (max-width: 1440px) {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  @media (max-width: 992px) {
+    padding-left: 35px;
+    padding-right: 35px;
+  }
+
+  @media (max-width: 599px) {
+    position: static;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+  @media (max-width: 420px) {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+// Flex утилиты
+.flex,
+%flex {
+  display: flex;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+}
+
+%flc,
+.flex-vertical {
+  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+}
+
+%jsb,
+.align-justify {
+  justify-content: space-between;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+}
+
+%jc,
+.align-center {
+  justify-content: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+}
+
+%jfs,
+.align-left,
+.align-start {
+  justify-content: flex-start;
+  -webkit-box-pack: start;
+  -webkit-justify-content: flex-start;
+  -ms-flex-pack: start;
+}
+
+%jfe,
+.align-right,
+.align-end {
+  justify-content: flex-end;
+  -webkit-box-pack: end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+}
+
+%aic,
+.valign-center {
+  align-items: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+
+%aifs,
+.valign-start {
+  align-items: flex-start;
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+
+%aife,
+.valign-end {
+  align-items: flex-end;
+  -webkit-box-align: end;
+  -webkit-align-items: flex-end;
+  -ms-flex-align: end;
+}
+
+%aibsl,
+.valign-baseline {
+  align-items: baseline;
+  -webkit-box-align: baseline;
+  -webkit-align-items: baseline;
+  -ms-flex-align: baseline;
+}
+
+.self-bottom {
+  align-self: flex-end;
+  -webkit-align-self: flex-end;
+  -ms-align-self: flex-end;
+}
+
+.self-top {
+  align-self: flex-start;
+  -webkit-align-self: flex-start;
+  -ms-align-self: flex-start;
+}
+
+.self-center {
+  align-self: center;
+  -webkit-align-self: center;
+  -ms-align-self: center;
+}
+
+%flg {
+  flex-grow: 1;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+}
+
+%flw,
+.flex-wrap {
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+}
+
+@mixin order($order) {
+  order: $order;
+  -webkit-box-ordinal-group: $order;
+  -webkit-order: $order;
+  -ms-flex-order: $order;
+}
+
+// Сетка
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -#{$col_gutter};
+  margin-right: -#{$col_gutter};
+
+  @media (max-width: 1366px) {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+}
+
+[class*="col-"] {
+  width: 100%;
+  padding-left: #{$col_gutter};
+  padding-right: #{$col_gutter};
+  @media (max-width: 1366px) {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+// Clearfix
+.inner:before,
+.inner:after,
+.clearfix:before,
+.clearfix:after {
+  content: "";
+  display: table;
+}
+.inner:after,
+.clearfix:after {
+  clear: both;
+}
+
+// Колонки
+@for $i from 1 through 12 {
+  .col-#{$i} {
+    flex: 0 0 (math.div(100%, 12) * $i);
+    max-width: (math.div(100%, 12) * $i);
+  }
+  .col-offset-#{$i} {
+    margin-left: (math.div(100%, 12) * $i);
+  }
+}
+
+// Брейкпоинты для колонок
+$reverseBreakpoints: reverse($breakpoints);
+@each $name, $screen in $reverseBreakpoints {
+  @media (min-width: #{$screen}) {
+    @for $i from 1 through 12 {
+      .col-#{$name}-#{$i} {
+        flex: 0 0 (math.div(100%, 12) * $i);
+        max-width: (math.div(100%, 12) * $i);
+      }
+      .col-#{$name}-offset-#{$i} {
+        margin-left: (math.div(100%, 12) * $i);
+      }
+    }
+    .col-#{$name}-20 {
+      flex: 0 0 20%;
+      max-width: 20%;
+    }
+  }
+}
