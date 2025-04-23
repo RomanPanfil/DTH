@@ -2,10 +2,12 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/image',  'nuxt-icons', 'nuxt-swiper', '@pinia/nuxt'],
   css: ["~/assets/scss/main.scss", 'plyr/dist/plyr.css'],
+  // css: ["~/assets/scss/main.scss"],
   app: {
     head: {
       link: [
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap' }
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap' },
+        { rel: 'stylesheet', href: 'https://cdn.plyr.io/3.7.8/plyr.css' },
       ]
     }
   },

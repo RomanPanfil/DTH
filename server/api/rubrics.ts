@@ -50,6 +50,14 @@ export default defineEventHandler(async (event) => {
     const apiKey = config.private.bitrixApiKey;
     const apiUrl = config.private.bitrixApiUrl;
 
+    // Логируем все входящие заголовки
+    const headers = event.node.req.headers;
+    console.log('Входящие заголовки:', headers);
+
+    // Извлекаем Authorization
+    const authHeader = getHeader(event, 'Authorization');
+    console.log('Заголовок Authorization:', authHeader);
+
     const requestBody = {
         key: apiKey,
         'params[filter][IBLOCK_ID]': 2, // Фильтр по инфоблоку 2

@@ -81,6 +81,10 @@ p {
 .main-content {
   flex: 1 0 auto;
   //padding: #{$gutter}px;
+
+  &.grey {
+    background-color: #F0F0F0;
+  }
 }
 
 footer {
@@ -150,4 +154,12 @@ footer {
 .block-quote {
   font-size: p2r(24);
   line-height: 1.35;
+}
+
+:root {
+  --plyr-color-main: #009865; /* Основной цвет (кнопки, прогресс-бар) */
+  --plyr-video-control-color: #009865; /* Цвет иконок */
+  --plyr-video-control-color-hover: #fff;
+  --plyr-video-control-bg-hover: rgba(255, 87, 34, 0.8);
+  --plyr-video-progress-buffered-background: rgba(255, 255, 255, 0.25);
 }

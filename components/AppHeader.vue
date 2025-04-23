@@ -26,10 +26,10 @@
                         <NuxtIcon name="search" class="header-search-btn-icon" filled />
                     </button>
                 </form>
-                <NuxtLink to="/" class="header-account">
+                <button @click="handleAccountClick" class="header-account">
                     <NuxtIcon name="user" class="header-account-icon" filled />
                     {{ $t('header.account') }}
-                </NuxtLink>
+                </button>
             </div>
         </div>
     </header>
@@ -45,13 +45,26 @@
     &-wrapper {
         display: flex;
         align-items: center;
+
+        @media(max-width: 1366px) {
+            justify-content: space-between;
+        }
     }
 
     &-logo {
-        margin-right: 60px;
+        margin-right: p2r(60);
+
+        @media(max-width: 1366px) {
+            margin-right: p2r(50);
+        }
+
         &-img {
             max-height: p2r(48);
             display: block;
+
+            @media(max-width: 1366px) {
+                max-height: p2r(42);
+            }
         }
     }
 
@@ -64,6 +77,11 @@
             color: $font;
             margin-right: p2r(36);
             text-decoration: none;
+
+            @media(max-width: 1680px) {
+                font-size: p2r(16);
+                margin-right: p2r(24);
+            }
         }
     }
 
@@ -78,6 +96,7 @@
         padding-right: p2r(20);
         display: flex;
         align-items: center;
+        cursor: pointer;
 
         &-icon {
             width: p2r(22);
@@ -99,6 +118,10 @@
         display: flex;
         flex-grow: 1;
         margin-right: p2r(30);
+
+        @media(max-width: 1366px) {
+            max-width: p2r(260);
+        }
 
         &-btn {
             position: absolute;
@@ -122,6 +145,12 @@
 
 <script setup lang="ts">
 import { useLocaleStore } from '~/stores/locale';
+import { useAuthStore } from '~/stores/auth'
+import { useModalsStore } from '~/stores/modals'
+
+const modalsStore = useModalsStore()
+const authStore = useAuthStore()
+const router = useRouter()
 
 // Поиск
 const searchQuery = ref('');
@@ -148,4 +177,13 @@ const menu = computed(() => {
     }
     return menuData.value?.menu?.[locale.value] || [];
 });
+
+// Обработка клика по кнопке аккаунта
+const handleAccountClick = () => {
+    if (authStore.isAuthenticated) {
+        router.push('/account')
+    } else {
+        modalsStore.openModal('login')
+    }
+}
 </script>

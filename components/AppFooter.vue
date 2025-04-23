@@ -12,7 +12,7 @@
                     <NuxtLink
                         v-for="item in menuTop"
                         :key="item.ID"
-                        :to="item.URL"
+                        :to="item.PAGE_ID ? `${item.URL}?id=${item.PAGE_ID}` : item.URL"
                         class="footer-nav-link"
                     >
                         {{ item.NAME }}
@@ -38,7 +38,7 @@
                     <NuxtLink
                         v-for="item in menuBottom"
                         :key="item.ID"
-                        :to="item.URL"
+                        :to="item.PAGE_ID ? `${item.URL}?id=${item.PAGE_ID}` : item.URL"
                         class="footer-bottom-link"
                     >
                         {{ item.NAME }}
@@ -84,6 +84,10 @@
         &-img {
             display: block;
             max-height: p2r(48);
+
+            @media(max-width: 1366px) {
+                max-height: p2r(42);
+            }
         }
     }
 
@@ -91,6 +95,11 @@
         font-weight: 300;
         font-size: p2r(18);
         margin-right: p2r(97);
+
+        @media(max-width: 1680px) {
+            font-size: p2r(16);
+            margin-right: p2r(60);
+        }
 
         &:before {
             content: '';
@@ -113,6 +122,11 @@
             color: $font-white;
             margin-right: p2r(36);
             text-decoration: none;
+
+            @media(max-width: 1680px) {
+                font-size: p2r(16);
+                margin-right: p2r(24);
+            }
         }
     }
 
@@ -120,6 +134,10 @@
         display: flex;
         column-gap: p2r(16);
         margin-left: auto;
+
+        @media(max-width: 1680px) {
+            column-gap: p2r(10);
+        }
 
         &-link {
             position: relative;
@@ -163,6 +181,10 @@
         &-link {
             font-size: p2r(16);
             color: $font-white-dark;
+
+            @media(max-width: 1680px) {
+                font-size: p2r(14);
+            }
         }
     }
 
@@ -180,6 +202,10 @@
 
     &-development {
         margin-left: auto;
+
+        @media(max-width: 1680px) {
+            font-size: p2r(14);
+        }
 
         &-link {
             position: relative;

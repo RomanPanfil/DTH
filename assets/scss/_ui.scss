@@ -120,29 +120,39 @@ table {
 //    background: lighten($accent, 8%);
 //  }
 //}
+.form-field {
+  margin-bottom: p2r(20);
+  position: relative;
+}
 
 .ui-input {
   display: block;
-  height: p2r(48);
-  line-height: p2r(46);
+  height: p2r(56);
+  line-height: 1;
+  //line-height: p2r(54);
   width: 100%;
   max-width: 100%;
-  background: $bgc;
-  padding: 0 p2r(20);
-  font-family: $basefont;
-  font-weight: 400;
-  font-size: p2r(16);
+  background: $bgc-input;
+  padding: p2r(17) p2r(14) p2r(18) p2r(16);
   color: $font;
   border: 1px solid $border;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: .3s border, .3s color;
+  transition: .3s border, .3s color, .3s padding;
   border-radius: p2r(4);
   outline: 0;
 
+  &.active {
+    padding: p2r(25) p2r(14) p2r(10) p2r(16);
+  }
+
   &::placeholder {
-    color: $placeholder;
+    color: $font;
+  }
+
+  &:focus {
+    background-color: $bgc;
   }
 
   &::-webkit-search-cancel-button {
@@ -156,17 +166,13 @@ table {
 }
 
 .ui-btn {
-  font-size: p2r(24);
-  //color: $font_accent;
   outline: none;
   border: none;
-  //font-family: $second_font;
   display: inline-block;
   background: $primary;
-  backdrop-filter: blur(p2r(16));
-  border-radius: p2r(40);
-  height: p2r(72);
-  line-height: p2r(72);
+  border-radius: p2r(4);
+  height: p2r(56);
+  line-height: p2r(56);
   padding-left: p2r(32);
   padding-right: p2r(32);
   cursor: pointer;
@@ -192,6 +198,19 @@ table {
         stroke: $font_white;
       }
     }
+  }
+
+  &__primary {
+    background-color: $primary;
+    color: $font-white;
+
+    &:hover {
+      background-color: darken($primary, 5%);
+    }
+  }
+
+  &__block {
+    width: 100%;
   }
 
   &.disabled {
@@ -251,4 +270,56 @@ table {
 
 .color-primary {
   color: $primary;
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.custom-checkbox input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: p2r(20);
+  height: p2r(20);
+  margin-right: p2r(10);
+  position: relative;
+  cursor: pointer;
+}
+
+.checkbox-indicator {
+  position: absolute;
+  left: 0;
+  width: p2r(20);
+  height: p2r(20);
+  background-color: transparent;
+  border: 1px solid $border;
+  border-radius: p2r(2);
+  pointer-events: none;
+}
+
+.custom-checkbox input:checked + .checkbox-indicator {
+  background-color: $primary;
+  border-color: $primary;
+}
+
+.custom-checkbox input:checked + .checkbox-indicator::before {
+  content: '';
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  width: p2r(10);
+  height: p2r(6);
+  border: 2px solid white;
+  border-top: none;
+  border-right: none;
+}
+
+.checkbox-label {
+  font-size: p2r(14);
+  letter-spacing: -0.03em;
+  color: $font;
 }

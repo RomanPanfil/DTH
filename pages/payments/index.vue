@@ -1,11 +1,9 @@
 <template>
-    <div class="container">
-        <Breadcrumbs />
-        <h2>Оплата</h2>
-        <p>Страница в разработке</p>
-    </div>
+    <ArticlePage :page-id="route.query.id" />
 </template>
 
-<script setup lang="ts">
+<script setup>
 
+
+const route = useRoute();
 </script>

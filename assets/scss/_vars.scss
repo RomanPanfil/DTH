@@ -1,10 +1,12 @@
 $bgc: #FFFFFF;
 $bgc-dark: #1D1D1D;
+$bgc-input: #F4F8FF;
 $font: #242424;
 
 $font-black: #000;
 
 $font-grey: #858585;
+$font-dark-grey: #353535;
 $font-white: #FFFFFF;
 $font-white-light: #FBFBFB;
 $font-white-dark: #D6D6D6;
@@ -15,12 +17,12 @@ $primary: #009865;
 $primary_light: #D9F0E8;
 
 $title: #1F2839;
-$link: #2861CF;
-$link_hover: #1F4CA1;
+$link: #009865;
+$link_hover: rgba(0, 152, 101, 0.72);
 $border: #E2E5EC;
 $border_grey: #DEE4F1;
 
-$error: #E53B3B;
+$error: #EB0000;
 
 $hover: #DA3C5A;
 
