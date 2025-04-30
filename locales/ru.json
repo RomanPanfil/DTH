@@ -2,7 +2,7 @@
   "breadcrumbs": {
     "home": "Главная",
     "journal": "Журнал DTH",
-    "account": "Личный кабинет"
+    "profile": "Личный кабинет"
   },
   "header": {
     "account": "Личный кабинет",
@@ -29,11 +29,22 @@
   "placeholders": {
     "name": "Имя",
     "lastName": "Фамилия",
+    "Surname": "Отчество",
+    "nameLat": "Имя (на латинице)",
+    "lastNameLat": "Фамилия (на латинице)",
+    "SurnameLat": "Отчество (на латинице)",
     "phone": "Телефон",
     "emailLogin": "Email (логин)",
     "loginEmail": "Логин (email)",
     "password": "Пароль",
-    "passwordRepeat": "Повторите пароль"
+    "passwordRepeat": "Повторите пароль",
+    "birthday": "День рождения",
+    "country": "Страна проживания",
+    "city": "Город проживания",
+    "messengers": "Мессенджеры",
+    "avatar": "Аватар",
+    "avatarDownload": "Загрузить аватар",
+    "fileNotSelected": "Файл не выбран"
   },
   "register": {
     "title": "Регистрация",
@@ -56,5 +67,45 @@
     "login": "Войти",
     "isNewUser": "Новый пользователь?",
     "createAccount": "Создайте аккаунт"
+  },
+  "errors": {
+    "required": "Поле обязательно для заполнения",
+    "invalidEmail": "Неверный формат email",
+    "minLength": "Минимальная длина: {length} символов",
+    "onlyLetters": "Допустимы только буквы и пробелы",
+    "passwordRequirements": "Пароль должен содержать буквы и цифры",
+    "passwordMismatch": "Пароли не совпадают",
+    "incompletePhone": "Пожалуйста, введите полный номер телефона",
+    "ERROR_LOGIN": "Указанный EMAIL не найден в базе данных",
+    "ERROR_NOT_ACTIVATION": "Учетная запись не активирована",
+    "ERROR_AUTH": "Неверный пароль",
+    "ERROR_UNIQUE_EMAIL": "Пользователь с таким EMAIL уже существует",
+    "ERROR_CONFIRM_PASSWORD": "Пароли не совпадают"
+  },
+  "account": {
+    "agree": "Я согласен участвовать в промо-акциях ресурса"
+  },
+  "months": {
+    "1": "Январь",
+    "2": "Февраль",
+    "3": "Март",
+    "4": "Апрель",
+    "5": "Май",
+    "6": "Июнь",
+    "7": "Июль",
+    "8": "Август",
+    "9": "Сентябрь",
+    "10": "Октябрь",
+    "11": "Ноябрь",
+    "12": "Декабрь"
+  },
+  "accountSidebar": {
+    "personalData": "Личные данные",
+    "certificates": "Сертификаты",
+    "courses": "Курсы",
+    "webinars": "Вебинары",
+    "favorites": "Избранное",
+    "paymentHistory": "История оплат",
+    "logout": "Выйти из аккаунта"
   }
 }

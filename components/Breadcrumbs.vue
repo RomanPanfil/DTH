@@ -114,8 +114,8 @@
                     {{ crumb.name }}
                 </NuxtLink>
                 <span v-else class="breadcrumbs-current">
-          {{ crumb.name }}
-        </span>
+                    {{ crumb.name }}
+                </span>
                 <span v-if="index < computedBreadcrumbs.length - 1" class="breadcrumbs-separator"></span>
             </li>
         </ol>
@@ -211,7 +211,28 @@ const getRubricName = (sectionCode) => {
 const computedBreadcrumbs = computed(() => {
     const crumbs = [{ name: t('breadcrumbs.home'), path: '/' }];
 
-    // Находим текущий пункт меню по URL
+    // Логика для профиля
+    if (route.path.startsWith('/profile')) {
+        crumbs.push({ name: t('breadcrumbs.profile'), path: '/profile/personal-data' });
+
+        const profilePages = {
+            'personal-data': t('accountSidebar.personalData'), // Личные данные
+            'certificates': t('accountSidebar.certificates'), // Свидетельства
+            'courses': t('accountSidebar.courses'), // Курсы
+            'webinars': t('accountSidebar.webinars'), // Вебинары
+            'favorites': t('accountSidebar.favorites'), // Избранное
+            'payments': t('accountSidebar.paymentHistory'), // История оплат
+        };
+
+        const currentPage = route.path.split('/').pop();
+        if (currentPage && profilePages[currentPage]) {
+            crumbs.push({ name: profilePages[currentPage], path: route.path });
+        }
+
+        return crumbs;
+    }
+
+    // логика для других страниц
     const currentMenuItem = allMenuItems.value.find((item) => {
         const normalizedItemUrl = item.URL.endsWith('/') ? item.URL : `${item.URL}/`;
         const normalizedRoutePath = route.path.endsWith('/') ? route.path : `${route.path}/`;

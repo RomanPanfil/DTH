@@ -181,7 +181,7 @@ const menu = computed(() => {
 // Обработка клика по кнопке аккаунта
 const handleAccountClick = () => {
     if (authStore.isAuthenticated) {
-        router.push('/account')
+        router.push('/profile')
     } else {
         modalsStore.openModal('login')
     }

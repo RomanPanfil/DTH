@@ -133,7 +133,7 @@ table {
   width: 100%;
   max-width: 100%;
   background: $bgc-input;
-  padding: p2r(17) p2r(14) p2r(18) p2r(16);
+  padding: p2r(17) p2r(40) p2r(18) p2r(16);
   color: $font;
   border: 1px solid $border;
   white-space: nowrap;
@@ -163,6 +163,34 @@ table {
   &__search {
     padding-right: p2r(64);
   }
+
+  &.error {
+    border-color: $error;
+  }
+
+  &-icon {
+    position: absolute;
+    right: p2r(15);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: p2r(24);
+    line-height: p2r(24);
+  }
+}
+
+.ui-label {
+  font-size: p2r(14);
+  color: #858585;
+  margin-bottom: p2r(15);
+  display: inline-block;
+
+  &-required {
+    color: $error;
+  }
+}
+
+.ui-password-content {
+  position: relative;
 }
 
 .ui-btn {
@@ -176,7 +204,7 @@ table {
   padding-left: p2r(32);
   padding-right: p2r(32);
   cursor: pointer;
-  transition: color 0.3s, background-color 0.3s;
+  transition: color 0.3s, background-color 0.3s, opacity 0.3s;
 
   &-icon {
     fill: none;
@@ -205,8 +233,38 @@ table {
     color: $font-white;
 
     &:hover {
-      background-color: darken($primary, 5%);
+      opacity: 0.9;
     }
+  }
+
+  &__secondary {
+    background: #F9F9F9;
+    border: 1px solid $border;
+    color: $font;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: $primary;
+      }
+    }
+  }
+
+  &__transparent {
+    background-color: transparent;
+    border: 1px solid $border;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: $primary;
+      }
+    }
+  }
+
+  &__mid {
+    font-size: p2r(14);
+    line-height: p2r(18);
+    height: p2r(38);
+    padding: p2r(10) p2r(20);
   }
 
   &__block {
@@ -322,4 +380,12 @@ table {
   font-size: p2r(14);
   letter-spacing: -0.03em;
   color: $font;
+}
+
+.error-message {
+  font-size: p2r(10);
+  color: $error;
+  position: absolute;
+  bottom: p2r(-15);
+  left: 0;
 }

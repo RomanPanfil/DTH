@@ -1,91 +1,66 @@
-import { defineEventHandler, getCookie, setCookie } from 'h3';
+import { defineEventHandler, readBody } from 'h3'
 
 export default defineEventHandler(async (event) => {
-    const config = useRuntimeConfig(event);
-    const apiKey = config.private.bitrixApiKey;
-    const apiUrl = config.private.bitrixApiUrl;
+    const config = useRuntimeConfig(event)
+    const apiKey = config.private.bitrixApiKey
+    const apiUrl = config.private.bitrixApiUrl
 
-    // Получаем текущий токен из куки
-    const authToken = getCookie(event, 'auth_token');
+    const { token } = await readBody(event)
+    console.log('Logout request, token:', token)
 
-    // Логируем токен для отладки
-    console.log('Токен из куки для logout:', authToken);
-
-    if (!authToken) {
+    if (!token) {
         throw createError({
             statusCode: 401,
-            statusMessage: 'Токен отсутствует',
-        });
+            statusMessage: 'Токен отсутствует'
+        })
     }
 
-    // Формируем тело запроса для Bitrix API
     const requestBody = {
         key: apiKey,
-        'params[TOKEN]': authToken,
-    };
-
-    // Логируем тело запроса
-    console.log('Тело запроса для Bitrix API (logout):', requestBody);
+        'params[TOKEN]': token
+    }
 
     try {
         const response = await $fetch(`${apiUrl}?method=logout&act=auth`, {
             method: 'POST',
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: new URLSearchParams(requestBody).toString(),
-        });
+            body: new URLSearchParams(requestBody).toString()
+        })
 
-        // Логируем ответ от Bitrix API
-        console.log('Ответ от Bitrix API (logout):', JSON.stringify(response, null, 2));
+        console.log('Bitrix API response (logout):', JSON.stringify(response, null, 2))
 
         if (response.MESSAGE === 'LOGGED_OUT_SUCCESSFULLY') {
-            // Сбрасываем куки на сервере
-            setCookie(event, 'auth_token', '', { maxAge: 0, path: '/' });
-            setCookie(event, 'auth_user', '', { maxAge: 0, path: '/' });
-            setCookie(event, 'auth_expires', '', { maxAge: 0, path: '/' });
-            setCookie(event, 'auth_activated', '', { maxAge: 0, path: '/' });
-
-            console.log('Сессия завершена, куки сброшены на сервере');
-
-            return {
-                success: true,
-                message: 'LOGGED_OUT_SUCCESSFULLY',
-            };
+            return { MESSAGE: response.MESSAGE }
         }
 
-        throw new Error('Неверный формат ответа API');
-    } catch (error) {
-        console.error('Ошибка при завершении сессии:', error);
+        if (response.ERROR) {
+            throw new Error(response.ERROR)
+        }
 
-        const errorMessage = error.message || 'Неизвестная ошибка';
-        let userFriendlyMessage = 'Не удалось завершить сессию';
+        throw new Error('Неверный формат ответа API')
+    } catch (error) {
+        console.error('Ошибка при выходе:', error)
+        const errorMessage = error.message || 'Неизвестная ошибка'
+        let userFriendlyMessage = 'Не удалось выйти'
 
         switch (errorMessage) {
             case 'ERROR_INVALID_TOKEN':
-                userFriendlyMessage = 'Неверный или истекший токен';
-                break;
-            case 'Incorrect method':
-                userFriendlyMessage = 'Некорректный метод';
-                break;
-            case 'Incorrect type':
-                userFriendlyMessage = 'Некорректный тип действия';
-                break;
-            case 'Action is not defined':
-                userFriendlyMessage = 'Указанное действие не определено';
-                break;
+                userFriendlyMessage = 'Неверный или истекший токен'
+                break
             case 'Invalid API key':
-                userFriendlyMessage = 'Неверный ключ API';
-                break;
+                userFriendlyMessage = 'Ошибка сервера: неверный API ключ'
+                break
             default:
-                userFriendlyMessage = errorMessage;
+                userFriendlyMessage = errorMessage
         }
 
         throw createError({
             statusCode: 401,
             statusMessage: userFriendlyMessage,
-            data: { error: errorMessage },
-        });
+            data: { error: errorMessage }
+        })
     }
-});
+})

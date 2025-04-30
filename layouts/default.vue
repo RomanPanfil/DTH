@@ -9,6 +9,9 @@
 </template>
 
 <script setup>
+import { useTokenRefresh} from "~/composables/useTokenRefresh";
+
+useTokenRefresh();
 const route = useRoute();
 
 const isGreyBg = computed(() => route.path.includes('register'))

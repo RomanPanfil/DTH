@@ -1,8 +1,6 @@
-import { useAuthStore } from '~/stores/auth'
-
 export default defineNuxtPlugin((nuxtApp) => {
-    if (process.client) {
-        const authStore = useAuthStore(nuxtApp.vueApp.$pinia)
-        authStore.initialize()
-    }
+    const authStore = useAuthStore()
+    // console.log('Auth plugin initialized')
+    authStore.initialize()
+    // console.log('Auth store after initialize:', authStore.token)
 })

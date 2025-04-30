@@ -1,5 +1,6 @@
 // @ts-ignore
 export default defineNuxtConfig({
+  plugins: ['~/plugins/auth.ts', '~/plugins/vee-validate.ts'],
   modules: ['@nuxt/image',  'nuxt-icons', 'nuxt-swiper', '@pinia/nuxt'],
   css: ["~/assets/scss/main.scss", 'plyr/dist/plyr.css'],
   // css: ["~/assets/scss/main.scss"],

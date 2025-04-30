@@ -5,28 +5,21 @@ export default defineEventHandler(async (event) => {
     const apiKey = config.private.bitrixApiKey
     const apiUrl = config.private.bitrixApiUrl
 
-    const body = await readBody(event)
+    const { email, password } = await readBody(event)
+    console.log('Login request:', { email })
 
-    // Логируем входящие данные для отладки
-    console.log('Входящие данные для авторизации:', body)
-
-    // Проверка на наличие обязательных полей
-    if (!body.email || !body.password) {
-        return {
-            error: 'Не удалось войти',
-            details: 'Email и пароль обязательны'
-        }
+    if (!email || !password) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'Email и пароль обязательны'
+        })
     }
 
-    // Формируем тело запроса для Bitrix API
     const requestBody = {
         key: apiKey,
-        'params[EMAIL]': body.email.trim(),
-        'params[PASSWORD]': body.password.trim()
+        'params[EMAIL]': email.trim(),
+        'params[PASSWORD]': password.trim()
     }
-
-    // Логируем тело запроса
-    console.log('Тело запроса для Bitrix API:', requestBody)
 
     try {
         const response = await $fetch(`${apiUrl}?method=login&act=auth`, {
@@ -38,19 +31,23 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString()
         })
 
-        // Логируем ответ от Bitrix API
-        console.log('Ответ от Bitrix API:', response)
+        console.log('Bitrix API response (login):', JSON.stringify(response, null, 2))
 
-        // Проверяем успешность ответа
         if (response.USER_ID && response.TOKEN && response.EXPIRES) {
-            return {
+            const expiresDate = new Date(response.EXPIRES)
+            if (isNaN(expiresDate.getTime())) {
+                console.error('Login: Invalid EXPIRES format:', response.EXPIRES)
+                throw new Error('Invalid EXPIRES format')
+            }
+            const formattedResponse = {
                 USER_ID: response.USER_ID,
                 TOKEN: response.TOKEN,
-                EXPIRES: response.EXPIRES
+                EXPIRES: expiresDate.toISOString()
             }
+            console.log('Login: Formatted response:', formattedResponse)
+            return formattedResponse
         }
 
-        // Если ответ содержит ошибку, обрабатываем её
         if (response.ERROR) {
             throw new Error(response.ERROR)
         }
@@ -58,29 +55,15 @@ export default defineEventHandler(async (event) => {
         throw new Error('Неверный формат ответа API')
     } catch (error) {
         console.error('Ошибка при авторизации:', error)
-
-        // Обрабатываем возможные ошибки от Bitrix
         const errorMessage = error.message || 'Неизвестная ошибка'
-        let userFriendlyMessage = 'Не удалось войти'
+        let userFriendlyMessage = 'Ошибка авторизации'
 
         switch (errorMessage) {
-            case 'ERROR_LOGIN':
-                userFriendlyMessage = 'Указанный email не найден'
+            case 'ERROR_INVALID_CREDENTIALS':
+                userFriendlyMessage = 'Неверный email или пароль'
                 break
-            case 'ERROR_NOT_ACTIVATION':
+            case 'ERROR_USER_NOT_ACTIVATED':
                 userFriendlyMessage = 'Учетная запись не активирована'
-                break
-            case 'ERROR_AUTH':
-                userFriendlyMessage = 'Неверный пароль'
-                break
-            case 'Incorrect method':
-                userFriendlyMessage = 'Некорректный метод'
-                break
-            case 'Incorrect type':
-                userFriendlyMessage = 'Некорректный тип действия'
-                break
-            case 'Action is not defined':
-                userFriendlyMessage = 'Указанное действие не определено'
                 break
             case 'Invalid API key':
                 userFriendlyMessage = 'Ошибка сервера: неверный API ключ'
@@ -89,9 +72,10 @@ export default defineEventHandler(async (event) => {
                 userFriendlyMessage = errorMessage
         }
 
-        return {
-            error: 'Не удалось войти',
-            details: userFriendlyMessage
-        }
+        throw createError({
+            statusCode: 401,
+            statusMessage: userFriendlyMessage,
+            data: { error: errorMessage }
+        })
     }
 })
