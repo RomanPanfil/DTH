@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const page = Number(query.page) || 1;
     const sectionId = query.section || null; // Оставляем как ID рубрики
-    const limit = 16;
+    const limit = Number(query.limit) || 16;
 
     const requestBody = {
         key: apiKey,

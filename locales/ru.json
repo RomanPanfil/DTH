@@ -2,7 +2,8 @@
   "breadcrumbs": {
     "home": "Главная",
     "journal": "Журнал DTH",
-    "profile": "Личный кабинет"
+    "profile": "Личный кабинет",
+    "events": "Мероприятия"
   },
   "header": {
     "account": "Личный кабинет",
@@ -44,7 +45,9 @@
     "messengers": "Мессенджеры",
     "avatar": "Аватар",
     "avatarDownload": "Загрузить аватар",
-    "fileNotSelected": "Файл не выбран"
+    "avatarChange": "Изменить аватар",
+    "fileNotSelected": "Файл не выбран",
+    "deleteAvatar": "Удалить аватар"
   },
   "register": {
     "title": "Регистрация",
@@ -80,10 +83,23 @@
     "ERROR_NOT_ACTIVATION": "Учетная запись не активирована",
     "ERROR_AUTH": "Неверный пароль",
     "ERROR_UNIQUE_EMAIL": "Пользователь с таким EMAIL уже существует",
-    "ERROR_CONFIRM_PASSWORD": "Пароли не совпадают"
+    "ERROR_CONFIRM_PASSWORD": "Пароли не совпадают",
+    "noToken": "Сессия истекла, пожалуйста, войдите снова",
+    "invalidToken": "Сессия истекла, пожалуйста, войдите снова",
+    "nameRequired": "Поле \"Имя\" обязательно",
+    "lastNameRequired": "Поле \"Фамилия\" обязательно",
+    "phoneRequired": "Поле \"Телефон\" обязательно",
+    "updateFailed": "Не удалось обновить профиль",
+    "invalidPhotoType": "Недопустимый тип файла (только JPEG, PNG, GIF)",
+    "photoTooLarge": "Файл превышает 5 МБ"
   },
   "account": {
-    "agree": "Я согласен участвовать в промо-акциях ресурса"
+    "agree": "Я согласен участвовать в промо-акциях ресурса",
+    "personalData": "Личные данные",
+    "saving": "Сохранение...",
+    "save": "Сохранить данные",
+    "profileUpdated": "Профиль успешно обновлён",
+    "photoUpdated": "Фото успешно обновлено"
   },
   "months": {
     "1": "Январь",

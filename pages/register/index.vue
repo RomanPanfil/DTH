@@ -8,174 +8,176 @@
                 </div>
             </div>
             <ClientOnly>
-                <Form v-if="!isRegistered && !isActivated" v-slot="{ errors }" @submit="handleRegister">
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label class="label" :class="{ active: nameFocused && registerForm.name, empty: !registerForm.name }">
-                                {{ $t('placeholders.name') }}
-                                <span class="label-required">*</span>
-                            </label>
-                            <Field
-                                name="name"
-                                v-model="registerForm.name"
-                                type="text"
-                                class="ui-input"
-                                :class="{ active: nameFocused && registerForm.name, error: errors.name }"
-                                :rules="{ required: true, min: 2, onlyLetters: true }"
-                                @focus="nameFocused = true"
-                                @blur="nameFocused = false"
-                                :placeholder="$t('placeholders.name')"
-                            />
-                            <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
-                        </div>
-                        <div class="form-field">
-                            <label class="label" :class="{ active: lastNameFocused && registerForm.last_name, empty: !registerForm.last_name }">
-                                {{ $t('placeholders.lastName') }}
-                                <span class="label-required">*</span>
-                            </label>
-                            <Field
-                                name="last_name"
-                                v-model="registerForm.last_name"
-                                type="text"
-                                class="ui-input"
-                                :class="{ active: lastNameFocused && registerForm.last_name, error: errors.last_name }"
-                                :rules="{ required: true, min: 2, onlyLetters: true }"
-                                @focus="lastNameFocused = true"
-                                @blur="lastNameFocused = false"
-                                :placeholder="$t('placeholders.lastName')"
-                            />
-                            <span v-if="errors.last_name" class="error-message">{{ errors.last_name }}</span>
-                        </div>
-                        <div class="form-field">
-                            <label class="label" :class="{ active: phoneFocused && registerForm.phone, empty: !registerForm.phone }">
-                                {{ $t('placeholders.phone') }}
-                                <span class="label-required">*</span>
-                            </label>
-                            <Field
-                                name="phone"
-                                v-model="registerForm.phone"
-                                type="tel"
-                                class="ui-input"
-                                :class="{ active: phoneFocused && registerForm.phone, error: errors.phone || serverPhoneError }"
-                                :rules="{ required: true }"
-                                ref="phoneInput"
-                                @focus="phoneFocused = true"
-                                @blur="phoneFocused = false"
-                                :placeholder="$t('placeholders.phone')"
-                            />
-                            <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
-                            <span v-else-if="serverPhoneError" class="error-message">{{ serverPhoneError }}</span>
-                        </div>
-                        <div class="form-field">
-                            <label class="label" :class="{ active: emailFocused && registerForm.email, empty: !registerForm.email }">
-                                {{ $t('placeholders.emailLogin') }}
-                                <span class="label-required">*</span>
-                            </label>
-                            <Field
-                                name="email"
-                                v-model="registerForm.email"
-                                type="email"
-                                class="ui-input"
-                                :class="{ active: emailFocused && registerForm.email, error: errors.email || serverEmailError }"
-                                :rules="{ required: true, email: true }"
-                                @focus="emailFocused = true"
-                                @blur="emailFocused = false"
-                                :placeholder="$t('placeholders.emailLogin')"
-                            />
-                            <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
-                            <span v-else-if="serverEmailError" class="error-message">{{ serverEmailError }}</span>
-                        </div>
-                        <div class="form-field">
-                            <label class="label" :class="{ active: passwordFocused && registerForm.password, empty: !registerForm.password }">
-                                {{ $t('placeholders.password') }}
-                                <span class="label-required">*</span>
-                            </label>
-                            <Field
-                                name="password"
-                                v-model="registerForm.password"
-                                :type="showPassword ? 'text' : 'password'"
-                                class="ui-input"
-                                :class="{ active: passwordFocused && registerForm.password, error: errors.password }"
-                                :rules="{ required: true, min: 6 }"
-                                @focus="passwordFocused = true"
-                                @blur="passwordFocused = false"
-                                :placeholder="$t('placeholders.password')"
-                            />
-                            <button
-                                type="button"
-                                class="toggle-password"
-                                @click="showPassword = !showPassword"
-                                aria-label="Показать/скрыть пароль"
-                            >
-                                <NuxtIcon v-if="showPassword" name="eye-visible" filled class="toggle-password-icon" />
-                                <NuxtIcon v-else name="eye-hidden" filled class="toggle-password-icon" />
-                            </button>
-                            <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
-                        </div>
-                        <div class="form-field">
-                            <label class="label" :class="{ active: confirmPasswordFocused && registerForm.confirm_password, empty: !registerForm.confirm_password }">
-                                {{ $t('placeholders.passwordRepeat') }}
-                                <span class="label-required">*</span>
-                            </label>
-                            <Field
-                                name="confirm_password"
-                                v-model="registerForm.confirm_password"
-                                :type="showPassword ? 'text' : 'password'"
-                                class="ui-input"
-                                :class="{ active: confirmPasswordFocused && registerForm.confirm_password, error: errors.confirm_password || serverPasswordError }"
-                                :rules="{ required: true, confirmed: '@password' }"
-                                @focus="confirmPasswordFocused = true"
-                                @blur="confirmPasswordFocused = false"
-                                :placeholder="$t('placeholders.passwordRepeat')"
-                            />
-                            <button
-                                type="button"
-                                class="toggle-password"
-                                @click="showPassword = !showPassword"
-                                aria-label="Показать/скрыть пароль"
-                            >
-                                <NuxtIcon v-if="showPassword" name="eye-visible" filled class="toggle-password-icon" />
-                                <NuxtIcon v-else name="eye-hidden" filled class="toggle-password-icon" />
-                            </button>
-                            <span v-if="errors.confirm_password" class="error-message">{{ errors.confirm_password }}</span>
-                            <span v-else-if="serverPasswordError" class="error-message">{{ serverPasswordError }}</span>
-                        </div>
-                        <div class="form-field checkbox-field">
-                            <div class="custom-checkbox">
-                                <Field
-                                    name="agreement"
-                                    v-model="agreement"
-                                    type="checkbox"
-                                    :value="true"
-                                    :unchecked-value="false"
-                                    :rules="{ required: true }"
-                                    class="checkbox-input"
-                                />
-                                <span class="checkbox-indicator"></span>
-                                <label for="agreement" class="checkbox-label">
-                                    {{ $t('register.agree') }} <a href="/terms" target="_blank">{{ $t('register.userAgreement') }}</a> {{ $t('register.and') }} <a href="/privacy" target="_blank">{{ $t('register.politics') }}</a>
+                <div v-if="!isLoading">
+                    <Form v-if="!isRegistered && !isActivated" v-slot="{ errors }" @submit="handleRegister">
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="label" :class="{ active: nameFocused && registerForm.name, empty: !registerForm.name }">
+                                    {{ $t('placeholders.name') }}
+                                    <span class="label-required">*</span>
                                 </label>
+                                <Field
+                                    name="name"
+                                    v-model="registerForm.name"
+                                    type="text"
+                                    class="ui-input"
+                                    :class="{ active: nameFocused && registerForm.name, error: errors.name }"
+                                    :rules="{ required: true, min: 2, onlyLetters: true }"
+                                    @focus="nameFocused = true"
+                                    @blur="nameFocused = false"
+                                    :placeholder="$t('placeholders.name')"
+                                />
+                                <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
                             </div>
-                            <span v-if="errors.agreement" class="error-message">{{ errors.agreement }}</span>
+                            <div class="form-field">
+                                <label class="label" :class="{ active: lastNameFocused && registerForm.last_name, empty: !registerForm.last_name }">
+                                    {{ $t('placeholders.lastName') }}
+                                    <span class="label-required">*</span>
+                                </label>
+                                <Field
+                                    name="last_name"
+                                    v-model="registerForm.last_name"
+                                    type="text"
+                                    class="ui-input"
+                                    :class="{ active: lastNameFocused && registerForm.last_name, error: errors.last_name }"
+                                    :rules="{ required: true, min: 2, onlyLetters: true }"
+                                    @focus="lastNameFocused = true"
+                                    @blur="lastNameFocused = false"
+                                    :placeholder="$t('placeholders.lastName')"
+                                />
+                                <span v-if="errors.last_name" class="error-message">{{ errors.last_name }}</span>
+                            </div>
+                            <div class="form-field">
+                                <label class="label" :class="{ active: phoneFocused && registerForm.phone, empty: !registerForm.phone }">
+                                    {{ $t('placeholders.phone') }}
+                                    <span class="label-required">*</span>
+                                </label>
+                                <Field
+                                    name="phone"
+                                    v-model="registerForm.phone"
+                                    type="tel"
+                                    class="ui-input"
+                                    :class="{ active: phoneFocused && registerForm.phone, error: errors.phone || serverPhoneError }"
+                                    :rules="{ required: true }"
+                                    ref="phoneInput"
+                                    @focus="phoneFocused = true"
+                                    @blur="phoneFocused = false"
+                                    :placeholder="$t('placeholders.phone')"
+                                />
+                                <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
+                                <span v-else-if="serverPhoneError" class="error-message">{{ serverPhoneError }}</span>
+                            </div>
+                            <div class="form-field">
+                                <label class="label" :class="{ active: emailFocused && registerForm.email, empty: !registerForm.email }">
+                                    {{ $t('placeholders.emailLogin') }}
+                                    <span class="label-required">*</span>
+                                </label>
+                                <Field
+                                    name="email"
+                                    v-model="registerForm.email"
+                                    type="email"
+                                    class="ui-input"
+                                    :class="{ active: emailFocused && registerForm.email, error: errors.email || serverEmailError }"
+                                    :rules="{ required: true, email: true }"
+                                    @focus="emailFocused = true"
+                                    @blur="emailFocused = false"
+                                    :placeholder="$t('placeholders.emailLogin')"
+                                />
+                                <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+                                <span v-else-if="serverEmailError" class="error-message">{{ serverEmailError }}</span>
+                            </div>
+                            <div class="form-field">
+                                <label class="label" :class="{ active: passwordFocused && registerForm.password, empty: !registerForm.password }">
+                                    {{ $t('placeholders.password') }}
+                                    <span class="label-required">*</span>
+                                </label>
+                                <Field
+                                    name="password"
+                                    v-model="registerForm.password"
+                                    :type="showPassword ? 'text' : 'password'"
+                                    class="ui-input"
+                                    :class="{ active: passwordFocused && registerForm.password, error: errors.password }"
+                                    :rules="{ required: true, min: 6 }"
+                                    @focus="passwordFocused = true"
+                                    @blur="passwordFocused = false"
+                                    :placeholder="$t('placeholders.password')"
+                                />
+                                <button
+                                    type="button"
+                                    class="toggle-password"
+                                    @click="showPassword = !showPassword"
+                                    aria-label="Показать/скрыть пароль"
+                                >
+                                    <NuxtIcon v-if="showPassword" name="eye-visible" filled class="toggle-password-icon" />
+                                    <NuxtIcon v-else name="eye-hidden" filled class="toggle-password-icon" />
+                                </button>
+                                <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
+                            </div>
+                            <div class="form-field">
+                                <label class="label" :class="{ active: confirmPasswordFocused && registerForm.confirm_password, empty: !registerForm.confirm_password }">
+                                    {{ $t('placeholders.passwordRepeat') }}
+                                    <span class="label-required">*</span>
+                                </label>
+                                <Field
+                                    name="confirm_password"
+                                    v-model="registerForm.confirm_password"
+                                    :type="showPassword ? 'text' : 'password'"
+                                    class="ui-input"
+                                    :class="{ active: confirmPasswordFocused && registerForm.confirm_password, error: errors.confirm_password || serverPasswordError }"
+                                    :rules="{ required: true, confirmed: '@password' }"
+                                    @focus="confirmPasswordFocused = true"
+                                    @blur="confirmPasswordFocused = false"
+                                    :placeholder="$t('placeholders.passwordRepeat')"
+                                />
+                                <button
+                                    type="button"
+                                    class="toggle-password"
+                                    @click="showPassword = !showPassword"
+                                    aria-label="Показать/скрыть пароль"
+                                >
+                                    <NuxtIcon v-if="showPassword" name="eye-visible" filled class="toggle-password-icon" />
+                                    <NuxtIcon v-else name="eye-hidden" filled class="toggle-password-icon" />
+                                </button>
+                                <span v-if="errors.confirm_password" class="error-message">{{ errors.confirm_password }}</span>
+                                <span v-else-if="serverPasswordError" class="error-message">{{ serverPasswordError }}</span>
+                            </div>
+                            <div class="form-field checkbox-field">
+                                <div class="custom-checkbox">
+                                    <Field
+                                        name="agreement"
+                                        v-model="agreement"
+                                        type="checkbox"
+                                        :value="true"
+                                        :unchecked-value="false"
+                                        :rules="{ required: true }"
+                                        class="checkbox-input"
+                                    />
+                                    <span class="checkbox-indicator"></span>
+                                    <label for="agreement" class="checkbox-label">
+                                        {{ $t('register.agree') }} <a href="/terms" target="_blank">{{ $t('register.userAgreement') }}</a> {{ $t('register.and') }} <a href="/privacy" target="_blank">{{ $t('register.politics') }}</a>
+                                    </label>
+                                </div>
+                                <span v-if="errors.agreement" class="error-message">{{ errors.agreement }}</span>
+                            </div>
+                            <button type="submit" class="ui-btn ui-btn__primary ui-btn__block register-btn">{{ $t('register.register') }}</button>
                         </div>
-                        <button type="submit" class="ui-btn ui-btn__primary ui-btn__block register-btn">{{ $t('register.register') }}</button>
-                    </div>
-                </Form>
+                    </Form>
+                    <template v-if="isRegistered && !isActivated" class="message-container">
+                        <p class="message-text">{{ $t('register.thankYou') }}</p>
+                        <NuxtLink to="/" class="ui-btn ui-btn__primary">{{ $t('register.toHome') }}</NuxtLink>
+                    </template>
+                    <template v-if="isActivated" class="message-container">
+                        <p class="message-text">{{ $t('register.activated') }}</p>
+                        <button class="ui-btn ui-btn__primary" @click="handleAccountClick">{{ $t('register.enter') }}</button>
+                    </template>
+                </div>
             </ClientOnly>
-            <template v-if="isRegistered && !isActivated" class="message-container">
-                <p class="message-text">{{ $t('register.thankYou') }}</p>
-                <NuxtLink to="/" class="ui-btn ui-btn__primary">{{ $t('register.toHome') }}</NuxtLink>
-            </template>
-            <template v-if="isActivated" class="message-container">
-                <p class="message-text">{{ $t('register.activated') }}</p>
-                <button class="ui-btn ui-btn__primary" @click="handleAccountClick">{{ $t('register.enter') }}</button>
-            </template>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch, nextTick } from 'vue'
+import { reactive, ref, watch, nextTick, onBeforeMount } from 'vue'
 import { Form, Field } from 'vee-validate'
 import IMask from 'imask'
 import { useAuthStore } from '~/stores/auth'
@@ -215,16 +217,15 @@ const confirmPasswordFocused = ref<boolean>(false)
 const agreement = ref<boolean>(false)
 const isRegistered = ref<boolean>(false)
 const isActivated = ref<boolean>(false)
+const isLoading = ref<boolean>(false)
 const serverPhoneError = ref<string | null>(null)
 const serverEmailError = ref<string | null>(null)
 const serverPasswordError = ref<string | null>(null)
 const phoneInput = ref<any>(null)
 const phoneMask = ref<any>(null)
 
-// Список разрешённых ошибок для отображения
 const allowedErrors = ['ERROR_PHONE_INVALID', 'ERROR_UNIQUE_EMAIL', 'ERROR_CONFIRM_PASSWORD']
 
-// Инициализация маски телефона после рендеринга
 watch(phoneInput, async (newValue) => {
     if (newValue && newValue.$el) {
         await nextTick()
@@ -235,73 +236,68 @@ watch(phoneInput, async (newValue) => {
                 {
                     mask: '+375 (00) 000-00-00',
                     startsWith: '375',
-                    lazy: false,
                     country: 'Belarus'
                 },
                 {
                     mask: '+7 (000) 000-00-00',
                     startsWith: '7',
-                    lazy: false,
                     country: 'Russia'
                 },
                 {
                     mask: '+38 (0{00}) 000-00-00',
                     startsWith: '38',
-                    lazy: false,
                     country: 'Ukraine'
                 },
                 {
                     mask: '+371 (00) 000-00-00',
                     startsWith: '371',
-                    lazy: false,
                     country: 'Latvia'
                 },
                 {
                     mask: '+370 (000) 000-00-00',
                     startsWith: '370',
-                    lazy: false,
                     country: 'Lithuania'
                 },
                 {
                     mask: '+48 (000) 000-00-00',
                     startsWith: '48',
-                    lazy: false,
                     country: 'Poland'
                 },
                 {
                     mask: '+49 0 000 000-00-00',
                     startsWith: '49',
-                    lazy: false,
                     country: 'Germany'
                 },
                 {
-                    mask: '0000000000000',
+                    mask: '+000 000 000 00 00',
                     startsWith: '',
                     country: 'unknown'
                 }
             ],
-            dispatch: (appended: string, dynamicMasked: any) => {
-                const number = (dynamicMasked.value + appended).replace(/\D/g, '')
-                return dynamicMasked.compiledMasks.find((m: any) => number.startsWith(m.startsWith)) || dynamicMasked.compiledMasks.find((m: any) => m.country === 'unknown')
+            dispatch: function (appended, dynamicMasked) {
+                let number = (dynamicMasked.value + appended).replace(/\D/g, '');
+                return dynamicMasked.compiledMasks.find(function (m) {
+                    return number.indexOf(m.startsWith) === 0;
+                });
             }
         })
     }
 })
 
-onMounted(() => {
+onBeforeMount(async () => {
     const activationCode = route.query.CODE?.toString()
     if (activationCode) {
-        handleActivate(activationCode)
+        isLoading.value = true
+        await handleActivate(activationCode)
+        isLoading.value = false
     }
 })
 
 const handleRegister = async () => {
-    // Очищаем серверные ошибки перед новой отправкой
     serverPhoneError.value = null
     serverEmailError.value = null
     serverPasswordError.value = null
 
-    // Проверка телефона
     if (phoneMask.value && !phoneMask.value.masked.isComplete) {
         serverPhoneError.value = t('errors.incompletePhone')
         return
@@ -319,7 +315,6 @@ const handleRegister = async () => {
         } else {
             let errorCode = response.error || response.details || 'Unknown error'
 
-            // Маппинг деталей ошибки на errorCode
             if (response.details === 'Пользователь с таким email уже существует') {
                 errorCode = 'ERROR_UNIQUE_EMAIL'
             } else if (response.details === 'Номер телефона недействителен') {
@@ -343,7 +338,6 @@ const handleRegister = async () => {
     } catch (error) {
         let errorCode = error.data?.error || error.data?.data?.error || error.data?.details || error.message || 'Unknown error'
 
-        // Маппинг деталей ошибки на errorCode в случае catch
         if (error.data?.details === 'Пользователь с таким email уже существует') {
             errorCode = 'ERROR_UNIQUE_EMAIL'
         } else if (error.data?.details === 'Номер телефона недействителен') {

@@ -1,0 +1,92 @@
+<template>
+    <div class="advantages">
+        <div v-if="items.length" class="row">
+            <div v-for="(item, index) in items" :key="index" class="col-md-3">
+                <div  class="advantages-item">
+                    <img :src="imageBaseUrl + item.icon" :alt="`Иконка преимущества ${index + 1}`" class="advantage-icon" />
+                    <div class="advantages-text">{{ item.text }}</div>
+                </div>
+            </div>
+        </div>
+        <div v-else class="advantages-placeholder">
+            Нет данных для отображения
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+
+const config = useRuntimeConfig();
+const imageBaseUrl = config.public.imageBaseUrl;
+
+// Загрузка данных преимуществ
+const { data, pending, error, refresh } = await useAsyncData('advantages', async () => {
+    try {
+        const response = await $fetch('/api/advantages', {
+            query: {
+                iblockId: 17,
+                GET_ALL_FILES: 'Y',
+            },
+        });
+        console.log('API Response:', response);
+        if (response.error) {
+            throw new Error(response.details);
+        }
+        return response; // Возвращаем весь объект ответа
+    } catch (err) {
+        console.error('Ошибка загрузки преимуществ:', err);
+        return { title: 'Почему мы?', items: [] };
+    }
+}, {
+    server: false, // Клиентская загрузка для отладки в Network
+});
+
+// Извлечение данных
+const title = ref(data.value?.title || 'Почему мы?');
+const items = ref(data.value?.items || []);
+
+watch(data, (newData) => {
+    title.value = newData?.title || 'Почему мы?';
+    items.value = newData?.items || [];
+    console.log('Updated items:', items.value);
+});
+
+// Ручное обновление данных для проверки
+const checkData = () => {
+    refresh();
+    console.log('Data refreshed, items:', items.value);
+};
+</script>
+
+<style scoped lang="scss">
+.advantages {
+    padding-left: p2r(20);
+    padding-right: p2r(20);
+
+    &-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: p2r(20);
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: p2r(8);
+        padding: p2r(20);
+        height: 100%;
+    }
+
+    &-icon {
+        width: p2r(68);
+        height: p2r(68);
+        flex: 0 0 p2r(68);
+        object-fit: contain;
+        margin-bottom: p2r(10);
+    }
+
+    &-placeholder {
+        color: $font-white;
+        font-size: p2r(16);
+        padding: p2r(20);
+    }
+}
+</style>

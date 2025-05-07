@@ -9,7 +9,9 @@
                         <div class="sidebar-profile">
                             <div class="sidebar-id">Ваш ID {{ userProfile?.ID || 'N/A' }}</div>
                             <div class="sidebar-person">
-                                <div class="sidebar-avatar" :style="{ backgroundImage: userProfile?.PHOTO ? `url(${userProfile.PHOTO})` : '' }"></div>
+                                <div class="sidebar-avatar">
+                                    <img v-if="userProfile?.PHOTO" :src="`${imageBaseUrl}${userProfile.PHOTO}`" alt="avatar" class="sidebar-avatar-image">
+                                </div>
                                 <div class="sidebar-name">
                                     {{ userProfile?.NAME || 'Имя' }} {{ userProfile?.LAST_NAME || 'Фамилия' }}
                                 </div>
@@ -69,18 +71,21 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
 import { useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useModalsStore } from '~/stores/modals';
 
 const modalsStore = useModalsStore();
 const authStore = useAuthStore();
 const router = useRouter();
 const userProfile = ref(null);
+const config = useRuntimeConfig();
+const imageBaseUrl = config.public.imageBaseUrl;
 
 const fetchProfile = async () => {
     if (!authStore.token) {
         console.error('fetchProfile: No token available, redirecting to login')
-        router.push('/login')
+        router.push('/')
+        modalsStore.openModal('login')
         return
     }
 
@@ -100,7 +105,8 @@ const fetchProfile = async () => {
         })
         if (error.data?.error === 'ERROR_INVALID_TOKEN') {
             authStore.logout()
-            router.push('/login')
+            router.push('/')
+            modalsStore.openModal('login')
         }
     }
 };
@@ -114,10 +120,14 @@ const logout = () => {
 onMounted(() => {
     fetchProfile()
 });
+
+// Синхронизация с userProfile из authStore
+watch(() => authStore.userProfile, (newProfile) => {
+    userProfile.value = newProfile;
+}, { immediate: true });
 </script>
 
 <style lang="scss" scoped>
-
 .profile {
     margin-bottom: p2r(80);
 }
@@ -139,11 +149,21 @@ onMounted(() => {
     &-avatar {
         width: p2r(60);
         height: p2r(60);
+        overflow: hidden;
         flex: 0 0 p2r(60);
         background-color: #F5F5F5;
         border-radius: 50%;
-        background-size: cover;
+        background-size: p2r(32);
+        background-repeat: no-repeat;
         background-position: center;
+        background-image: url('data:image/svg+xml,<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.9983 16.4C11.3879 16.4 7.50618 19.52 6.34946 23.7639C5.96217 25.1848 7.19226 26.4 8.66502 26.4H23.3316C24.8044 26.4 26.0346 25.1848 25.6472 23.7639C24.4906 19.52 20.6088 16.4 15.9983 16.4Z" fill="%234D5452" stroke="%234D5452" stroke-width="1.25" stroke-linecap="round"/><path d="M20.6653 7.73332C20.6653 10.3107 18.576 12.4 15.9986 12.4C13.4213 12.4 11.332 10.3107 11.332 7.73332C11.332 5.15598 13.4213 3.06665 15.9986 3.06665C18.576 3.06665 20.6653 5.15598 20.6653 7.73332Z" fill="%234D5452" stroke="%234D5452" stroke-width="1.25" stroke-linecap="round"/></svg>');
+
+        &-image {
+            object-fit: cover;
+            object-position: top center;
+            width: 100%;
+            height: 100%;
+        }
     }
 
     &-name {

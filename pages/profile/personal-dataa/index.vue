@@ -353,7 +353,9 @@ import { useRouter } from 'vue-router';
 const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
+import { useModalsStore } from '~/stores/modals';
 
+const modalsStore = useModalsStore();
 const userProfile = ref(null);
 const errorMessage = ref<string | null>(null);
 const config = useRuntimeConfig();
@@ -406,6 +408,7 @@ const fetchProfile = async () => {
     if (!authStore.token) {
         console.error('fetchProfile: No token available, redirecting to home')
         router.push('/')
+        modalsStore.openModal('login')
         return
     }
 
@@ -447,7 +450,8 @@ const fetchProfile = async () => {
         errorMessage.value = error.data?.error || 'Ошибка загрузки профиля'
         if (error.data?.error === 'ERROR_INVALID_TOKEN') {
             authStore.logout()
-            router.push('/login')
+            router.push('/')
+            modalsStore.openModal('login')
         }
     }
 };
@@ -455,7 +459,8 @@ const fetchProfile = async () => {
 // Выход из аккаунта
 const logout = () => {
     authStore.logout()
-    router.push('/login')
+    router.push('/')
+    modalsStore.openModal('login')
 };
 
 // Списки стран и месяцев

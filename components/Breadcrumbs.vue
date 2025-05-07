@@ -1,107 +1,3 @@
-<!--<template>-->
-<!--    <nav class="breadcrumbs" aria-label="Breadcrumb">-->
-<!--        <ol class="breadcrumbs-list">-->
-<!--            <li v-for="(crumb, index) in computedBreadcrumbs" :key="crumb.path" class="breadcrumbs-item">-->
-<!--                <NuxtLink-->
-<!--                    v-if="index < computedBreadcrumbs.length - 1"-->
-<!--                    :to="crumb.path"-->
-<!--                    class="breadcrumbs-link"-->
-<!--                >-->
-<!--                    {{ crumb.name }}-->
-<!--                </NuxtLink>-->
-<!--                <span v-else class="breadcrumbs-current">-->
-<!--          {{ crumb.name }}-->
-<!--        </span>-->
-<!--                <span v-if="index < computedBreadcrumbs.length - 1" class="breadcrumbs-separator"></span>-->
-<!--            </li>-->
-<!--        </ol>-->
-<!--    </nav>-->
-<!--</template>-->
-
-<!--<style scoped lang="scss">-->
-<!--.breadcrumbs {-->
-<!--    padding: p2r(10) 0;-->
-<!--    margin-bottom: p2r(60);-->
-
-<!--    &-list {-->
-<!--        display: flex;-->
-<!--        flex-wrap: wrap;-->
-<!--    }-->
-
-<!--    &-item {-->
-<!--        display: flex;-->
-<!--        align-items: center;-->
-<!--    }-->
-
-<!--    &-link {-->
-<!--        color: $bgc-dark;-->
-
-<!--        &:hover {-->
-<!--            color: $placeholder;-->
-<!--        }-->
-<!--    }-->
-
-<!--    &-current {-->
-<!--        color: $placeholder;-->
-<!--    }-->
-
-<!--    &-separator {-->
-<!--        margin: 0 p2r(8);-->
-<!--        color: $font-white-dark;-->
-<!--        width: p2r(26);-->
-<!--        height: p2r(1);-->
-<!--        background-color: $font-black;-->
-<!--    }-->
-<!--}-->
-<!--</style>-->
-
-<!--<script setup lang="ts">-->
-<!--import { useI18n } from 'vue-i18n';-->
-
-<!--const { items, newsTitle } = defineProps<{-->
-<!--    items?: { name: string; path: string }[];-->
-<!--    newsTitle?: string;-->
-<!--}>();-->
-
-<!--const route = useRoute();-->
-<!--const { t } = useI18n();-->
-
-<!--const { data: rubricsData } = await useFetch('/api/rubrics');-->
-<!--const rubrics = computed(() => rubricsData.value?.rubrics || []);-->
-
-<!--const getRubricName = (sectionCode) => {-->
-<!--    if (!sectionCode) return null;-->
-<!--    const rubric = rubrics.value.find((r) => r.CODE === sectionCode);-->
-<!--    return rubric ? rubric.UF_SHORT_NAME || rubric.NAME : null;-->
-<!--};-->
-
-<!--const computedBreadcrumbs = computed(() => {-->
-<!--    const crumbs = [-->
-<!--        { name: t('breadcrumbs.home'), path: '/' },-->
-<!--    ];-->
-
-<!--    if (route.path.startsWith('/journal')) {-->
-<!--        crumbs.push({ name: t('breadcrumbs.journal'), path: '/journal' });-->
-
-<!--        // Если есть рубрика в пути (например, /journal/novosti_servisa)-->
-<!--        const sectionCode = route.params.section;-->
-<!--        if (sectionCode) {-->
-<!--            const rubricName = getRubricName(sectionCode);-->
-<!--            if (rubricName) {-->
-<!--                crumbs.push({ name: rubricName, path: `/journal/${sectionCode}` });-->
-<!--            }-->
-<!--        }-->
-
-<!--        // Если передан заголовок новости и это детальная страница (есть ID)-->
-<!--        if (newsTitle && route.params.id) {-->
-<!--            crumbs.push({ name: newsTitle, path: route.path });-->
-<!--        }-->
-<!--    }-->
-
-<!--    return crumbs;-->
-<!--});-->
-<!--</script>-->
-
 <template>
     <nav class="breadcrumbs" aria-label="Breadcrumb">
         <ol class="breadcrumbs-list">
@@ -164,9 +60,10 @@ import { useRoute } from 'nuxt/app';
 import { useI18n } from 'vue-i18n';
 import { useLocaleStore } from '~/stores/locale';
 
-const { newsTitle } = defineProps<{
+const { newsTitle, eventTitle } = defineProps<{
     items?: { name: string; path: string }[];
     newsTitle?: string;
+    eventTitle?: string;
 }>();
 
 const route = useRoute();
@@ -211,28 +108,7 @@ const getRubricName = (sectionCode) => {
 const computedBreadcrumbs = computed(() => {
     const crumbs = [{ name: t('breadcrumbs.home'), path: '/' }];
 
-    // Логика для профиля
-    if (route.path.startsWith('/profile')) {
-        crumbs.push({ name: t('breadcrumbs.profile'), path: '/profile/personal-data' });
-
-        const profilePages = {
-            'personal-data': t('accountSidebar.personalData'), // Личные данные
-            'certificates': t('accountSidebar.certificates'), // Свидетельства
-            'courses': t('accountSidebar.courses'), // Курсы
-            'webinars': t('accountSidebar.webinars'), // Вебинары
-            'favorites': t('accountSidebar.favorites'), // Избранное
-            'payments': t('accountSidebar.paymentHistory'), // История оплат
-        };
-
-        const currentPage = route.path.split('/').pop();
-        if (currentPage && profilePages[currentPage]) {
-            crumbs.push({ name: profilePages[currentPage], path: route.path });
-        }
-
-        return crumbs;
-    }
-
-    // логика для других страниц
+    // Логика для других страниц через меню
     const currentMenuItem = allMenuItems.value.find((item) => {
         const normalizedItemUrl = item.URL.endsWith('/') ? item.URL : `${item.URL}/`;
         const normalizedRoutePath = route.path.endsWith('/') ? route.path : `${route.path}/`;
@@ -244,6 +120,40 @@ const computedBreadcrumbs = computed(() => {
         return crumbs;
     }
 
+    // Логика для профиля
+    if (route.path.startsWith('/profile')) {
+        crumbs.push({ name: t('breadcrumbs.profile'), path: '/profile/personal-data' });
+
+        const profilePages = {
+            'personal-data': t('accountSidebar.personalData'),
+            'certificates': t('accountSidebar.certificates'),
+            'courses': t('accountSidebar.courses'),
+            'webinars': t('accountSidebar.webinars'),
+            'favorites': t('accountSidebar.favorites'),
+            'payments': t('accountSidebar.paymentHistory'),
+        };
+
+        const currentPage = route.path.split('/').pop();
+        if (currentPage && profilePages[currentPage]) {
+            crumbs.push({ name: profilePages[currentPage], path: route.path });
+        }
+
+        return crumbs;
+    }
+
+    // Логика для мероприятий
+    if (route.path.startsWith('/events')) {
+        crumbs.push({ name: t('breadcrumbs.events'), path: '/events' });
+
+        // Добавляем название конкретного мероприятия, если есть eventTitle
+        if (eventTitle && route.path !== '/events') {
+            crumbs.push({ name: eventTitle, path: route.path });
+        }
+
+        return crumbs;
+    }
+
+    // Логика для журнала
     if (route.path.startsWith('/journal')) {
         crumbs.push({ name: t('breadcrumbs.journal'), path: '/journal' });
 
@@ -259,8 +169,6 @@ const computedBreadcrumbs = computed(() => {
             crumbs.push({ name: newsTitle, path: route.path });
         }
     }
-
-    // console.log('Breadcrumbs:', crumbs, 'News title:', newsTitle);
     return crumbs;
 });
 </script>

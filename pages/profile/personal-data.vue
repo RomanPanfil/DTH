@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h1 class="page-title">Личные данные</h1>
-        <Form class="content__form">
+        <h1 class="page-title">{{ $t('account.personalData') }}</h1>
+        <Form class="content__form" v-slot="{ errors }" @submit="submitForm">
             <div class="content__grid">
                 <div class="form-field">
                     <label class="ui-label">
@@ -13,7 +13,9 @@
                         v-model="profilerForm.name"
                         type="text"
                         class="ui-input"
+                        :rules="{ required: true, min: 2, onlyLetters: true }"
                     />
+                    <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
                 </div>
                 <div class="form-field">
                     <label class="ui-label">
@@ -25,12 +27,13 @@
                         v-model="profilerForm.last_name"
                         type="text"
                         class="ui-input"
+                        :rules="{ required: true, min: 2, onlyLetters: true }"
                     />
+                    <span v-if="errors.last_name" class="error-message">{{ errors.last_name }}</span>
                 </div>
                 <div class="form-field">
                     <label class="ui-label">
                         {{ $t('placeholders.Surname') }}
-                        <span class="ui-label-required">*</span>
                     </label>
                     <Field
                         name="surname"
@@ -39,7 +42,6 @@
                         class="ui-input"
                     />
                 </div>
-
                 <div class="form-field">
                     <label class="ui-label">
                         {{ $t('placeholders.nameLat') }}
@@ -73,7 +75,6 @@
                         class="ui-input"
                     />
                 </div>
-
                 <div class="form-field birthday-field">
                     <label class="ui-label">
                         {{ $t('placeholders.birthday') }}
@@ -173,8 +174,10 @@
                         v-model="profilerForm.phone"
                         type="tel"
                         class="ui-input"
+                        :rules="{ required: true, phoneMaskComplete: true }"
                         ref="phoneInput"
                     />
+                    <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
                 </div>
                 <div class="form-field">
                     <label class="ui-label">
@@ -187,7 +190,9 @@
                         type="email"
                         class="ui-input"
                         :rules="{ required: true, email: true }"
+                        disabled
                     />
+                    <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
                 </div>
                 <div class="form-field">
                     <label class="ui-label">
@@ -198,6 +203,7 @@
                             name="password"
                             v-model="profilerForm.password"
                             class="ui-input"
+                            disabled
                         />
                         <button type="button" class="change-password">
                             <NuxtIcon name="edit" filled class="change-password-icon" />
@@ -247,13 +253,22 @@
                         name="avatar"
                         id="avatar-upload"
                         class="avatar-input"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/gif"
                         @change="handleAvatarUpload"
+                        :disabled="photoDel"
                     />
-                    <label for="avatar-upload" class="ui-btn ui-btn__secondary ui-btn__mid">
-                        {{ $t('placeholders.avatarDownload') }}
+                    <label for="avatar-upload" class="ui-btn ui-btn__secondary ui-btn__mid avatar-upload-btn" :class="{ disabled: photoDel }">
+                        <span v-if="avatarPreviewUrl" class="avatar-preview">
+                            <img :src="avatarPreviewUrl" class="avatar-preview-img" alt="Avatar Preview" />
+                            {{ $t('placeholders.avatarChange') }}
+                        </span>
+                        <span v-else>{{ $t('placeholders.avatarDownload') }}</span>
                     </label>
-                    <span class="avatar-file-name">{{ avatarFileName || $t('placeholders.fileNotSelected') }}</span>
+                    <button type="button" class="avatar-delete" @click="deleteAvatar" v-if="!photoDel && (hasAvatar || avatarPreviewUrl)">
+                        {{ $t('placeholders.deleteAvatar') }}
+                        <div class="avatar-delete-icon"></div>
+                    </button>
+                    <span class="avatar-file-name" v-if="!avatarPreviewUrl && !hasAvatar">{{ avatarFileName || $t('placeholders.fileNotSelected') }}</span>
                 </div>
             </div>
             <div class="form-field checkbox-field">
@@ -273,20 +288,40 @@
                 </div>
             </div>
             <div class="content-save">
-                <button type="button" class="ui-btn ui-btn__primary">Сохранить данные</button>
+                <button type="submit" class="ui-btn ui-btn__primary" :disabled="isSubmitting">
+                    {{ isSubmitting ? $t('account.saving') : $t('account.save') }}
+                </button>
             </div>
         </Form>
     </div>
 </template>
 
 <script setup lang="ts">
-import { Field, Form } from "vee-validate";
-import { reactive, ref, computed, onMounted, onUnmounted } from "vue";
+import { Field, Form, defineRule } from "vee-validate";
+import { reactive, ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '~/stores/auth';
+import { useNuxtApp } from 'nuxt/app';
+import { useRouter } from 'vue-router';
+import IMask from 'imask';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const { $toast } = useNuxtApp();
+const router = useRouter();
+const config = useRuntimeConfig();
+const imageBaseUrl = config.public.imageBaseUrl;
+import { useModalsStore } from '~/stores/modals';
+
+const modalsStore = useModalsStore();
+
+// Определение кастомного правила валидации для проверки заполненности маски
+defineRule('phoneMaskComplete', (value: string) => {
+    if (phoneMask.value && !phoneMask.value.masked.isComplete) {
+        return t('errors.incompletePhone');
+    }
+    return true;
+});
 
 const profilerForm = reactive<{
     name: string;
@@ -303,7 +338,6 @@ const profilerForm = reactive<{
     phone: string;
     email: string;
     password: string;
-    confirm_password: string;
     telegram: string;
     viber: string;
     whatsApp: string;
@@ -323,17 +357,24 @@ const profilerForm = reactive<{
     phone: '',
     email: '',
     password: '',
-    confirm_password: '',
     telegram: '',
     viber: '',
     whatsApp: ''
 });
 
+const avatarFileName = ref<string | null>(null);
+const avatarPreviewUrl = ref<string | null>(null);
+const photoDel = ref<boolean>(false);
+const hasAvatar = ref<boolean>(false);
+const isSubmitting = ref<boolean>(false);
+const phoneInput = ref<any>(null);
+const phoneMask = ref<any>(null);
+
 const countries = ref([
-    { label: 'Россия', value: 'russia' },
-    { label: 'Беларусь', value: 'belarus' },
-    { label: 'Казахстан', value: 'kazakhstan' },
-    { label: 'Украина', value: 'ukraine' },
+    { label: 'Россия', value: 'Россия' },
+    { label: 'Беларусь', value: 'Беларусь' },
+    { label: 'Казахстан', value: 'Казахстан' },
+    { label: 'Украина', value: 'Украина' },
 ]);
 
 const months = ref(
@@ -386,17 +427,278 @@ const restrictToNumbers = (event: Event, field: string) => {
     profilerForm[field] = value;
 };
 
-const avatarFileName = ref<string | null>(null);
 const handleAvatarUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-        profilerForm.avatar = input.files[0];
-        avatarFileName.value = input.files[0].name;
+        const file = input.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+            $toast?.error(t('errors.photoTooLarge'));
+            return;
+        }
+        if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+            $toast?.error(t('errors.invalidPhotoType'));
+            return;
+        }
+        profilerForm.avatar = file;
+        avatarFileName.value = file.name;
+        avatarPreviewUrl.value = URL.createObjectURL(file);
+        photoDel.value = false;
     } else {
         profilerForm.avatar = undefined;
         avatarFileName.value = null;
+        avatarPreviewUrl.value = null;
     }
 };
+
+const deleteAvatar = () => {
+    profilerForm.avatar = undefined;
+    avatarFileName.value = null;
+    avatarPreviewUrl.value = null;
+    photoDel.value = true;
+};
+
+// Настройка маски для телефона
+watch(phoneInput, async (newValue) => {
+    if (newValue && newValue.$el) {
+        await nextTick();
+        const inputElement = newValue.$el;
+
+        phoneMask.value = IMask(inputElement, {
+            mask: [
+                {
+                    mask: '+375 (00) 000-00-00',
+                    startsWith: '375',
+                    country: 'Belarus'
+                },
+                {
+                    mask: '+7 (000) 000-00-00',
+                    startsWith: '7',
+                    country: 'Russia'
+                },
+                {
+                    mask: '+38 (0{00}) 000-00-00',
+                    startsWith: '38',
+                    country: 'Ukraine'
+                },
+                {
+                    mask: '+371 (00) 000-00-00',
+                    startsWith: '371',
+                    country: 'Latvia'
+                },
+                {
+                    mask: '+370 (000) 000-00-00',
+                    startsWith: '370',
+                    country: 'Lithuania'
+                },
+                {
+                    mask: '+48 (000) 000-00-00',
+                    startsWith: '48',
+                    country: 'Poland'
+                },
+                {
+                    mask: '+49 0 000 000-00-00',
+                    startsWith: '49',
+                    country: 'Germany'
+                },
+                {
+                    mask: '+000 000 000 00 00',
+                    startsWith: '',
+                    country: 'unknown'
+                }
+            ],
+            dispatch: function (appended, dynamicMasked) {
+                let number = (dynamicMasked.value + appended).replace(/\D/g, '');
+                return dynamicMasked.compiledMasks.find(function (m) {
+                    return number.indexOf(m.startsWith) === 0;
+                });
+            }
+        });
+
+        // Синхронизация начального значения
+        if (profilerForm.phone) {
+            phoneMask.value.value = profilerForm.phone;
+        }
+    }
+});
+
+// Синхронизация маски при изменении значения через v-model
+watch(() => profilerForm.phone, (newValue) => {
+    if (phoneMask.value && newValue !== phoneMask.value.value) {
+        phoneMask.value.value = newValue;
+    }
+});
+
+const submitForm = async () => {
+    if (!authStore.token) {
+        $toast?.error(t('errors.noToken'));
+        router.push('/');
+        modalsStore.openModal('login');
+        return;
+    }
+
+    isSubmitting.value = true;
+
+    try {
+        const profileData = {
+            token: authStore.token,
+            name: profilerForm.name,
+            last_name: profilerForm.last_name,
+            second_name: profilerForm.surname,
+            phone: profilerForm.phone,
+            link_inst: profilerForm.whatsApp,
+            link_fb: profilerForm.viber,
+            link_vk: profilerForm.telegram,
+            name_en: profilerForm.name_lat,
+            last_name_en: profilerForm.last_name_lat,
+            second_name_en: profilerForm.surname_lat,
+            personal_birthday: profilerForm.birth_year && profilerForm.birth_month && profilerForm.birth_day
+                ? `${profilerForm.birth_year}-${profilerForm.birth_month}-${profilerForm.birth_day}`
+                : '',
+            country: profilerForm.country,
+            city: profilerForm.city
+        };
+
+        console.log('Submitting profile data:', profileData);
+
+        const profileResponse = await $fetch('/api/auth/update-profile', {
+            method: 'POST',
+            body: profileData
+        });
+
+        console.log('Profile update response:', profileResponse);
+
+        if (profileResponse.message === 'PROFILE_UPDATED_SUCCESSFULLY') {
+            $toast?.success(t('account.profileUpdated'));
+
+            const profileFetch = await $fetch('/api/auth/profile', {
+                method: 'POST',
+                body: { token: authStore.token }
+            });
+            authStore.userProfile = profileFetch; // Обновляем профиль в store
+            hasAvatar.value = !!profileFetch.PHOTO;
+            if (profileFetch.PHOTO && !profilerForm.avatar && !photoDel.value) {
+                avatarPreviewUrl.value = `${imageBaseUrl}${profileFetch.PHOTO}`;
+            }
+        }
+
+        if (profilerForm.avatar || photoDel.value) {
+            const formData = new FormData();
+            formData.append('token', authStore.token);
+            if (photoDel.value) {
+                formData.append('photo_del', 'Y');
+            } else if (profilerForm.avatar) {
+                formData.append('photo', profilerForm.avatar);
+            }
+
+            console.log('Submitting photo data:', formData);
+
+            const photoResponse = await $fetch('/api/auth/update-photo', {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('Photo update response:', photoResponse);
+
+            if (photoResponse.message === 'PHOTO_UPDATED_SUCCESSFULLY') {
+                $toast?.success(t('account.photoUpdated'));
+                const profileFetch = await $fetch('/api/auth/profile', {
+                    method: 'POST',
+                    body: { token: authStore.token }
+                });
+                authStore.userProfile = profileFetch; // Обновляем профиль в store после изменения фото
+                hasAvatar.value = !!profileFetch.PHOTO;
+                profilerForm.avatar = undefined;
+                avatarFileName.value = null;
+                avatarPreviewUrl.value = profileFetch.PHOTO ? `${imageBaseUrl}${profileFetch.PHOTO}` : null;
+                photoDel.value = false;
+            }
+        }
+    } catch (error) {
+        console.error('Form submission error:', error);
+        let userFriendlyMessage = t('errors.updateFailed');
+        if (error.data?.error) {
+            switch (error.data.error) {
+                case 'ERROR_INVALID_TOKEN':
+                    userFriendlyMessage = t('errors.invalidToken');
+                    authStore.logout();
+                    router.push('/');
+                    modalsStore.openModal('login');
+                    break;
+                case 'ERROR_FIELD_NAME_REQUIRED':
+                    userFriendlyMessage = t('errors.nameRequired');
+                    break;
+                case 'ERROR_FIELD_LAST_NAME_REQUIRED':
+                    userFriendlyMessage = t('errors.lastNameRequired');
+                    break;
+                case 'ERROR_FIELD_PHONE_REQUIRED':
+                    userFriendlyMessage = t('errors.phoneRequired');
+                    break;
+                case 'ERROR_INVALID_PHOTO_TYPE':
+                    userFriendlyMessage = t('errors.invalidPhotoType');
+                    break;
+                case 'ERROR_PHOTO_TOO_LARGE':
+                    userFriendlyMessage = t('errors.photoTooLarge');
+                    break;
+                default:
+                    userFriendlyMessage = error.data.statusMessage || t('errors.updateFailed');
+            }
+        }
+        $toast?.error(userFriendlyMessage);
+    } finally {
+        isSubmitting.value = false;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', closeDropdownOnClickOutside);
+    if (authStore.token) {
+        console.log('personal-data: Loading profile data');
+        $fetch('/api/auth/profile', {
+            method: 'POST',
+            body: { token: authStore.token }
+        }).then(response => {
+            console.log('personal-data: Profile data loaded:', response);
+            profilerForm.name = response.NAME || '';
+            profilerForm.last_name = response.LAST_NAME || '';
+            profilerForm.surname = response.SECOND_NAME || '';
+            profilerForm.name_lat = response.NAME_EN || '';
+            profilerForm.last_name_lat = response.LAST_NAME_EN || '';
+            profilerForm.surname_lat = response.SECOND_NAME_EN || '';
+            profilerForm.phone = response.PHONE || '';
+            profilerForm.email = response.EMAIL || response.LOGIN || '';
+            profilerForm.telegram = response.LINK_VK || '';
+            profilerForm.viber = response.LINK_FB || '';
+            profilerForm.whatsApp = response.LINK_INST || '';
+            if (response.BIRTHDAY) {
+                const [year, month, day] = response.BIRTHDAY.split('-');
+                profilerForm.birth_year = year;
+                profilerForm.birth_month = month;
+                profilerForm.birth_day = day;
+            }
+            profilerForm.country = response.COUNTRY || '';
+            profilerForm.city = response.CITY || '';
+            hasAvatar.value = !!response.PHOTO;
+            if (response.PHOTO) {
+                avatarPreviewUrl.value = `${imageBaseUrl}${response.PHOTO}`;
+            }
+            authStore.userProfile = response;
+        }).catch(error => {
+            console.error('personal-data: Failed to load profile:', error);
+            if (error.data?.error === 'ERROR_INVALID_TOKEN') {
+                authStore.logout();
+                router.push('/');
+                modalsStore.openModal('login');
+            }
+        });
+    }
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', closeDropdownOnClickOutside);
+    if (avatarPreviewUrl.value && avatarPreviewUrl.value.startsWith('blob:')) {
+        URL.revokeObjectURL(avatarPreviewUrl.value);
+    }
+});
 
 const closeDropdownOnClickOutside = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
@@ -406,67 +708,9 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
         });
     }
 };
-
-onMounted(() => {
-    document.addEventListener('click', closeDropdownOnClickOutside);
-    // Загрузка данных профиля
-    if (authStore.token) {
-        console.log('personal-data: Loading profile data')
-        $fetch('/api/auth/profile', {
-            method: 'POST',
-            body: { token: authStore.token }
-        }).then(response => {
-            console.log('personal-data: Profile data loaded:', response)
-            profilerForm.name = response.NAME || ''
-            profilerForm.last_name = response.LAST_NAME || ''
-            profilerForm.surname = response.SECOND_NAME || ''
-            profilerForm.name_lat = response.NAME_EN || ''
-            profilerForm.last_name_lat = response.LAST_NAME_EN || ''
-            profilerForm.surname_lat = response.SECOND_NAME_EN || ''
-            profilerForm.phone = response.PHONE || ''
-            profilerForm.email = response.EMAIL || response.LOGIN || ''
-            profilerForm.telegram = response.LINK_VK || ''
-            profilerForm.viber = response.LINK_FB || ''
-            profilerForm.whatsApp = response.LINK_INST || ''
-            if (response.BIRTHDAY) {
-                const [year, month, day] = response.BIRTHDAY.split('-')
-                profilerForm.birth_year = year
-                profilerForm.birth_month = month
-                profilerForm.birth_day = day
-            }
-        }).catch(error => {
-            console.error('personal-data: Failed to load profile:', error)
-        })
-    }
-});
-
-onUnmounted(() => {
-    document.removeEventListener('click', closeDropdownOnClickOutside);
-});
-
-const showPassword = ref<boolean>(false);
-const nameFocused = ref<boolean>(false);
-const lastNameFocused = ref<boolean>(false);
-const surNameFocused = ref<boolean>(false);
-const phoneFocused = ref<boolean>(false);
-const emailFocused = ref<boolean>(false);
-const passwordFocused = ref<boolean>(false);
-const confirmPasswordFocused = ref<boolean>(false);
-const agreement = ref<boolean>(false);
-const promoAgreement = ref<boolean>(false);
-const isRegistered = ref<boolean>(false);
-const isActivated = ref<boolean>(false);
-const serverPhoneError = ref<string | null>(null);
-const serverEmailError = ref<string | null>(null);
-const serverPasswordError = ref<string | null>(null);
-const phoneInput = ref<any>(null);
-const phoneMask = ref<any>(null);
 </script>
 
 <style lang="scss" scoped>
-.page-title {
-    margin-bottom: p2r(60);
-}
 .content {
     &__form {
         display: flex;
@@ -513,6 +757,44 @@ const phoneMask = ref<any>(null);
         display: flex;
         align-items: center;
         gap: p2r(20);
+        position: relative;
+    }
+
+    .avatar-upload-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-left: p2r(20);
+        padding-right: p2r(20);
+        height: p2r(40);
+        width: auto;
+        min-width: p2r(150);
+    }
+
+    .avatar-preview {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &-img {
+            width: p2r(28);
+            height: p2r(28);
+            flex: 0 0 p2r(28);
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+        }
+    }
+
+    .avatar-delete {
+        border: none;
+        background-color: transparent;
+        display: flex;
+        align-items: center;
+        gap: p2r(8);
+        cursor: pointer;
+        font-size: p2r(14);
+        color: $placeholder;
     }
 
     .avatar-input {
@@ -523,6 +805,11 @@ const phoneMask = ref<any>(null);
         font-size: p2r(14);
         color: $placeholder;
         letter-spacing: -0.03em;
+    }
+
+    .disabled {
+        opacity: 0.5;
+        pointer-events: none;
     }
 
     .birthday-field {
@@ -608,14 +895,57 @@ const phoneMask = ref<any>(null);
             }
         }
     }
+
+    .error-message {
+        color: $error;
+        font-size: p2r(12);
+        margin-top: p2r(5);
+        display: block;
+    }
 }
 
-.checkbox-label {
-    font-weight: 500;
-    font-size: p2r(16);
-    letter-spacing: -0.03em;
-}
-.checkbox-field {
-    margin-bottom: p2r(60);
+.avatar-delete {
+    transition: color 0.3s;
+
+    &-icon {
+        display: inline-block;
+        width: p2r(16);
+        height: p2r(16);
+        border-radius: 50%;
+        background-color: $delete;
+        position: relative;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s;
+
+        &::before, &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: p2r(10);
+            height: p2r(2);
+            border-radius: p2r(2);
+            background-color: white;
+        }
+
+        &::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        &::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            color: $delete;
+
+            .avatar-delete-icon {
+                opacity: 1;
+            }
+        }
+    }
 }
 </style>

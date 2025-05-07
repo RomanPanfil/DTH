@@ -120,6 +120,54 @@ table {
 //    background: lighten($accent, 8%);
 //  }
 //}
+
+.ui-block-title {
+  font-weight: 500;
+  font-size: p2r(32);
+  line-height: 1.3;
+  margin-bottom: p2r(40);
+}
+
+.ui-section {
+  padding: p2r(40);
+  margin-bottom: p2r(40);
+  background: $bgc;
+  border-radius: p2r(8);
+}
+
+.article {
+  ul {
+    margin-top: p2r(20);
+    margin-bottom: p2r(40);
+  }
+
+  li {
+    position: relative;
+    padding-left: p2r(16);
+    margin-bottom: p2r(8);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &::before {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      content: '';
+      width: p2r(6);
+      height: p2r(6);
+      border-radius: 50%;
+      background-color: $primary;
+    }
+  }
+
+  img {
+    display: block;
+  }
+}
+
 .form-field {
   margin-bottom: p2r(20);
   position: relative;
@@ -175,6 +223,11 @@ table {
     transform: translateY(-50%);
     font-size: p2r(24);
     line-height: p2r(24);
+  }
+
+  &.birthday-input {
+    padding-left: p2r(14);
+    padding-right: p2r(14);
   }
 }
 

@@ -6,7 +6,8 @@ export const useAuthStore = defineStore('auth', {
         user: null as { email: string, userId: number } | null,
         token: null as string | null,
         expires: null as string | null,
-        isActivated: false as boolean
+        isActivated: false as boolean,
+        userProfile: null as any | null // Добавляем поле для профиля
     }),
     getters: {
         isAuthenticated: (state) => !!state.token
@@ -66,6 +67,7 @@ export const useAuthStore = defineStore('auth', {
             this.token = null
             this.expires = null
             this.isActivated = false
+            this.userProfile = null // Очищаем профиль при выходе
 
             if (process.client) {
                 const authToken = useCookie('auth_token')
@@ -101,6 +103,7 @@ export const useAuthStore = defineStore('auth', {
                             if (!isNaN(expiresDate.getTime()) && expiresDate > now) {
                                 this.token = authToken.value
                                 this.expires = tokenExpires.value
+                                this.fetchProfile() // Загружаем профиль при инициализации
                                 console.log('Client: Token loaded into store:', this.token, 'Expires:', this.expires)
                             } else {
                                 console.log('Client: Token expired or invalid date, clearing cookies')
@@ -212,5 +215,33 @@ export const useAuthStore = defineStore('auth', {
                 })
             }
         },
+        async fetchProfile() {
+            if (!this.token) {
+                console.error('fetchProfile: No token available')
+                return
+            }
+
+            try {
+                console.log('fetchProfile: Sending request to /api/auth/profile with token:', this.token)
+                const response = await $fetch('/api/auth/profile', {
+                    method: 'POST',
+                    body: { token: this.token }
+                })
+                console.log('fetchProfile: Received response:', JSON.stringify(response, null, 2))
+                this.userProfile = response
+            } catch (error) {
+                console.error('fetchProfile: Request failed:', {
+                    message: error.message,
+                    status: error.status,
+                    data: error.data
+                })
+                if (error.data?.error === 'ERROR_INVALID_TOKEN') {
+                    this.logout()
+                }
+            }
+        },
+        updateProfile(profileData: any) {
+            this.userProfile = { ...this.userProfile, ...profileData }
+        }
     }
 })

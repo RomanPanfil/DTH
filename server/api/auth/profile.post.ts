@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const apiUrl = config.private.bitrixApiUrl
 
     const { token } = await readBody(event)
-    console.log('Profile: Request received, token:', token)
+    // console.log('Profile: Request received, token:', token)
 
     // Проверка наличия токена
     if (!token) {
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        console.log('Profile: Sending request to Bitrix API:', apiUrl)
+        // console.log('Profile: Sending request to Bitrix API:', apiUrl)
         const response = await $fetch(`${apiUrl}?method=getprofile&act=auth`, {
             method: 'POST',
             headers: {
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString()
         })
 
-        console.log('Profile: Bitrix API response:', JSON.stringify(response, null, 2))
+        // console.log('Profile: Bitrix API response:', JSON.stringify(response, null, 2))
 
         // Проверка успешного ответа
         if (response.ID && response.EMAIL) {
@@ -54,12 +54,14 @@ export default defineEventHandler(async (event) => {
                 LINK_INST: response.LINK_INST,
                 LINK_FB: response.LINK_FB,
                 LINK_VK: response.LINK_VK,
+                COUNTRY: response.COUNTRY,
+                CITY: response.CITY,
                 ACTIVE: response.ACTIVE,
                 IS_LECTOR: response.IS_LECTOR,
                 DATE_REGISTER: response.DATE_REGISTER,
                 DATE_LAST_LOGIN: response.DATE_LAST_LOGIN
             }
-            console.log('Profile: Formatted response:', formattedResponse)
+            // console.log('Profile: Formatted response:', formattedResponse)
             return formattedResponse
         }
 

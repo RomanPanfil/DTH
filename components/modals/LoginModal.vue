@@ -106,7 +106,7 @@ const handleLogin = async () => {
 
         if (response.status >= 200 && response.status < 300 && response._data?.USER_ID && response._data?.TOKEN) {
             authStore.login(loginForm.email, response._data.USER_ID, response._data.TOKEN, response._data.EXPIRES)
-            await router.push('/profile')
+            await router.push('/')
             emit('close')
         } else {
             const errorCode = response._data?.data?.error || response._data?.statusMessage || response._data?.message || 'Unknown error'
