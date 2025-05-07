@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useI18n } from 'vue-i18n';
 import { useLocaleStore } from '~/stores/locale';
@@ -72,9 +72,6 @@ const baseUrl = config.public.baseUrl;
 
 const currentPage = computed(() => Number(route.query.page) || 1);
 
-const newsData = ref(null);
-const newsError = ref(null);
-
 const { data: rubricsData, error: rubricsError } = await useFetch('/api/rubrics');
 const rubrics = computed(() => rubricsData.value?.rubrics || []);
 
@@ -93,6 +90,20 @@ const currentPath = computed(() => {
     return currentPage.value > 1 ? `${path}?page=${currentPage.value}` : path;
 });
 
+const { data: newsData, error: newsError } = await useAsyncData('news', async () => {
+    try {
+        const { data, error } = await useFetch('/api/news', {
+            query: { page: currentPage.value, section: sectionId.value },
+        });
+        if (error.value) throw error.value;
+        return data.value;
+    } catch (err) {
+        return null;
+    }
+}, {
+    watch: [() => route.query.page, () => sectionCode], // Реактивное обновление при изменении страницы или секции
+});
+
 if (!sectionCode) {
     useHead({
         title: 'Журнал DTH',
@@ -104,7 +115,7 @@ if (!sectionCode) {
             { property: 'og:image', content: `${baseUrl}/images/logo.png` },
             { property: 'og:url', content: `${baseUrl}${currentPath.value}` },
             { property: 'og:type', content: 'website' },
-            { property: 'og:site_name', content: 'DTH Journal' }
+            { property: 'og:site_name', content: 'DTH Journal' },
         ],
     });
 } else if (currentRubric.value?.IPROPERTY_VALUES) {
@@ -120,23 +131,10 @@ if (!sectionCode) {
             { property: 'og:image', content: ogImage },
             { property: 'og:url', content: `${baseUrl}${currentPath.value}` },
             { property: 'og:type', content: 'website' },
-            { property: 'og:site_name', content: 'DTH Journal' }
+            { property: 'og:site_name', content: 'DTH Journal' },
         ],
     });
 }
-
-const fetchNews = async (page, section) => {
-    const { data, error } = await useFetch('/api/news', {
-        query: { page, section },
-    });
-    newsData.value = data.value;
-    newsError.value = error.value;
-};
-
-watch(() => [route.query.page, sectionCode], ([newPage]) => {
-    const page = Number(newPage) || 1;
-    fetchNews(page, sectionId.value);
-}, { immediate: true });
 
 const news = computed(() => newsData.value?.news || []);
 const pagination = computed(() => newsData.value?.pagination || { currentPage: 1, limit: 16, total: 0 });

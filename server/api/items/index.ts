@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString(),
         });
 
-        console.log('Items API Response:', JSON.stringify(response, null, 2));
+        // console.log('Items API Response:', JSON.stringify(response, null, 2));
 
         if (!response.RESULT || !response.RESULT.ITEMS || !response.RESULT.ITEMS.RU) {
             throw new Error('Неверная структура ответа API');

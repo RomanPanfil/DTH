@@ -1,8 +1,14 @@
 <template>
     <div class="advantages">
-        <div v-if="items.length" class="row">
-            <div v-for="(item, index) in items" :key="index" class="col-md-3">
-                <div  class="advantages-item">
+        <div v-if="pending" class="advantages-placeholder">
+            Загрузка данных...
+        </div>
+        <div v-else-if="error" class="advantages-placeholder">
+            Ошибка загрузки данных: {{ error.message || 'Неизвестная ошибка' }}
+        </div>
+        <div v-else-if="data.items && data.items.length" class="row">
+            <div v-for="(item, index) in data.items" :key="index" class="col-md-3">
+                <div class="advantages-item">
                     <img :src="imageBaseUrl + item.icon" :alt="`Иконка преимущества ${index + 1}`" class="advantage-icon" />
                     <div class="advantages-text">{{ item.text }}</div>
                 </div>
@@ -15,8 +21,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
 
@@ -29,7 +33,6 @@ const { data, pending, error, refresh } = await useAsyncData('advantages', async
                 GET_ALL_FILES: 'Y',
             },
         });
-        console.log('API Response:', response);
         if (response.error) {
             throw new Error(response.details);
         }
@@ -38,24 +41,11 @@ const { data, pending, error, refresh } = await useAsyncData('advantages', async
         console.error('Ошибка загрузки преимуществ:', err);
         return { title: 'Почему мы?', items: [] };
     }
-}, {
-    server: false, // Клиентская загрузка для отладки в Network
-});
-
-// Извлечение данных
-const title = ref(data.value?.title || 'Почему мы?');
-const items = ref(data.value?.items || []);
-
-watch(data, (newData) => {
-    title.value = newData?.title || 'Почему мы?';
-    items.value = newData?.items || [];
-    console.log('Updated items:', items.value);
 });
 
 // Ручное обновление данных для проверки
 const checkData = () => {
     refresh();
-    console.log('Data refreshed, items:', items.value);
 };
 </script>
 

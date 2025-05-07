@@ -1,13 +1,11 @@
 <template>
     <div class="container">
-        <div class="slider">
-            <div class="row">
-                <div class="col-md-9">
-                    <MainSlider />
-                </div>
-                <div class="col-md-3">
-                    <MainBanner />
-                </div>
+        <div class="row">
+            <div class="col-md-9">
+                <MainSlider />
+            </div>
+            <div class="col-md-3">
+                <MainBanner />
             </div>
         </div>
         <MainAdvantages />
@@ -17,6 +15,7 @@
     <div class="container">
         <JournalShort :news="news" :rubrics="rubrics" />
     </div>
+    <JoinSection />
 </template>
 
 <script setup lang="ts">
