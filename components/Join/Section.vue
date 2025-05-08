@@ -36,7 +36,7 @@
                             <div class="join-card-text" v-html="item.PREVIEW_TEXT"></div>
                             <a
                                 :href="item.PROPS?.BTN_LINK?.VALUE || '#'"
-                                class="ui-btn ui-btn__primary"
+                                class="ui-btn ui-btn__primary join-card-btn"
                             >
                                 {{ item.PROPS?.BTN_TEXT?.VALUE }}
                             </a>
@@ -115,17 +115,21 @@ if (itemsError.value) {
     }
 
     &-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
         background-color: $bgc;
         color: $font;
         border-radius: p2r(8);
-        padding: p2r(80) p2r(80) p2r(100) p2r(80);
+        padding: p2r(72) p2r(80) p2r(100) p2r(80);
         height: 100%;
 
         &-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: p2r(20);
+            margin-bottom: p2r(14);
+            width: 100%;
         }
 
         &-title {
@@ -148,6 +152,10 @@ if (itemsError.value) {
             p {
                 margin-bottom: p2r(10);
             }
+        }
+
+        &-btn {
+            margin-top: auto;
         }
     }
 

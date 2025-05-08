@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useI18n } from 'vue-i18n';
 import { useLocaleStore } from '~/stores/locale';
@@ -98,43 +98,12 @@ const { data: newsData, error: newsError } = await useAsyncData('news', async ()
         if (error.value) throw error.value;
         return data.value;
     } catch (err) {
+        console.error('Error fetching news:', err);
         return null;
     }
 }, {
-    watch: [() => route.query.page, () => sectionCode], // Реактивное обновление при изменении страницы или секции
+    watch: [() => route.query.page, () => sectionCode],
 });
-
-if (!sectionCode) {
-    useHead({
-        title: 'Журнал DTH',
-        meta: [
-            { name: 'keywords', content: 'журнал dth' },
-            { name: 'description', content: 'Журнал DTH - все материалы' },
-            { property: 'og:title', content: 'Журнал DTH' },
-            { property: 'og:description', content: 'Журнал DTH - все материалы' },
-            { property: 'og:image', content: `${baseUrl}/images/logo.png` },
-            { property: 'og:url', content: `${baseUrl}${currentPath.value}` },
-            { property: 'og:type', content: 'website' },
-            { property: 'og:site_name', content: 'DTH Journal' },
-        ],
-    });
-} else if (currentRubric.value?.IPROPERTY_VALUES) {
-    const meta = currentRubric.value.IPROPERTY_VALUES;
-    const ogImage = currentRubric.value.PICTURE ? `${imageBaseUrl}${currentRubric.value.PICTURE}` : `${baseUrl}/images/logo.png`;
-    useHead({
-        title: meta.SECTION_META_TITLE || currentRubric.value.NAME || 'Рубрика',
-        meta: [
-            { name: 'keywords', content: meta.SECTION_META_KEYWORDS || '' },
-            { name: 'description', content: meta.SECTION_META_DESCRIPTION || '' },
-            { property: 'og:title', content: meta.SECTION_META_TITLE || currentRubric.value.NAME || 'Рубрика' },
-            { property: 'og:description', content: meta.SECTION_META_DESCRIPTION || '' },
-            { property: 'og:image', content: ogImage },
-            { property: 'og:url', content: `${baseUrl}${currentPath.value}` },
-            { property: 'og:type', content: 'website' },
-            { property: 'og:site_name', content: 'DTH Journal' },
-        ],
-    });
-}
 
 const news = computed(() => newsData.value?.news || []);
 const pagination = computed(() => newsData.value?.pagination || { currentPage: 1, limit: 16, total: 0 });
@@ -168,39 +137,86 @@ const nextUrl = computed(() => {
     return null;
 });
 
-useHead({
-    link: computed(() => {
-        const links = [];
-        if (prevUrl.value) {
-            links.push({ rel: 'prev', href: prevUrl.value });
-        }
-        if (nextUrl.value) {
-            links.push({ rel: 'next', href: nextUrl.value });
-        }
-        return links;
-    }),
-    script: computed(() => {
-        if (!news.value.length) return [];
-        return [{
-            type: 'application/ld+json',
-            innerHTML: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'ItemList',
-                'itemListElement': news.value.map((item, index) => ({
-                    '@type': 'ListItem',
-                    'position': index + 1,
-                    'item': {
-                        '@type': 'Article',
-                        'url': `${baseUrl}${getItemUrl(item)}`,
-                        'name': item.NAME,
-                        'image': item.PREVIEW_PICTURE ? `${imageBaseUrl}${item.PREVIEW_PICTURE}` : `${baseUrl}/images/logo.svg`,
-                        'datePublished': item.DATE_ACTIVE_FROM || ''
-                    }
-                }))
-            })
-        }];
-    })
+onMounted(() => {
+    if (rubricsData.value && newsData.value) {
+        useHead(computed(() => {
+            const meta = [];
+            const links = [];
+            const scripts = [];
+
+            // Общие метаданные
+            if (!sectionCode) {
+                meta.push(
+                    { name: 'keywords', content: 'журнал dth' },
+                    { name: 'description', content: 'Журнал DTH - все материалы' },
+                    { property: 'og:title', content: 'Журнал DTH' },
+                    { property: 'og:description', content: 'Журнал DTH - все материалы' },
+                    { property: 'og:image', content: `${baseUrl}/images/logo.png` },
+                    { property: 'og:url', content: `${baseUrl}${currentPath.value}` },
+                    { property: 'og:type', content: 'website' },
+                    { property: 'og:site_name', content: 'DTH Journal' }
+                );
+            } else if (currentRubric.value?.IPROPERTY_VALUES) {
+                const rubricMeta = currentRubric.value.IPROPERTY_VALUES;
+                const ogImage = currentRubric.value.PICTURE ? `${imageBaseUrl}${currentRubric.value.PICTURE}` : `${baseUrl}/images/logo.png`;
+                meta.push(
+                    { name: 'keywords', content: rubricMeta.SECTION_META_KEYWORDS || '' },
+                    { name: 'description', content: rubricMeta.SECTION_META_DESCRIPTION || '' },
+                    { property: 'og:title', content: rubricMeta.SECTION_META_TITLE || currentRubric.value.NAME || 'Рубрика' },
+                    { property: 'og:description', content: rubricMeta.SECTION_META_DESCRIPTION || '' },
+                    { property: 'og:image', content: ogImage },
+                    { property: 'og:url', content: `${baseUrl}${currentPath.value}` },
+                    { property: 'og:type', content: 'website' },
+                    { property: 'og:site_name', content: 'DTH Journal' }
+                );
+            }
+
+            // Ссылки prev/next
+            if (prevUrl.value) {
+                links.push({ rel: 'prev', href: prevUrl.value });
+            }
+            if (nextUrl.value) {
+                links.push({ rel: 'next', href: nextUrl.value });
+            }
+
+            // JSON-LD
+            if (news.value.length) {
+                scripts.push({
+                    type: 'application/ld+json',
+                    innerHTML: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'ItemList',
+                        'itemListElement': news.value.map((item, index) => ({
+                            '@type': 'ListItem',
+                            'position': index + 1,
+                            'item': {
+                                '@type': 'Article',
+                                'url': `${baseUrl}${getItemUrl(item)}`,
+                                'name': item.NAME,
+                                'image': item.PREVIEW_PICTURE ? `${imageBaseUrl}${item.PREVIEW_PICTURE}` : `${baseUrl}/images/logo.svg`,
+                                'datePublished': item.DATE_ACTIVE_FROM || ''
+                            }
+                        }))
+                    })
+                });
+            }
+
+            return {
+                title: !sectionCode ? 'Журнал DTH' : currentRubric.value?.IPROPERTY_VALUES?.SECTION_META_TITLE || currentRubric.value?.NAME || 'Рубрика',
+                meta,
+                link: links,
+                script: scripts
+            };
+        }));
+    }
 });
+
+// onBeforeUnmount(() => {
+//     console.log('beforeUnmount triggered');
+//     console.log('rubricsData:', rubricsData.value);
+//     console.log('newsData:', newsData.value);
+//     console.log('currentRubric:', currentRubric.value);
+// });
 
 const getItemUrl = (item) => {
     const sectionId = item.IBLOCK_SECTION_ID;
@@ -227,7 +243,6 @@ const scrollToRubrics = () => {
 watch(() => route.query.page, () => {
     scrollToRubrics();
 });
-
 </script>
 
 <style scoped lang="scss">

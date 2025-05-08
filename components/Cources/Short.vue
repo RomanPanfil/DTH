@@ -3,13 +3,13 @@
         <div class="courses-head">
             <div class="courses-head-text">
                 <h2 class="courses-head-title">Наши курсы</h2>
-                <NuxtLink to="/events" class="courses-head-more">Смотреть все</NuxtLink>
+                <NuxtLink to="/courses" class="courses-head-more">Смотреть все</NuxtLink>
             </div>
-            <div class="slider-btns">
-                <button class="slider-btn slider-prev" :disabled="isBeginning" @click="slidePrev">
+            <div v-if="showNavigation" class="slider-btns">
+                <button class="slider-btn slider-prev courses-slider-prev" :disabled="isBeginning" @click="slidePrev">
                     <NuxtIcon name="arrow-left" class="slider-icon" filled />
                 </button>
-                <button class="slider-btn slider-next" :disabled="isEnd" @click="slideNext">
+                <button class="slider-btn slider-next courses-slider-next" :disabled="isEnd" @click="slideNext">
                     <NuxtIcon name="arrow-right" class="slider-icon" filled />
                 </button>
             </div>
@@ -19,13 +19,20 @@
                 :modules="[SwiperNavigation]"
                 :slides-per-view="4"
                 :space-between="30"
+                :breakpoints="{
+                    320: { slidesPerView: 1 },
+                    768: { slidesPerView: 2 },
+                    1024: { slidesPerView: 3 },
+                    1280: { slidesPerView: 4 }
+                }"
                 :navigation="{
-                    prevEl: '.courses .slider-prev',
-                    nextEl: '.courses .slider-next',
+                    prevEl: '.courses-slider-prev',
+                    nextEl: '.courses-slider-next',
                 }"
                 class="courses-swiper"
                 @swiper="onSwiper"
                 @slideChange="onSlideChange"
+                @breakpoint="onBreakpoint"
             >
                 <SwiperSlide v-for="event in events" :key="event.ID">
                     <CourcesCard :event="event" />
@@ -42,22 +49,34 @@ import { Navigation as SwiperNavigation } from 'swiper/modules';
 import 'swiper/css';
 
 const props = defineProps<{
-    events: any;
+    events: any[];
 }>();
-// Логика для слайдера
+
 const swiperInstance = ref(null);
 const isBeginning = ref(true);
 const isEnd = ref(false);
+const showNavigation = ref(true);
+
+const updateNavigationVisibility = (swiper) => {
+    const slidesCount = swiper.slides.length;
+    const slidesPerView = swiper.params.slidesPerView;
+    showNavigation.value = slidesCount > slidesPerView;
+};
 
 const onSwiper = (swiper) => {
     swiperInstance.value = swiper;
     isBeginning.value = swiper.isBeginning;
     isEnd.value = swiper.isEnd;
+    updateNavigationVisibility(swiper);
 };
 
 const onSlideChange = (swiper) => {
     isBeginning.value = swiper.isBeginning;
     isEnd.value = swiper.isEnd;
+};
+
+const onBreakpoint = (swiper) => {
+    updateNavigationVisibility(swiper);
 };
 
 const slidePrev = () => swiperInstance.value?.slidePrev();
@@ -76,6 +95,10 @@ const slideNext = () => swiperInstance.value?.slideNext();
         gap: p2r(24);
         margin-bottom: p2r(30);
 
+        &-title {
+            margin-bottom: 0;
+        }
+
         &-text {
             display: flex;
             align-items: baseline;
@@ -83,6 +106,7 @@ const slideNext = () => swiperInstance.value?.slideNext();
         }
 
         &-more {
+            font-size: p2r(18);
             color: $font;
             border-bottom: 1px solid $border;
         }

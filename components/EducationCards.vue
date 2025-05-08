@@ -7,10 +7,10 @@
                     <NuxtLink to="/webinars" class="education-head-more">Смотреть все</NuxtLink>
                 </div>
                 <div class="slider-btns">
-                    <button class="slider-btn slider-prev" :disabled="isBeginning" @click="slidePrev">
+                    <button class="slider-btn slider-prev education-slider-prev" :disabled="isBeginning" @click="slidePrev">
                         <NuxtIcon name="arrow-left" class="slider-icon" filled />
                     </button>
-                    <button class="slider-btn slider-next" :disabled="isEnd" @click="slideNext">
+                    <button class="slider-btn slider-next education-slider-next" :disabled="isEnd" @click="slideNext">
                         <NuxtIcon name="arrow-right" class="slider-icon" filled />
                     </button>
                 </div>
@@ -21,8 +21,8 @@
                         :slides-per-view="4"
                         :space-between="30"
                         :navigation="{
-                        prevEl: '.education .slider-prev',
-                        nextEl: '.education .slider-next',
+                        prevEl: '.education-slider-prev',
+                        nextEl: '.education-slider-next',
                     }"
                         class="education-swiper"
                         @swiper="onSwiper"
@@ -150,9 +150,11 @@ const webinars = ref([
 
     &-title {
       color: $font-white;
+        margin-bottom: 0;
     }
 
     &-more {
+      font-size: p2r(18);
       color: #D9F0E8;
       border-bottom: 1px solid #D9F0E8;
     }

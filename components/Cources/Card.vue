@@ -7,7 +7,7 @@
                     {{ formatEventDates(event.PROPS.WHEN_DATE?.VALUE) }}
                 </div>
                 <div v-if="event.PROPS.WHEN_ADDR?.VALUE" class="event-card-info-item">
-                    {{ event.PROPS.WHEN_ADDR?.VALUE }}
+                    {{ event.PROPS.CITY.VALUE}}
                 </div>
                 <div v-if="event.PROPS.FORMAT?.VALUE && event.PROPS.FORMAT?.VALUE === 'Online'" class="event-card-info-item">
                     {{ event.PROPS.FORMAT?.VALUE }}
@@ -52,13 +52,79 @@ const getLectorNames = (lectors: any[]) => {
     return lectors.map(lector => lector.name).join(', ');
 };
 
-// Форматирование дат мероприятия
+// Форматирование дат мероприятия с использованием диапазонов
 const formatEventDates = (dateStrings: string[]) => {
-    if (!dateStrings || !Array.isArray(dateStrings)) return 'Дата не указана';
-    return dateStrings.map(dateString => {
+    if (!dateStrings || !Array.isArray(dateStrings) || dateStrings.length === 0)
+        return 'Дата не указана';
+
+    // Сортируем даты
+    const sortedDates = [...dateStrings].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+    // Преобразуем строки дат в объекты для группировки
+    const dates = sortedDates.map(dateString => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
-    }).join(', ');
+        // Получаем русское название месяца и берем только первые 3 буквы без склонения
+        const fullMonth = date.toLocaleDateString('ru-RU', { month: 'long' });
+        const shortMonth = fullMonth.substring(0, 3);
+
+        return {
+            date: date,
+            day: date.getDate(),
+            month: date.getMonth(),
+            monthFormatted: shortMonth
+        };
+    });
+
+    // Группируем даты по месяцам
+    const groupedByMonth: { [key: string]: number[] } = {};
+    dates.forEach(dateObj => {
+        const monthKey = dateObj.monthFormatted;
+        if (!groupedByMonth[monthKey]) {
+            groupedByMonth[monthKey] = [];
+        }
+        groupedByMonth[monthKey].push(dateObj.day);
+    });
+
+    // Форматируем каждую группу месяцев
+    const formattedGroups: string[] = [];
+
+    for (const [month, days] of Object.entries(groupedByMonth)) {
+        // Сортируем дни
+        days.sort((a, b) => a - b);
+
+        // Находим последовательные дни
+        const ranges: Array<[number, number]> = [];
+        let rangeStart = days[0];
+        let rangeEnd = days[0];
+
+        for (let i = 1; i < days.length; i++) {
+            if (days[i] === rangeEnd + 1) {
+                // Продолжаем текущий диапазон
+                rangeEnd = days[i];
+            } else {
+                // Завершаем текущий диапазон и начинаем новый
+                ranges.push([rangeStart, rangeEnd]);
+                rangeStart = days[i];
+                rangeEnd = days[i];
+            }
+        }
+
+        // Добавляем последний диапазон
+        ranges.push([rangeStart, rangeEnd]);
+
+        // Форматируем диапазоны дней
+        const formattedDays = ranges.map(([start, end]) => {
+            if (start === end) {
+                return `${start}`;
+            } else {
+                return `${start}-${end}`;
+            }
+        }).join(', ');
+
+        formattedGroups.push(`${formattedDays} ${month}`);
+    }
+
+    return formattedGroups.join(', ');
 };
 
 // Получение URL изображения
@@ -68,7 +134,7 @@ const getImageUrl = (path: string) => {
 
 // Получение URL мероприятия
 const getEventUrl = (event: any) => {
-    return `/events/${event.CODE}`;
+    return `/courses/${event.CODE}`;
 };
 </script>
 
@@ -130,7 +196,7 @@ const getEventUrl = (event: any) => {
 
     &-content {
       position: relative;
-      padding: p2r(20) p2r(20) p2r(30) p2r(20);
+      padding: p2r(20) p2r(20) p2r(24) p2r(20);
       display: flex;
       flex-direction: column;
       flex-grow: 1;
@@ -148,7 +214,7 @@ const getEventUrl = (event: any) => {
       font-weight: 500;
       font-size: p2r(20);
       line-height: p2r(26);
-      margin-bottom: p2r(20);
+      margin-bottom: p2r(16);
     }
 
     &-lector {
@@ -163,7 +229,7 @@ const getEventUrl = (event: any) => {
       color: $font;
       margin-top: auto;
       align-self: flex-end;
-      padding-top: p2r(40);
+      padding-top: p2r(22);
     }
   }
 }

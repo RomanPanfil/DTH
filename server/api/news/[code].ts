@@ -134,8 +134,8 @@ export default defineEventHandler(async (event) => {
         'params[select][7]': 'CODE',
         'params[select][8]': 'PROPERTY_*',
         // Добавляем resize для миниатюр галерей
-        'params[resize][0]': 265, // ширина
-        'params[resize][1]': 200, // высота
+        'params[resize][0]': 390, // ширина
+        'params[resize][1]': 292, // высота
         'params[resize][2]': 'true' // обрезка
     };
 

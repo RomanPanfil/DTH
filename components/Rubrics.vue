@@ -16,7 +16,7 @@
                     :to="`/journal/${rubric.CODE}`"
                     :class="{ 'rubrics-link': true, 'active': isActive(rubric.CODE) }"
                 >
-                    {{ rubric.UF_SHORT_NAME || rubric.NAME }}
+                    {{ rubric.NAME || rubric.UF_SHORT_NAME }}
                 </NuxtLink>
             </li>
         </ul>

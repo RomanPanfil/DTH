@@ -142,11 +142,11 @@ const computedBreadcrumbs = computed(() => {
     }
 
     // Логика для мероприятий
-    if (route.path.startsWith('/events')) {
-        crumbs.push({ name: t('breadcrumbs.events'), path: '/events' });
+    if (route.path.startsWith('/courses')) {
+        crumbs.push({ name: t('breadcrumbs.courses'), path: '/courses' });
 
         // Добавляем название конкретного мероприятия, если есть eventTitle
-        if (eventTitle && route.path !== '/events') {
+        if (eventTitle && route.path !== '/courses') {
             crumbs.push({ name: eventTitle, path: route.path });
         }
 

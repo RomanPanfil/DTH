@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <Breadcrumbs />
-        <h2>Мероприятия</h2>
+        <h2>Курсы</h2>
         <div class="row">
             <div class="col-md-3">
                 <aside>
@@ -45,7 +45,7 @@ const eventsError = ref(null);
 // Выполняем запрос мероприятий через useAsyncData для SSR
 const { data: eventsData } = await useAsyncData('events', async () => {
     try {
-        const response = await $fetch('/api/items', {
+        const response = await $fetch('/api/events', {
             query: {
                 page: currentPage.value,
                 iblockId,
@@ -132,7 +132,7 @@ useHead({
         { property: 'og:title', content: 'Мероприятия DTH' },
         { property: 'og:description', content: 'Мероприятия и курсы от Dental Training House' },
         { property: 'og:image', content: `${baseUrl}/images/logo.png` },
-        { property: 'og:url', content: `${baseUrl}/events` },
+        { property: 'og:url', content: `${baseUrl}/courses` },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'DTH Events' },
     ],

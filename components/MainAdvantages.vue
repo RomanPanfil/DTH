@@ -61,7 +61,6 @@ const checkData = () => {
         gap: p2r(20);
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: p2r(8);
-        padding: p2r(20);
         height: 100%;
     }
 

@@ -21,8 +21,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const iblockId = 13;
-
 const news = ref([]);
 const rubrics = ref([]);
 
@@ -50,9 +48,8 @@ const fetchLectors = async (lectorIds: number[]) => {
 
 const { data: eventsData, error: eventsError } = await useAsyncData('featuredEvents', async () => {
     try {
-        const { data } = await useFetch('/api/items', {
+        const { data } = await useFetch('/api/events', {
             query: {
-                iblockId,
                 GET_ALL_FILES: 'Y',
                 isFeatured: '1',
             },
@@ -100,7 +97,7 @@ const { data: eventsData, error: eventsError } = await useAsyncData('featuredEve
             return processedEvent;
         });
 
-        return processedEvents.slice(0, 4);
+        return processedEvents;
     } catch (err) {
         console.error('Ошибка при загрузке избранных курсов:', err);
         return [];

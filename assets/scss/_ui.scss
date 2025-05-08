@@ -210,6 +210,8 @@ table {
 
   &__search {
     padding-right: p2r(64);
+    height: p2r(48);
+    background-color: $bgc;
   }
 
   &.error {
@@ -362,7 +364,7 @@ table {
   text-transform: uppercase;
   border: 1px solid $border_grey;
   border-radius: 2px;
-  padding: p2r(6) p2r(8);
+  padding: p2r(4) p2r(8);
   width: max-content;
 
   &__dark {

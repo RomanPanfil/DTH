@@ -22,8 +22,9 @@
                         <div v-if="webinar.hasHtmlCode" class="slider-card-content" v-html="getDecodedHTML(webinar.htmlContent)"></div>
                     </div>
                 </SwiperSlide>
-                <div class="swiper-pagination"></div>
+<!--                <div class="swiper-pagination"></div>-->
             </Swiper>
+            <div class="swiper-pagination"></div>
         </div>
     </div>
 </template>
@@ -174,10 +175,14 @@ const getDecodedHTML = (text) => {
 }
 
 /* Стили для пагинации с использованием :deep() */
+:deep(.swiper-pagination-bullets.swiper-pagination-horizontal) {
+    width: auto;
+}
 :deep(.swiper-pagination) {
     //position: absolute;
     bottom: p2r(50);
     left: 50%;
+    transform: translateX(-50%);
     z-index: 2;
     display: flex;
     gap: p2r(2);

@@ -7,7 +7,46 @@
             </div>
             <div v-else-if="newsItem && newsItem[locale]" class="news-detail">
                 <h1 class="news-title">{{ newsItem[locale].NAME }}</h1>
-                <div class="news-wrapper">
+                <div v-if="newsItem[locale].PROPS?.REPORT_EXIST?.VALUE === 'Y'" class="report-wrapper">
+                    <div class="news-meta">
+                        <span class="news-meta-item">{{ formatDate(newsItem[locale].DATE_ACTIVE_FROM) }}</span>
+                        <div class="news-meta-item news-meta-item__report">
+                            <span v-if="newsItem[locale].PROPS?.REPORT_GALLERY?.VALUE">{{ newsItem[locale].PROPS?.REPORT_GALLERY?.VALUE?.length }} {{ $t('report.photo') }}</span>
+                            <span v-if="newsItem[locale].PROPS?.REPORT_GR?.VALUE">{{ newsItem[locale].PROPS?.REPORT_GR?.VALUE?.length }} {{ $t('report.video') }}</span>
+                        </div>
+                    </div>
+                    <div class="report-content">
+                        <div class="row">
+                            <!-- Video Previews -->
+                            <div class="col-md-3" v-for="(video, index) in reportVideos" :key="'video-' + index">
+                                <a
+                                    href="#"
+                                    class="report-image report-video"
+                                    :data-video-index="index"
+                                    @click.prevent="openPopup({ video: video, galleryType: 'video' })"
+                                >
+                                    <img :src="video.preview" :alt="'Video preview ' + (index + 1)" />
+                                    <div class="report-video-play">
+                                        <NuxtIcon name="play"  class="report-video-play-icon"/>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- Photo Gallery -->
+                            <div class="col-md-3" v-for="(photo, index) in reportGallery" :key="'gallery-' + index">
+                                <a
+                                    href="#"
+                                    class="report-image"
+                                    data-gallery="report-gallery"
+                                    :data-index="index"
+                                    @click.prevent="openPopup({ images: reportGalleryFull, initialIndex: index, galleryType: 'report-gallery' })"
+                                >
+                                    <img :src="photo.thumb" :alt="'Gallery image ' + (index + 1)" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="news-wrapper">
                     <div class="news-main">
                         <div class="news-meta">
                             <span class="news-meta-item">{{ formatDate(newsItem[locale].DATE_ACTIVE_FROM) }}</span>
@@ -40,9 +79,14 @@
         </div>
 
         <GalleryPopup
-            v-if="isPopupOpen"
+            v-if="isPopupOpen && (popupType === 'report-gallery' || popupType === 'report' || popupType === 'gall')"
             :images="currentGalleryFull"
             :initial-index="currentSlideIndex"
+            @close="closePopup"
+        />
+        <VideoPopup
+            v-if="isPopupOpen && popupType === 'video'"
+            :video="currentVideo"
             @close="closePopup"
         />
     </div>
@@ -59,6 +103,7 @@ import Advantages from '~/components/Advantages.vue';
 import Video from '~/components/Video.vue';
 import Report from '~/components/Report.vue';
 import GalleryPopup from '~/components/GalleryPopup.vue';
+import VideoPopup from '~/components/VideoPopup.vue';
 
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
@@ -89,6 +134,8 @@ const componentsMap = {
 const isPopupOpen = ref(false);
 const currentGalleryFull = ref<string[]>([]);
 const currentSlideIndex = ref(0);
+const currentVideo = ref<{ file: string; code: string } | null>(null);
+const popupType = ref<'report' | 'gall' | 'report-gallery' | 'video'>('report');
 
 const { data, error } = await useFetch(`/api/news/${newsCode}`, {
     method: 'GET',
@@ -123,6 +170,36 @@ const galleries = computed(() => {
     }
     console.log('Galleries:', result);
     return result;
+});
+
+// Формирование видео для отчета из REPORT_GR
+const reportVideos = computed(() => {
+    if (!newsItem.value?.[locale.value]?.PROPS?.REPORT_GR?.VALUE) return [];
+    return newsItem.value[locale.value].PROPS.REPORT_GR.VALUE.map((video: any) => ({
+        preview: video.SUB_VALUES.REPORT_VIDEO_PREVIEW?.VALUE_PATH
+            ? `${imageBaseUrl}${video.SUB_VALUES.REPORT_VIDEO_PREVIEW.VALUE_PATH}`
+            : '',
+        file: video.SUB_VALUES.REPORT_VIDEO_FILE?.VALUE_PATH
+            ? `${imageBaseUrl}${video.SUB_VALUES.REPORT_VIDEO_FILE.VALUE_PATH}`
+            : '',
+        code: video.SUB_VALUES.REPORT_VIDEO_LINK?.VALUE || '',
+    }));
+});
+
+// Формирование фотогалереи для отчета из REPORT_GALLERY
+const reportGallery = computed(() => {
+    if (!newsItem.value?.[locale.value]?.PROPS?.REPORT_GALLERY?.VALUE_PATH) return [];
+    const props = newsItem.value[locale.value].PROPS.REPORT_GALLERY;
+    return props.VALUE_PATH.map((path: string, index: number) => ({
+        thumb: props.VALUE_RESIZE?.[index]
+            ? `${imageBaseUrl}${props.VALUE_RESIZE[index]}`
+            : `${imageBaseUrl}${path}`,
+        full: `${imageBaseUrl}${path}`,
+    }));
+});
+
+const reportGalleryFull = computed(() => {
+    return reportGallery.value.map((item: any) => item.full);
 });
 
 // Замена {GALL_N} на разметку галерей
@@ -224,24 +301,27 @@ const newsBlocks = computed(() => {
     return blocks;
 });
 
-// Обработчик кликов на картинки для GALL_N
+// Обработчик кликов на картинки для GALL_N и report-gallery
 onMounted(() => {
     const handleGalleryClick = (e: Event) => {
-        console.log('Gallery click detected:', e.target);
-        const link = (e.target as HTMLElement).closest('.gallery-item-image');
+        const link = (e.target as HTMLElement).closest('.gallery-item-image, .report-image');
         if (link) {
-            console.log('Found gallery-item-image:', link);
             e.preventDefault();
             const galleryKey = link.getAttribute('data-gallery');
             const index = parseInt(link.getAttribute('data-index') || '0', 10);
-            console.log('Gallery data:', { galleryKey, index });
+            const videoIndex = parseInt(link.getAttribute('data-video-index') || '-1', 10);
+
             if (galleryKey && galleries.value[galleryKey]) {
                 openPopup({ images: [], initialIndex: index, galleryType: 'gall', galleryKey });
+            } else if (galleryKey === 'report-gallery') {
+                openPopup({ images: reportGalleryFull.value, initialIndex: index, galleryType: 'report-gallery' });
+            } else if (videoIndex >= 0) {
+                openPopup({ video: reportVideos.value[videoIndex], galleryType: 'video' });
             } else {
-                console.warn('No gallery found for key:', galleryKey);
+                console.warn('No valid gallery or video found');
             }
         } else {
-            console.warn('No gallery-item-image found');
+            console.warn('No clickable image found');
         }
     };
 
@@ -287,52 +367,61 @@ onMounted(() => {
 });
 
 // Открытие попапа
-const openPopup = (payload: { images: string[]; initialIndex: number; galleryType?: 'report' | 'gall'; galleryKey?: string } | number) => {
+const openPopup = (payload: { images?: string[]; initialIndex?: number; galleryType?: 'report' | 'gall' | 'report-gallery' | 'video'; galleryKey?: string; video?: { file: string; code: string } } | number) => {
     let initialIndex = 0;
-    let galleryType: 'report' | 'gall' = 'report';
+    let galleryType: 'report' | 'gall' | 'report-gallery' | 'video' = 'report';
     let galleryKey: string | undefined;
     let images: string[] = [];
+    let video: { file: string; code: string } | undefined;
 
-    // Проверяем, является ли payload числом (для REPORT) или объектом (для GALL_N)
+    // Проверяем, является ли payload числом (для REPORT) или объектом
     if (typeof payload === 'number') {
         initialIndex = payload;
         galleryType = 'report';
-        console.log('REPORT popup triggered with index:', initialIndex);
         images = newsItem.value?.[locale.value]?.PROPS?.REPORT_FOTOS?.VALUE_PATH?.map(
             (photo: string) => `${imageBaseUrl}${photo}`
         ) || [];
     } else {
-        ({ images = [], initialIndex = 0, galleryType = 'report', galleryKey } = payload);
-        console.log('openPopup called:', { images, initialIndex, galleryType, galleryKey });
+        ({ images = [], initialIndex = 0, galleryType = 'report', galleryKey, video } = payload);
     }
 
-    // Устанавливаем изображения для галереи
+    // Устанавливаем данные для попапа
     if (galleryType === 'report') {
         currentGalleryFull.value = newsItem.value?.[locale.value]?.PROPS?.REPORT_FOTOS?.VALUE_PATH?.map(
             (photo: string) => `${imageBaseUrl}${photo}`
         ) || images;
+        currentVideo.value = null;
     } else if (galleryType === 'gall' && galleryKey) {
         currentGalleryFull.value = galleries.value[galleryKey]?.full || images;
+        currentVideo.value = null;
+    } else if (galleryType === 'report-gallery') {
+        currentGalleryFull.value = reportGalleryFull.value || images;
+        currentVideo.value = null;
+    } else if (galleryType === 'video' && video) {
+        currentVideo.value = video;
+        currentGalleryFull.value = [];
     } else {
         currentGalleryFull.value = images;
+        currentVideo.value = null;
     }
 
-    console.log('currentGalleryFull:', currentGalleryFull.value);
-    console.log('Setting currentSlideIndex:', initialIndex);
-
-    if (!currentGalleryFull.value.length) {
-        console.warn('No images to display in popup');
+    if (!currentGalleryFull.value.length && !currentVideo.value) {
+        console.warn('No content to display in popup');
         isPopupOpen.value = false;
         return;
     }
 
     currentSlideIndex.value = initialIndex;
+    popupType.value = galleryType;
     isPopupOpen.value = true;
 };
 
 // Закрытие попапа
 const closePopup = () => {
     isPopupOpen.value = false;
+    popupType.value = 'report';
+    currentVideo.value = null;
+    currentGalleryFull.value = [];
 };
 
 // Устанавливаем метатеги и микроразметку
@@ -343,7 +432,8 @@ if (newsItem.value) {
     const galleryImages = newsBlocks.value
         .filter(block => block.type === 'report')
         .flatMap(block => block.photos)
-        .concat(Object.values(galleries.value).flatMap(g => g.full));
+        .concat(Object.values(galleries.value).flatMap(g => g.full))
+        .concat(news?.PROPS?.REPORT_EXIST?.VALUE === 'Y' ? reportGalleryFull.value : []);
 
     useHead({
         title: meta.ELEMENT_META_TITLE || news?.NAME || 'Новость',
@@ -419,6 +509,8 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
     &-meta {
         font-size: p2r(16);
         margin-bottom: p2r(62);
+        display: flex;
+
         &-item {
             &:not(:last-child) {
                 padding-right: p2r(30);
@@ -428,16 +520,44 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
                     content: '';
                     width: 1px;
                     height: 11px;
-                    background-color: $font;
+                    background-color: $border;
                     position: absolute;
                     left: 100%;
                     top: 50%;
                     transform: translate(-50%, -50%);
                 }
             }
+
+            &__report {
+                span {
+                    position: relative;
+                    margin-right: p2r(12);
+                    padding-right: p2r(12);
+
+                    &:last-child {
+                        margin-right: 0;
+                        padding-right: 0;
+
+                        &::after {
+                            display: none;
+                        }
+                    }
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        right: 0;
+                        top: 50%;
+                        transform: translate(50%, -50%);
+                        width: p2r(4);
+                        height: p2r(4);
+                        border-radius: 50%;
+                        background-color: $font;
+                    }
+                }
+            }
         }
     }
-
     &-share {
         transition: top 0.1s ease;
         &-head {
@@ -452,9 +572,73 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
             }
         }
     }
-
     &-gallery {
         margin: p2r(20) 0;
+    }
+}
+
+.report {
+    &-wrapper {
+        margin-top: p2r(40);
+    }
+
+    &-image {
+        display: block;
+        border-radius: p2r(6);
+        overflow: hidden;
+        margin-bottom: p2r(30);
+        height: calc(100% - 30px);
+        aspect-ratio: 1.3;
+        filter: brightness(0.8);
+        transition: filter 0.3s;
+
+        &:hover {
+            filter: brightness(1);
+        }
+
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+    &-video {
+        position: relative;
+        &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: p2r(50);
+            height: p2r(50);
+            background: url('/images/play-icon.svg') no-repeat center;
+            background-size: contain;
+            opacity: 0.8;
+        }
+        &:hover::after {
+            opacity: 1;
+        }
+        &-play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: p2r(80);
+            height: p2r(80);
+            border-radius: 50%;
+            background-color: $bgc;
+            z-index: 2;
+
+            &-icon {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-44%, -54%);
+                font-size: p2r(28);
+            }
+        }
     }
 }
 
@@ -483,6 +667,6 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
 
 .error-message {
     color: red;
-    padding: 20px;
+    padding: p2r(20);
 }
 </style>

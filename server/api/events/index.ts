@@ -8,46 +8,32 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const page = Number(query.page) || 1;
     const iblockId = Number(query.iblockId) || 13; // Динамический IBLOCK_ID, по умолчанию 13
-    const limit = Number(query.limit) || 12; // Количество элементов на странице
-    const getAllFiles = query.GET_ALL_FILES || 'Y'; // Извлекаем GET_ALL_FILES, по умолчанию 'N'
-    const isFeatured = query.isFeatured || ''; // Новый параметр для фильтрации по избранным
+    const limit = Number(query.limit) || 15; // Количество элементов на странице
+    const getAllFiles = query.GET_ALL_FILES || 'Y'; // Извлекаем GET_ALL_FILES, по умолчанию 'Y'
 
     const requestBody = {
         key: apiKey,
         'params[filter][IBLOCK_ID]': iblockId,
         'params[filter][ACTIVE]': 'Y',
-        'params[sort][ACTIVE_FROM]': 'DESC', // Сортировка по дате (по убыванию)
-    };
-
-    // Если указан параметр isFeatured, добавляем фильтр по свойству IS_FEATURED
-    if (isFeatured === '1' || isFeatured === 'Y') {
-        requestBody['params[filter][PROPERTY_IS_FEATURED]'] = '1';
-    }
-
-    Object.assign(requestBody, {
-        'params[select][0]': 'NAME',
-        'params[select][1]': 'IBLOCK_ID',
-        'params[select][2]': 'ID',
-        'params[select][3]': 'DATE_ACTIVE_FROM',
-        'params[select][4]': 'PREVIEW_PICTURE',
-        'params[select][5]': 'CODE',
-        'params[select][6]': 'PROPERTY_*', // Все свойства
+        'params[select][0]': 'PROPERTY_*', // Все свойства
         'params[resize][0]': 320, // Ширина для ресайза
         'params[resize][1]': 240, // Высота для ресайза
-        'params[resize][2]': 'true', // Обрезка по меньшей стороне
+        'params[resize][2]': '1', // Обрезка по меньшей стороне
+        'params[resize_WHEN_GALL][0]': 640, // Ширина для галереи
+        'params[resize_WHEN_GALL][1]': 480, // Высота для галереи
+        'params[resize_WHEN_GALL][2]': '1', // Обрезка для галереи
         'params[pager][start]': page,
         'params[pager][limit]': limit,
-    });
+    };
 
     // Добавляем GET_ALL_FILES, если указано
     if (getAllFiles === 'Y') {
         Object.assign(requestBody, {
-            'params[filter][GET_ALL_FILES]': 'Y',
+            'params[GET_ALL_FILES]': 'Y',
         });
     }
 
     try {
-        console.log(requestBody)
         const response = await $fetch(`${apiUrl}?method=items&act=get`, {
             method: 'POST',
             headers: {
@@ -56,8 +42,6 @@ export default defineEventHandler(async (event) => {
             },
             body: new URLSearchParams(requestBody).toString(),
         });
-
-        // console.log('Items API Response:', JSON.stringify(response, null, 2));
 
         if (!response.RESULT || !response.RESULT.ITEMS || !response.RESULT.ITEMS.RU) {
             throw new Error('Неверная структура ответа API');
@@ -79,6 +63,3 @@ export default defineEventHandler(async (event) => {
         };
     }
 });
-
-
-

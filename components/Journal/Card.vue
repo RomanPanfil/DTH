@@ -13,7 +13,14 @@
             <NuxtLink :to="itemUrl" class="journal-card-title">
                 {{ item.NAME }}
             </NuxtLink>
-            <div class="journal-card-info">{{ formattedDate || 'Без даты' }}</div>
+            <div v-if="currentRubric.ID === '2'" class="journal-card-info">
+                <span v-for="theme in item.PROPS.THEMES?.VALUE" :key="item.PROPS.THEMES?.VALUE">{{ theme }}</span>
+            </div>
+            <div v-else-if="currentRubric.ID === '3'" class="journal-card-info">
+                <span v-if="item.PROPS.REPORT_GALLERY?.VALUE">{{ item.PROPS.REPORT_GALLERY?.VALUE.length }} {{ $t('report.photo') }}</span>
+                <span v-if="item.PROPS.REPORT_GR?.VALUE">{{ item.PROPS.REPORT_GR?.VALUE.length }} {{ $t('report.video') }}</span>
+            </div>
+            <div v-else class="journal-card-info">{{ formattedDate || '' }}</div>
         </div>
     </div>
 </template>
@@ -58,6 +65,10 @@ const rubricName = computed(() => {
 
 const isReport = computed(() => {
     return currentRubric.value?.UF_SHORT_NAME === 'Отчеты';
+});
+
+const isArticle = computed(() => {
+    return currentRubric.value?.UF_SHORT_NAME === 'Статьи';
 });
 
 const formattedDate = computed(() => {
