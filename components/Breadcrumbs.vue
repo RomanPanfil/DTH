@@ -20,8 +20,8 @@
 
 <style scoped lang="scss">
 .breadcrumbs {
-    padding: p2r(10) 0;
-    margin-bottom: p2r(60);
+    padding: 0;
+    margin-bottom: p2r(70);
 
     &-list {
         display: flex;
@@ -48,7 +48,7 @@
     &-separator {
         margin: 0 p2r(8);
         color: $font-white-dark;
-        width: p2r(26);
+        width: p2r(20);
         height: p2r(1);
         background-color: $font-black;
     }

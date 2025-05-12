@@ -53,6 +53,41 @@ defineProps<{
     rubrics: any[];
 }>();
 
+const news = ref([]);
+const rubrics = ref([]);
+
+const { data: newsData, error: newsError } = await useAsyncData('news', async () => {
+    try {
+        const { data } = await useFetch('/api/news', {
+            query: { page: 1, limit: 12 },
+        });
+        return data.value?.news || [];
+    } catch (err) {
+        console.error('Ошибка при загрузке новостей:', err);
+        return [];
+    }
+});
+
+const { data: rubricsData, error: rubricsError } = await useAsyncData('rubrics', async () => {
+    try {
+        const { data } = await useFetch('/api/rubrics');
+        return data.value?.rubrics || [];
+    } catch (err) {
+        console.error('Ошибка при загрузке рубрик:', err);
+        return [];
+    }
+});
+
+news.value = newsData.value || [];
+rubrics.value = rubricsData.value || [];
+
+if (newsError.value) {
+    console.error('Ошибка useAsyncData для новостей:', newsError.value);
+}
+if (rubricsError.value) {
+    console.error('Ошибка useAsyncData для рубрик:', rubricsError.value);
+}
+
 const swiperInstance = ref(null);
 const isBeginning = ref(true);
 const isEnd = ref(false);

@@ -71,7 +71,7 @@ const changePage = (page: number) => {
     display: flex;
     align-items: center;
     gap: p2r(8);
-    padding: p2r(16) 0;
+    padding: p2r(20) 0;
 
     &-btn {
         width: p2r(48);
@@ -106,8 +106,8 @@ const changePage = (page: number) => {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: p2r(24);
-        line-height: p2r(24);
+        font-size: p2r(20);
+        line-height: p2r(20);
         text-decoration: none;
         color: $font-black;
         border: none;

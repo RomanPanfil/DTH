@@ -15,5 +15,8 @@ console.log('TextBlock props:', props);
 <style scoped lang="scss">
 .text-block {
     line-height: 1.6;
+    font-size: p2r(18);
+    border-bottom: 1px solid $border;
+    padding-bottom: p2r(40);
 }
 </style>

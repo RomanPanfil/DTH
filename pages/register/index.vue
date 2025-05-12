@@ -244,32 +244,32 @@ watch(phoneInput, async (newValue) => {
                     country: 'Russia'
                 },
                 {
-                    mask: '+38 (0{00}) 000-00-00',
-                    startsWith: '38',
+                    mask: '+380 (00) 000-00-00',
+                    startsWith: '380',
                     country: 'Ukraine'
                 },
                 {
-                    mask: '+371 (00) 000-00-00',
+                    mask: '+371 0000 0000',
                     startsWith: '371',
                     country: 'Latvia'
                 },
                 {
-                    mask: '+370 (000) 000-00-00',
+                    mask: '+370 (000) 00000',
                     startsWith: '370',
                     country: 'Lithuania'
                 },
                 {
-                    mask: '+48 (000) 000-00-00',
+                    mask: '+48 000 000 000',
                     startsWith: '48',
                     country: 'Poland'
                 },
                 {
-                    mask: '+49 0 000 000-00-00',
+                    mask: '+49 000 00000000',
                     startsWith: '49',
                     country: 'Germany'
                 },
                 {
-                    mask: '+000 000 000 00 00',
+                    mask: '+000 00000000000',
                     startsWith: '',
                     country: 'unknown'
                 }

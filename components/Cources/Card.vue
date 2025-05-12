@@ -188,7 +188,7 @@ const getEventUrl = (event: any) => {
         line-height: 1.3;
         text-transform: uppercase;
         color: $font-white;
-        background: $font-dark-grey;
+        background: $primary;
         border-radius: p2r(2);
         padding: p2r(7) p2r(10) p2r(5) p2r(10);
       }
