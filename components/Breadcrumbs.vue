@@ -108,6 +108,12 @@ const getRubricName = (sectionCode) => {
 const computedBreadcrumbs = computed(() => {
     const crumbs = [{ name: t('breadcrumbs.home'), path: '/' }];
 
+    // Логика для страницы поиска
+    if (route.path.startsWith('/search-result')) {
+        crumbs.push({ name: t('breadcrumbs.search-result'), path: '/search-result' });
+        return crumbs;
+    }
+
     // Логика для других страниц через меню
     const currentMenuItem = allMenuItems.value.find((item) => {
         const normalizedItemUrl = item.URL.endsWith('/') ? item.URL : `${item.URL}/`;

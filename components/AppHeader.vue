@@ -9,7 +9,7 @@
                     <NuxtLink
                         v-for="item in menu"
                         :key="item.ID"
-                        :to="item.PAGE_ID ? `${item.URL}?id=${item.PAGE_ID}` : item.URL"
+                        :to="item.URL"
                         class="header-nav-link"
                     >
                         {{ item.NAME }}
@@ -144,19 +144,53 @@
 </style>
 
 <script setup lang="ts">
+import { ref, watch, computed } from 'vue';
 import { useLocaleStore } from '~/stores/locale';
-import { useAuthStore } from '~/stores/auth'
-import { useModalsStore } from '~/stores/modals'
+import { useAuthStore } from '~/stores/auth';
+import { useModalsStore } from '~/stores/modals';
+import { useRouter, useRoute } from 'nuxt/app';
 
-const modalsStore = useModalsStore()
-const authStore = useAuthStore()
-const router = useRouter()
+const modalsStore = useModalsStore();
+const authStore = useAuthStore();
+const router = useRouter();
+const route = useRoute();
 
 // Поиск
 const searchQuery = ref('');
-const handleSearch = () => {
+
+const handleSearch = async () => {
     if (searchQuery.value.trim()) {
-        console.log(searchQuery.value);
+        // Сохраняем текущий запрос
+        const query = searchQuery.value.trim();
+
+        try {
+            // Проверяем, находимся ли мы уже на странице результатов поиска
+            const isOnSearchPage = route.path === '/search-result';
+
+            if (isOnSearchPage) {
+                // Сначала переходим на промежуточную страницу
+                await router.push('/'); // Можно использовать любую другую страницу
+
+                // Затем сразу возвращаемся на страницу поиска с новым запросом
+                setTimeout(() => {
+                    router.push({
+                        path: '/search-result',
+                        query: { query: query }
+                    });
+                }, 10);
+            } else {
+                // Стандартный переход на страницу поиска
+                await router.push({
+                    path: '/search-result',
+                    query: { query: query }
+                });
+            }
+
+            // Очистка инпута после перехода
+            searchQuery.value = '';
+        } catch (error) {
+            console.error('Ошибка при навигации:', error);
+        }
     }
 };
 
@@ -181,9 +215,14 @@ const menu = computed(() => {
 // Обработка клика по кнопке аккаунта
 const handleAccountClick = () => {
     if (authStore.isAuthenticated) {
-        router.push('/profile')
+        router.push('/profile');
     } else {
-        modalsStore.openModal('login')
+        modalsStore.openModal('login');
     }
-}
+};
+
+// Отслеживаем изменения параметра query в URL
+watch(() => route.query.query, (newQuery) => {
+    console.log('Current search query:', newQuery);
+});
 </script>

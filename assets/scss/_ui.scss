@@ -388,6 +388,10 @@ table {
   color: $primary;
 }
 
+.text-italic {
+  font-style: italic;
+}
+
 .custom-checkbox {
   display: flex;
   align-items: center;
@@ -438,6 +442,44 @@ table {
   font-size: p2r(14);
   letter-spacing: -0.03em;
   color: $font;
+}
+
+.custom-radio {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  .radio-input {
+    display: none;
+
+    &:checked + .radio-indicator {
+      background-color: $bgc;
+      border-color: $border;
+
+      &::after {
+        content: '';
+        position: absolute;
+        width: p2r(10);
+        height: p2r(10);
+        background: $primary;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+
+  .radio-indicator {
+    display: inline-block;
+    width: p2r(20);
+    height: p2r(20);
+    border: 1px solid $border;
+    border-radius: 50%; // Круглый индикатор, как на макете
+    position: relative;
+    margin-right: p2r(10);
+    transition: background-color 0.3s;
+  }
 }
 
 .error-message {

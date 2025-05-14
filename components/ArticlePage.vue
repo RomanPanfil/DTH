@@ -8,11 +8,11 @@
                     <article class="article">
                         <div class="article-content">
                             <component
-                                    v-for="(block, index) in pageBlocks"
-                                    :key="index + '-' + block.type"
-                                    :is="componentsMap[block.type]"
-                                    v-bind="block"
-                                    @open-popup="openPopup"
+                                v-for="(block, index) in pageBlocks"
+                                :key="index + '-' + block.type"
+                                :is="componentsMap[block.type]"
+                                v-bind="block"
+                                @open-popup="openPopup"
                             />
                             <p v-if="pageError">Ошибка загрузки страницы: {{ pageError.details }}</p>
                             <p v-else-if="!page">Страница не найдена</p>
@@ -23,10 +23,10 @@
         </div>
 
         <GalleryPopup
-                v-if="isPopupOpen"
-                :images="currentGalleryFull"
-                :initial-index="currentSlideIndex"
-                @close="closePopup"
+            v-if="isPopupOpen"
+            :images="currentGalleryFull"
+            :initial-index="currentSlideIndex"
+            @close="closePopup"
         />
     </div>
 </template>
@@ -45,19 +45,34 @@ import { useI18n } from 'vue-i18n';
 const props = defineProps({
     pageId: {
         type: String,
-        default: '99'
-    }
+        default: null, // Изменили default на null, так как теперь может быть code
+    },
+    code: {
+        type: String,
+        default: null, // Новый prop для code
+    },
 });
 
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
 const { t } = useI18n();
 
+// Формируем параметры запроса
+const query = computed(() => {
+    if (props.code) {
+        return { code: props.code };
+    }
+    if (props.pageId) {
+        return { id: props.pageId };
+    }
+    return { id: '99' }; // Резервный ID, если ничего не передано
+});
+
 // Загружаем данные страницы
 const { data, error } = await useFetch('/api/page', {
     method: 'GET',
-    query: { id: props.pageId },
-    key: `page-${props.pageId}`,
+    query,
+    key: `page-${props.code || props.pageId || '99'}`,
 });
 
 const page = computed(() => data.value?.page || null);
@@ -160,6 +175,6 @@ if (page.value) {
 
 <style scoped lang="scss">
 .content {
-  line-height: 1.6;
+    line-height: 1.6;
 }
 </style>

@@ -7,27 +7,27 @@
         >
             <NuxtIcon name="arrow-left" class="pagination-icon" filled />
         </button>
-        <NuxtLink
+        <button
             v-for="page in visiblePages"
             :key="page"
-            :to="`?page=${page}${section ? `§ion=${section}` : ''}`"
             class="pagination-link"
             :class="{ active: currentPage === page }"
+            @click="changePage(page)"
         >
             {{ page }}
-        </NuxtLink>
+        </button>
         <span
             v-if="totalPages > 5 && visiblePages[visiblePages.length - 1] < totalPages - 1"
             class="pagination-ellipsis"
         >...</span>
-        <NuxtLink
+        <button
             v-if="totalPages > 5 && visiblePages[visiblePages.length - 1] < totalPages"
-            :to="`?page=${totalPages}${section ? `§ion=${section}` : ''}`"
             class="pagination-link"
             :class="{ active: currentPage === totalPages }"
+            @click="changePage(totalPages)"
         >
             {{ totalPages }}
-        </NuxtLink>
+        </button>
         <button
             class="pagination-btn pagination-next"
             :disabled="currentPage === totalPages"
@@ -39,6 +39,9 @@
 </template>
 
 <script setup lang="ts">
+import { useRoute } from 'vue-router';
+import { computed } from 'vue';
+
 const props = defineProps<{
     currentPage: number;
     totalPages: number;
@@ -46,6 +49,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['page-change']);
+
+const route = useRoute();
 
 const visiblePages = computed(() => {
     const pages = [];
@@ -61,6 +66,11 @@ const visiblePages = computed(() => {
 
 const changePage = (page: number) => {
     if (page >= 1 && page <= props.totalPages) {
+        const query = { ...route.query, page: page.toString() };
+        // Сохраняем section, если он есть
+        if (props.section && !query.section) {
+            query.section = props.section;
+        }
         emit('page-change', page);
     }
 };
@@ -111,6 +121,8 @@ const changePage = (page: number) => {
         text-decoration: none;
         color: $font-black;
         border: none;
+        background: none;
+        cursor: pointer;
 
         &.active {
             background-color: $primary;

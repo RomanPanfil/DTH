@@ -8,10 +8,10 @@
                 </div>
                 <div v-else class="join-header">
                     <h2 class="join-title">
-                        {{ settings?.MAIN_TITLE_BLOCK?.VALUE_RU }}
+                        {{ mainTitle }}
                     </h2>
                     <div class="join-subtitle">
-                        {{ settings?.MAIN_TITLE_DESC?.VALUE_RU }}
+                        {{ mainSubtitle }}
                     </div>
                 </div>
                 <div v-if="itemsError" class="error-message">
@@ -49,8 +49,24 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useLocaleStore } from '~/stores/locale';
+
 const runtimeConfig = useRuntimeConfig();
 const imageBaseUrl = runtimeConfig.public.imageBaseUrl;
+
+const localeStore = useLocaleStore();
+const locale = computed(() => localeStore.locale);
+
+const mainTitle = computed(() => {
+    const localeSuffix = locale.value?.toUpperCase() || 'RU';
+    return settings.value?.MAIN_TITLE_BLOCK?.[`VALUE_${localeSuffix}`] || '';
+});
+
+const mainSubtitle = computed(() => {
+    const localeSuffix = locale.value?.toUpperCase() || 'RU';
+    return settings.value?.MAIN_TITLE_DESC?.[`VALUE_${localeSuffix}`] || '';
+});
 
 const { data: settings, error: settingsError } = await useFetch('/api/settings', {
     method: 'POST',

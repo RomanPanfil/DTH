@@ -772,7 +772,7 @@ useHead({
     }
 
     &-aside {
-        margin-top: p2r(-454);
+        margin-top: p2r(-354);
         padding: p2r(20);
         background-color: $bgc;
         box-shadow: 0px 4px 35px rgba(114, 142, 174, 0.1);

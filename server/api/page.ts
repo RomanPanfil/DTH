@@ -7,17 +7,20 @@ export default defineEventHandler(async (event) => {
 
     const query = getQuery(event);
     const pageId = query.id;
+    const code = query.code;
 
-    if (!pageId) {
+    // Проверяем, что передан хотя бы один параметр
+    if (!pageId && !code) {
         throw createError({
             statusCode: 400,
-            statusMessage: 'ID страницы обязателен',
+            statusMessage: 'Требуется указать ID или CODE страницы',
         });
     }
 
+    // Формируем params как строку: либо code, либо pageId
     const requestBody = {
         key: apiKey,
-        params: pageId,
+        params: code || pageId,
     };
 
     try {
@@ -36,8 +39,8 @@ export default defineEventHandler(async (event) => {
             throw new Error('Неверная структура ответа API для страницы');
         }
 
-        const item = response;
-        if (!item) {
+        // Проверяем наличие данных страницы
+        if (!response.RU && !response.EN) {
             return {
                 page: null,
                 message: 'Страница не найдена',
@@ -45,14 +48,14 @@ export default defineEventHandler(async (event) => {
         }
 
         return {
-            page: item,
+            page: response,
         };
     } catch (error) {
         console.error('Ошибка при запросе страницы:', error);
         return {
             error: 'Не удалось загрузить страницу',
             details: error.message,
+            status: 500,
         };
     }
 });
-

@@ -12,7 +12,7 @@
                     <NuxtLink
                         v-for="item in menuTop"
                         :key="item.ID"
-                        :to="item.PAGE_ID ? `${item.URL}?id=${item.PAGE_ID}` : item.URL"
+                        :to="item.URL"
                         class="footer-nav-link"
                     >
                         {{ item.NAME }}
@@ -38,7 +38,7 @@
                     <NuxtLink
                         v-for="item in menuBottom"
                         :key="item.ID"
-                        :to="item.PAGE_ID ? `${item.URL}?id=${item.PAGE_ID}` : item.URL"
+                        :to="item.URL"
                         class="footer-bottom-link"
                     >
                         {{ item.NAME }}

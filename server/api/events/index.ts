@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const page = Number(query.page) || 1;
     const iblockId = Number(query.iblockId) || 13; // Динамический IBLOCK_ID, по умолчанию 13
-    const limit = Number(query.limit) || 15; // Количество элементов на странице
+    const limit = Number(query.limit) || 12; // Количество элементов на странице
     const getAllFiles = query.GET_ALL_FILES || 'Y'; // Извлекаем GET_ALL_FILES, по умолчанию 'Y'
 
     const requestBody = {
