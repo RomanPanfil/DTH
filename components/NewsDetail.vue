@@ -66,11 +66,11 @@
                 </div>
                 <div class="news-side">
                     <div class="news-share" ref="newsShare">
-                        <div class="news-share-head">
+                        <div class="news-share-head" @click="isShareLinksShow = !isShareLinksShow">
                             <span class="news-share-head-title">{{ $t('news.share') }}</span>
                             <NuxtIcon name="share" class="news-share-head-icon" filled />
                         </div>
-                        <div class="news-share-links">
+                        <div v-show="isShareLinksShow" class="news-share-links">
                             <a href="#" class="news-share-link">
                                 <NuxtIcon name="vk-color" class="news-share-link-icon" filled />
                             </a>
@@ -93,7 +93,10 @@
                     </div>
                 </div>
             </div>
-            <JournalShort v-if="newsItem[locale].PROPS?.REPORT_EXIST?.VALUE !== 'Y'" :news="news" :rubrics="rubrics" />
+            <JournalShort
+                v-if="newsItem[locale].PROPS?.REPORT_EXIST?.VALUE !== 'Y'"
+                :exclude-news-code="newsCode"
+            />
         </div>
         <div v-else>Loading...</div>
 
@@ -143,6 +146,7 @@ const { t } = useI18n();
 const newsItem = ref(null);
 const newsError = ref(null);
 const newsShare = ref<HTMLElement | null>(null);
+const isShareLinksShow = ref(false);
 
 // Карта компонентов для динамического рендеринга
 const componentsMap = {
@@ -627,6 +631,7 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
         &-head {
             text-align: right;
             margin-bottom: p2r(8);
+            cursor: pointer;
 
             &-title {
                 border-bottom: 1px dotted $font;

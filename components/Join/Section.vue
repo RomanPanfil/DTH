@@ -34,12 +34,13 @@
                                 >
                             </div>
                             <div class="join-card-text" v-html="item.PREVIEW_TEXT"></div>
-                            <a
+                            <button
                                 :href="item.PROPS?.BTN_LINK?.VALUE || '#'"
                                 class="ui-btn ui-btn__primary join-card-btn"
+                                @click="handleRegister"
                             >
                                 {{ item.PROPS?.BTN_TEXT?.VALUE }}
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -49,8 +50,13 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth';
 import { computed } from 'vue';
 import { useLocaleStore } from '~/stores/locale';
+import { useRouter } from 'nuxt/app';
+
+const router = useRouter();
+const authStore = useAuthStore();
 
 const runtimeConfig = useRuntimeConfig();
 const imageBaseUrl = runtimeConfig.public.imageBaseUrl;
@@ -94,6 +100,12 @@ if (settingsError.value) {
 if (itemsError.value) {
     console.error('Failed to fetch items:', itemsError.value);
 }
+
+const handleRegister = () => {
+    if (!authStore.token) {
+        router.push('/register');
+    }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -109,25 +121,66 @@ if (itemsError.value) {
     overflow: hidden;
     margin-bottom: p2r(100);
 
+    @media(max-width: 1280px) {
+        padding-top: p2r(80);
+        padding-bottom: p2r(80);
+    }
+
+    @media(max-width: 768px) {
+        padding-top: p2r(40);
+        padding-bottom: p2r(40);
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: p2r(32);
+    }
+
+    @media(max-width: 599px) {
+        padding-top: p2r(32);
+        padding-bottom: p2r(24);
+        border-radius: p2r(16);
+        margin-bottom: p2r(32);
+    }
+
     &-image {
         position: absolute;
         right: p2r(-30);
         top: p2r(-30);
         width: p2r(690);
+
+        @media(max-width: 1280px) {
+            display: none;
+        }
     }
 
     &-header {
         margin-bottom: p2r(60);
+
+        @media(max-width: 768px) {
+            margin-bottom: p2r(40);
+        }
+
+        @media(max-width: 599px) {
+            margin-bottom: p2r(32);
+        }
     }
 
     &-title {
         color: $font-white;
         margin-bottom: p2r(20);
+
+        @media(max-width: 599px) {
+            font-size: p2r(24);
+        }
     }
 
     &-subtitle {
         font-weight: 500;
         font-size: p2r(18);
+
+        @media(max-width: 599px) {
+            font-size: p2r(14);
+            line-height: 1.3;
+        }
     }
 
     &-card {
@@ -137,33 +190,97 @@ if (itemsError.value) {
         background-color: $bgc;
         color: $font;
         border-radius: p2r(8);
-        padding: p2r(72) p2r(80) p2r(100) p2r(80);
+        padding: p2r(60);
         height: 100%;
+
+        @media(max-width: 1366px) {
+            padding: p2r(40);
+        }
+
+        @media(max-width: 1280px) {
+            padding: p2r(32);
+        }
+
+        @media(max-width: 1024px) {
+            margin-bottom: p2r(24);
+            height: calc(100% - 24px);
+        }
+
+        @media(max-width: 599px) {
+            padding: p2r(32) p2r(20);
+            margin-bottom: p2r(16);
+            height: calc(100% - 16px);
+        }
 
         &-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: p2r(12);
             margin-bottom: p2r(14);
             width: 100%;
+
+            @media(max-width: 599px) {
+                flex-direction: column-reverse;
+                align-items: flex-start;
+                gap: p2r(16);
+            }
         }
 
         &-title {
+            position: relative;
             font-weight: 500;
             font-size: p2r(32);
             line-height: 1.3;
+            text-transform: uppercase;
+
+            @media(max-width: 1366px) {
+                font-size: p2r(28);
+            }
+
+            @media(max-width: 599px) {
+                font-size: p2r(24);
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                bottom: p2r(-20);
+                width: p2r(128);
+                height: 1px;
+                background-color: $border;
+
+                @media(max-width: 599px) {
+                    display: none;
+                }
+            }
         }
 
         &-image {
-            width: p2r(55);
-            flex: 0 0 p2r(55);
+            width: p2r(100);
+            flex: 0 0 p2r(100);
+
+            @media(max-width: 1366px) {
+                width: p2r(80);
+                flex: 0 0 p2r(80);
+            }
+
+            @media(max-width: 599px) {
+                width: p2r(60);
+                flex: 0 0 p2r(60);
+            }
         }
 
         &-text {
             font-size: p2r(16);
             line-height: 1.5;
             margin-bottom: p2r(30);
-            max-width: p2r(518);
+            max-width: p2r(550);
+
+            @media(max-width: 599px) {
+                font-size: p2r(14);
+            }
 
             p {
                 margin-bottom: p2r(10);

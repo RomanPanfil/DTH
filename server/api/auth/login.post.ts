@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const apiUrl = config.private.bitrixApiUrl
 
     const { email, password } = await readBody(event)
-    console.log('Login request:', { email })
+    // console.log('Login request:', { email })
 
     if (!email || !password) {
         throw createError({
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString()
         })
 
-        console.log('Bitrix API response (login):', JSON.stringify(response, null, 2))
+        // console.log('Bitrix API response (login):', JSON.stringify(response, null, 2))
 
         if (response.USER_ID && response.TOKEN && response.EXPIRES) {
             const expiresDate = new Date(response.EXPIRES)
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
                 TOKEN: response.TOKEN,
                 EXPIRES: expiresDate.toISOString()
             }
-            console.log('Login: Formatted response:', formattedResponse)
+            // console.log('Login: Formatted response:', formattedResponse)
             return formattedResponse
         }
 

@@ -16,7 +16,7 @@
         </div>
         <div class="courses-cards">
             <Swiper
-                :modules="[SwiperNavigation]"
+                :modules="[SwiperNavigation, Pagination]"
                 :slides-per-view="4"
                 :space-between="30"
                 :breakpoints="{
@@ -29,6 +29,7 @@
                     prevEl: '.courses-slider-prev',
                     nextEl: '.courses-slider-next',
                 }"
+                :pagination="{ clickable: true, el: '.swiper-pagination' }"
                 class="courses-swiper"
                 @swiper="onSwiper"
                 @slideChange="onSlideChange"
@@ -37,6 +38,7 @@
                 <SwiperSlide v-for="event in events" :key="event.ID">
                     <CourcesCard :event="event" />
                 </SwiperSlide>
+                <div class="swiper-pagination"></div>
             </Swiper>
         </div>
     </div>
@@ -45,8 +47,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation as SwiperNavigation } from 'swiper/modules';
+import { Navigation as SwiperNavigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/pagination';
 
 const props = defineProps<{
     events: any[];
@@ -88,6 +91,11 @@ const slideNext = () => swiperInstance.value?.slideNext();
     padding-top: p2r(104);
     padding-bottom: p2r(40);
 
+    @media(max-width: 599px) {
+        padding-top: p2r(40);
+        padding-bottom: p2r(6);
+    }
+
     &-head {
         display: flex;
         justify-content: space-between;
@@ -97,18 +105,34 @@ const slideNext = () => swiperInstance.value?.slideNext();
 
         &-title {
             margin-bottom: 0;
+
+            @media(max-width: 599px) {
+                font-size: p2r(24);
+                line-height: 1.30;
+            }
         }
 
         &-text {
             display: flex;
             align-items: baseline;
+            flex-wrap: wrap;
             gap: p2r(24);
+
+            @media(max-width: 599px) {
+                row-gap: p2r(4);
+                flex-direction: column;
+            }
         }
 
         &-more {
             font-size: p2r(18);
             color: $font;
             border-bottom: 1px solid $border;
+
+            @media(max-width: 599px) {
+                font-size: p2r(14);
+                line-height: 1.3;
+            }
         }
     }
 }
@@ -117,6 +141,10 @@ const slideNext = () => swiperInstance.value?.slideNext();
     &-btns {
         display: flex;
         gap: p2r(20);
+
+        @media(max-width: 599px) {
+            display: none;
+        }
     }
 
     &-btn {
@@ -145,5 +173,37 @@ const slideNext = () => swiperInstance.value?.slideNext();
 
 .swiper-slide {
     height: auto;
+}
+
+/* Стили для пагинации с использованием :deep() */
+:deep(.swiper-pagination-bullets.swiper-pagination-horizontal) {
+    width: auto;
+}
+:deep(.swiper-pagination) {
+    bottom: p2r(24);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: none;
+    gap: p2r(2);
+
+    @media(max-width: 599px) {
+        display: flex;
+    }
+}
+
+:deep(.swiper-pagination-bullet) {
+    width: p2r(8);
+    height: p2r(8);
+    background: #D9F0E8;
+    border-radius: p2r(8);
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+    background-color: $primary;
+    width: p2r(48);
 }
 </style>

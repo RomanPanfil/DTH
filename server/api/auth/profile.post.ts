@@ -59,7 +59,8 @@ export default defineEventHandler(async (event) => {
                 ACTIVE: response.ACTIVE,
                 IS_LECTOR: response.IS_LECTOR,
                 DATE_REGISTER: response.DATE_REGISTER,
-                DATE_LAST_LOGIN: response.DATE_LAST_LOGIN
+                DATE_LAST_LOGIN: response.DATE_LAST_LOGIN,
+                FAVORITES: response.FAVORITES
             }
             // console.log('Profile: Formatted response:', formattedResponse)
             return formattedResponse

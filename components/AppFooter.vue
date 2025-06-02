@@ -101,6 +101,11 @@
             margin-right: p2r(60);
         }
 
+        @media(max-width: 1366px) {
+            font-size: p2r(14);
+            margin-right: p2r(40);
+        }
+
         &:before {
             content: '';
             width: p2r(14);
@@ -115,6 +120,11 @@
 
     &-nav {
         margin-right: p2r(24);
+
+        @media(max-width: 1280px) {
+            margin-right: 0;
+            margin-left: auto;
+        }
         &-link {
             font-family: 'Inter';
             font-weight: 400;
@@ -127,6 +137,11 @@
                 font-size: p2r(16);
                 margin-right: p2r(24);
             }
+
+            @media(max-width: 1366px) {
+                font-size: p2r(14);
+                margin-right: p2r(20);
+            }
         }
     }
 
@@ -137,6 +152,10 @@
 
         @media(max-width: 1680px) {
             column-gap: p2r(10);
+        }
+
+        @media(max-width: 1280px) {
+            display: none;
         }
 
         &-link {
@@ -185,12 +204,20 @@
             @media(max-width: 1680px) {
                 font-size: p2r(14);
             }
+
+            @media(max-width: 1366px) {
+                font-size: p2r(13);
+            }
         }
     }
 
     &-pay {
         display: flex;
         column-gap: p2r(16);
+
+        @media(max-width: 1280px) {
+            display: none;
+        }
 
         &-icon {
             img {
@@ -205,6 +232,10 @@
 
         @media(max-width: 1680px) {
             font-size: p2r(14);
+        }
+
+        @media(max-width: 1366px) {
+            font-size: p2r(13);
         }
 
         &-link {

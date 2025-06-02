@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     const apiUrl = config.private.bitrixApiUrl;
 
     const formData = await readMultipartFormData(event);
-    console.log('Update photo request:', formData);
+    // console.log('Update photo request:', formData);
 
     if (!formData) {
         throw createError({
@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
             body: requestFormData
         });
 
-        console.log('Bitrix API response (updatephoto):', JSON.stringify(response, null, 2));
+        // console.log('Bitrix API response (updatephoto):', JSON.stringify(response, null, 2));
 
         if (response.MESSAGE === 'PHOTO_UPDATED_SUCCESSFULLY') {
             return { message: response.MESSAGE };

@@ -39,8 +39,30 @@
                                 </div>
                             </div>
                             <div class="event-props-share">
-                                {{ $t('news.share')}}
-                                <NuxtIcon name="share" class="event-props-share-icon" filled />
+                                <div class="event-share-head" @click="isShareLinksShow = !isShareLinksShow">
+                                    <span class="event-share-head-title">{{ $t('news.share')}}</span>
+                                    <NuxtIcon name="share" class="event-props-share-icon" filled />
+                                </div>
+                                <div v-show="isShareLinksShow" class="event-share-links">
+                                    <a href="#" class="event-share-link">
+                                        <NuxtIcon name="vk-color" class="event-share-link-icon" filled />
+                                    </a>
+                                    <a href="#" class="event-share-link">
+                                        <NuxtIcon name="tg-color" class="event-share-link-icon" filled />
+                                    </a>
+                                    <a href="#" class="event-share-link">
+                                        <NuxtIcon name="fb-color" class="event-share-link-icon" filled />
+                                    </a>
+                                    <a href="#" class="event-share-link">
+                                        <NuxtIcon name="ok-color" class="event-share-link-icon" filled />
+                                    </a>
+                                    <a href="#" class="event-share-link">
+                                        <NuxtIcon name="twitter-color" class="event-share-link-icon" filled />
+                                    </a>
+                                    <a href="#" class="event-share-link">
+                                        <NuxtIcon name="link-color" class="event-share-link-icon" filled />
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -60,9 +82,9 @@
                             />
                         </div>
                         <!-- Блок Лекторы -->
-                        <div class="ui-section lectors-section">
+                        <div v-if="event.PROPS?.LECTOR_SET?.VALUE?.length" class="ui-section lectors-section">
                             <h2 class="ui-block-title">{{ event.PROPS?.LECTOR_TITLE?.VALUE || 'Лекторы' }}</h2>
-                            <div v-if="event.PROPS?.LECTOR_SET?.VALUE?.length" class="lectors-list">
+                            <div class="lectors-list">
                                 <div v-for="(lector, index) in lectorsData" :key="index" class="lector-item">
                                     <div class="lector-header">
                                         <div class="lector-avatar">
@@ -135,7 +157,7 @@
                                                 <div class="when-info-value">
                                                     <div>{{ event.PROPS?.WHEN_ADDR?.VALUE }}</div>
                                                 </div>
-                                                <a href="#" class="when-map-link">Посмотреть на карте</a>
+                                                <a href="#" class="when-map-link" @click.prevent="openMapModal">Посмотреть на карте</a>
                                             </div>
                                         </div>
                                     </div>
@@ -231,20 +253,29 @@
                                     <div v-for="(costGroup, index) in event.PROPS?.COST_GR?.VALUE" :key="index" class="col-md-4">
                                         <div class="cost-group">
                                             <div class="cost-group-header">
-                                                <div class="cost-group-title">{{ costGroup.SUB_VALUES.COST_GR_TITLE.VALUE }}</div>
-                                                <div v-if="costGroup.SUB_VALUES.COST_GR_SUBTITLE?.VALUE" class="cost-group-subtitle">
-                                                    {{ costGroup.SUB_VALUES.COST_GR_SUBTITLE.VALUE }}
+                                                <div class="cost-group-header-text">
+                                                    <div class="cost-group-title">{{ costGroup.SUB_VALUES.COST_GR_TITLE.VALUE }}</div>
+                                                    <div v-if="costGroup.SUB_VALUES.COST_GR_SUBTITLE?.VALUE" class="cost-group-subtitle">
+                                                        {{ costGroup.SUB_VALUES.COST_GR_SUBTITLE.VALUE }}
+                                                    </div>
                                                 </div>
+                                                <NuxtIcon v-if="costGroup?.SUB_VALUES?.COST_GR_SALE_DESCRIPTION" name="discount" filled class="cost-group-header-icon"/>
                                             </div>
                                             <div class="cost-group-details">
                                                 <div class="cost-group-type">{{ costGroup.SUB_VALUES.COST_GR_TYPE.VALUE }}:</div>
                                                 <div class="cost-group-price">{{ costGroup.SUB_VALUES.COST_GR_PRICE.VALUE }}</div>
-                                                <button class="cost-group-btn">Подробнее об оплате</button>
+                                                <button class="cost-group-btn" @click="openTooltipModal(costGroup)">
+                                                    <template v-if="costGroup?.SUB_VALUES?.COST_GR_SALE_DESCRIPTION">
+                                                        Подробнее о скидке
+                                                    </template>
+                                                    <template v-else>
+                                                        Подробнее об оплате
+                                                    </template>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
@@ -280,7 +311,7 @@
                         <div class="event-aside-wrapper">
                             <div class="event-aside" ref="eventAside">
                                 <div class="event-card-image">
-                                    <img :src="getImageUrl(event.DETAIL_PICTURE)" :alt="event.NAME" />
+                                    <img :src="getImageUrl(event.PREVIEW_PICTURE)" :alt="event.NAME" />
                                 </div>
                                 <div class="event-card-info">
                                     <div v-if="event.PROPS.WHEN_DATE?.VALUE" class="event-card-info-item">
@@ -307,12 +338,19 @@
                                     </div>
                                 </div>
                                 <div class="event-card-pay">
-                                    <button class="ui-btn ui-btn__primary event-card-pay-btn">Оплатить участие</button>
-                                    <button class="event-card-fav-btn">
-                                        <NuxtIcon name="heart-filled" class="icon" filled />
+                                    <button class="ui-btn ui-btn__primary event-card-pay-btn" @click="takePart">
+                                        <template v-if="isFree">{{ $t('courses.takePart') }}</template>
+                                        <template v-else>{{ $t('courses.payPart') }}</template>
+                                    </button>
+                                    <button class="event-card-fav-btn" @click="addToFav">
+                                        <NuxtIcon
+                                            :name="isAddingToFav ? 'heart' : (isFavorite ? 'heart-filled' : 'heart')"
+                                            class="icon"
+                                            filled
+                                        />
                                     </button>
                                 </div>
-                                <button class="event-card-more cost-group-btn">Подробнее об оплате</button>
+                                <button class="event-card-more cost-group-btn" @click="openTooltipModal(null)">Подробнее об оплате</button>
                             </div>
                         </div>
                     </div>
@@ -326,13 +364,28 @@
     </div>
     <!--    хардкод-->
     <EducationCards />
+
+    <!-- Модальное окно -->
+    <ModalsTooltipModal
+        :is-open="isTooltipModalOpen"
+        :content="tooltipContent"
+        :title="tooltipTitle"
+        @close="closeTooltipModal"
+    />
+    <ModalsMapModal
+        :is-open="isMapModalOpen"
+        :latitude="mapLatitude"
+        :longitude="mapLongitude"
+        @close="closeMapModal"
+    />
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRoute } from 'nuxt/app';
+import { useRoute, useRouter } from 'nuxt/app';
+import { useAuthStore } from '~/stores/auth';
+import { useModalsStore } from '~/stores/modals';
 import { useI18n } from 'vue-i18n';
-import Breadcrumbs from '~/components/Breadcrumbs.vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Navigation as SwiperNavigation } from 'swiper/modules';
 import { useLocaleStore } from '~/stores/locale';
@@ -340,7 +393,11 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
+
+const modalsStore = useModalsStore();
+const authStore = useAuthStore();
 
 const localeStore = useLocaleStore();
 const locale = computed(() => localeStore.locale);
@@ -354,7 +411,70 @@ const eventCode = route.params.code;
 const event = ref(null);
 const eventError = ref(null);
 const lectorsData = ref([]);
-const reportData = ref(null); // Для хранения данных отчета
+const reportData = ref(null);
+const isShareLinksShow = ref(false);
+const isAddingToFav = ref(false);
+
+// Состояние для модального окна
+const isTooltipModalOpen = ref(false);
+const tooltipContent = ref('');
+const tooltipTitle = ref('');
+
+const isMapModalOpen = ref(false);
+const mapLatitude = ref(53.90257)
+const mapLongitude = ref(27.557088)
+
+const openMapModal = () => {
+    if (event.value?.PROPS?.WHEN_MAP?.VALUE) {
+        const [lat, lng] = event.value.PROPS.WHEN_MAP.VALUE.split(',').map(coord => Number(coord.trim()))
+        mapLatitude.value = lat
+        mapLongitude.value = lng
+    }
+    isMapModalOpen.value = true
+}
+
+const closeMapModal = () => {
+    isMapModalOpen.value = false
+}
+
+// Проверка, находится ли курс в избранном
+const isFavorite = computed(() => {
+    if (!event.value?.ID || !authStore.favorites.length) return false;
+    const eventId = Number(event.value.ID);
+    const isInFavorites = authStore.favorites.includes(eventId);
+    console.log('isFavorite computed:', {
+        eventId,
+        favorites: authStore.favorites,
+        isInFavorites
+    });
+    return isInFavorites;
+});
+
+const tooltipTitlePay = ref<string | null>(null)
+const tooltipTitleDiscount = ref<string | null>(null)
+const { data: settings, error: settingsError } = await useFetch('/api/settings', {
+    method: 'POST',
+    body: {},
+})
+if (settings.value) {
+    // Устанавливаем значения для заголовков подсказок
+    tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE || settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || 'Оплата'
+    tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || 'Скидка'
+
+    // Динамическая выборка в зависимости от языка
+    if (locale.value === 'RU') {
+        tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || settings.value.TOOLTIP_TITLE_PAY?.VALUE || 'Оплата'
+        tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || 'Скидка'
+    } else {
+        tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE || settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || 'Оплата'
+        tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || 'Скидка'
+    }
+} else if (settingsError.value) {
+    console.error('Ошибка загрузки настроек:', settingsError.value)
+    // Устанавливаем значения по умолчанию в случае ошибки
+    tooltipTitlePay.value = 'Оплата'
+    tooltipTitleDiscount.value = 'Скидка'
+}
 
 const getImageUrl = (path) => {
     return path ? `${imageBaseUrl}${path}` : '/images/examples/new-image.jpg';
@@ -660,6 +780,114 @@ useHead({
         { property: 'og:site_name', content: 'DTH Events' },
     ],
 });
+
+const addToFav = async () => {
+    if (!authStore.isAuthenticated) {
+        console.log('addToFav: User not authenticated, opening login modal');
+        modalsStore.openModal('login');
+        return;
+    }
+
+    if (!event.value?.ID) {
+        console.error('addToFav: Event ID not found');
+        return;
+    }
+
+    isAddingToFav.value = true;
+
+    try {
+        const eventId = Number(event.value.ID);
+
+        if (isFavorite.value) {
+            // Удаление из избранного
+            await $fetch('/api/favorites/remove', {
+                method: 'POST',
+                body: {
+                    token: authStore.token,
+                    itemId: eventId
+                }
+            });
+            authStore.removeFavorite(eventId);
+            // useToast().success('Курс удален из избранного');
+        } else {
+            // Добавление в избранное
+            await $fetch('/api/favorites/add', {
+                method: 'POST',
+                body: {
+                    token: authStore.token,
+                    itemId: eventId
+                }
+            });
+            authStore.addFavorite(eventId);
+            // useToast().success('Курс добавлен в избранное');
+        }
+        // Синхронизируем избранное с сервером
+        await authStore.fetchProfile();
+    } catch (error) {
+        console.error('addToFav: Error:', error);
+        const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';
+        if (error.data?.error === 'ERROR_INVALID_TOKEN') {
+            console.warn('addToFav: Invalid token, opening login modal');
+            modalsStore.openModal('login');
+        } else if (error.data?.error === 'ERROR_ITEM_ALREADY_FAVORITE') {
+            await authStore.fetchProfile(); // Синхронизируем избранное
+            // useToast().info('Курс уже в избранном');
+        } else if (error.data?.error === 'ERROR_ITEM_NOT_FAVORITE') {
+            await authStore.fetchProfile(); // Синхронизируем избранное
+            // useToast().info('Курс не находится в избранном');
+        } else {
+            console.error('addToFav: Unknown error:', errorMessage);
+            // useToast().error('Не удалось изменить избранное');
+        }
+    } finally {
+        isAddingToFav.value = false;
+    }
+};
+
+const isFree = computed(() => {
+    return !event.value?.PROPS?.PRICE?.VALUE || event.value.PROPS.PRICE.VALUE === '';
+});
+
+const takePart = () => {
+    if (!authStore.isAuthenticated) {
+        modalsStore.openModal('login');
+        // toast.error(t('courses.notAuthenticated'));
+        return;
+    }
+
+    router.push({
+        path: '/payment',
+        query: { code: eventCode },
+    });
+
+    // alert(t('добавлениекурсов в разработке!')); // Временная заглушка
+}
+
+const payTooltip = computed(() => {
+    return event.value?.PROPS?.COST_ABOUT_PAY?.VALUE?.TEXT || '';
+});
+
+const discountTooltip = computed(() => {
+    return event.value?.PROPS?.COST_GR_SALE_DESCRIPTION?.VALUE?.[0]?.TEXT || '';
+});
+
+// Функция для открытия модального окна
+const openTooltipModal = (costGroup) => {
+    if (costGroup && costGroup?.SUB_VALUES?.COST_GR_SALE_DESCRIPTION) {
+        tooltipContent.value = getDecodedHTML(discountTooltip.value);
+        tooltipTitle.value = tooltipTitleDiscount.value;
+    } else {
+        tooltipContent.value = getDecodedHTML(payTooltip.value);
+        tooltipTitle.value = tooltipTitlePay.value;
+    }
+    isTooltipModalOpen.value = true;
+};
+
+// Функция для закрытия модального окна
+const closeTooltipModal = () => {
+    isTooltipModalOpen.value = false;
+    tooltipContent.value = '';
+};
 </script>
 
 <style scoped lang="scss">
@@ -679,6 +907,7 @@ useHead({
     &-wrapper {
         display: flex;
         gap: p2r(30);
+        flex-grow: 1;
     }
 
     &-main {
@@ -694,8 +923,21 @@ useHead({
     }
     &-header {
         position: relative;
-        overflow: hidden;
         padding-top: p2r(60);
+        min-height: p2r(500);
+        display: flex;
+        flex-direction: column;
+
+        .event-main {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
         &-bg {
             position: absolute;
@@ -720,12 +962,12 @@ useHead({
         justify-content: space-between;
         align-items: center;
         margin-bottom: p2r(54);
+        margin-top: auto;
 
         &-list {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: p2r(16);
         }
 
         &-item {
@@ -746,7 +988,7 @@ useHead({
                 position: absolute;
                 right: 0;
                 top: 50%;
-                transform: translate(50%, -50%);
+                transform: translate(0, -50%);
                 content: '';
                 width: 1px;
                 height: p2r(12);
@@ -759,6 +1001,7 @@ useHead({
         }
 
         &-share {
+            position: relative;
             display: flex;
             align-items: center;
             gap: p2r(4);
@@ -767,6 +1010,38 @@ useHead({
             &-icon {
                 font-size: p2r(20);
                 color: $font;
+            }
+        }
+    }
+
+    &-share {
+        &-head {
+            cursor: pointer;
+
+            &-title {
+                border-bottom: 1px dotted $font;
+                margin-right: p2r(8);
+            }
+        }
+
+        &-links {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            display: flex;
+            gap: p2r(12);
+            padding: p2r(20);
+            background: $bgc;
+            box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
+            border-radius: p2r(8);
+            z-index: 2;
+        }
+
+        &-link {
+            &-icon {
+                display: block;
+                font-size: p2r(48);
+                line-height: p2r(32);
             }
         }
     }
@@ -817,7 +1092,7 @@ useHead({
 
             &-item {
                 font-weight: 600;
-                font-size: p2r(12);
+                font-size: p2r(14);
                 line-height: 1.3;
                 text-transform: uppercase;
                 color: $font-white;
@@ -846,6 +1121,7 @@ useHead({
 
         &-seats {
             font-size: p2r(18);
+            margin-left: auto;
 
             &-title {
                 font-size: p2r(10);
@@ -874,6 +1150,7 @@ useHead({
                 .icon {
                     font-size: p2r(28);
                     line-height: p2r(26);
+                    color: $primary;
                 }
             }
         }
@@ -891,6 +1168,7 @@ useHead({
         display: flex;
         flex-wrap: wrap;
         gap: p2r(4);
+        margin-top: p2r(60);
         margin-bottom: p2r(36);
     }
 
@@ -924,7 +1202,6 @@ useHead({
 }
 
 .lectors-section {
-
     .lectors-list {
         display: flex;
         flex-direction: column;
@@ -1115,12 +1392,12 @@ useHead({
     flex-direction: column;
     margin-bottom: p2r(20);
 
-  &-arrows {
-      display: flex;
-      gap: p2r(20);
-      margin-left: auto;
-      margin-bottom: p2r(40);
-  }
+    &-arrows {
+        display: flex;
+        gap: p2r(20);
+        margin-left: auto;
+        margin-bottom: p2r(40);
+    }
 
     &-arrow {
         position: relative;
@@ -1200,11 +1477,21 @@ useHead({
 
         &-header {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             padding: p2r(20) p2r(30);
             border-bottom: 1px solid $border;
             min-height: p2r(90);
+
+            &-text {
+                display: flex;
+                flex-direction: column;
+            }
+
+            &-icon {
+                color: $primary;
+                font-size: p2r(32);
+                line-height: p2r(28);
+            }
         }
 
         &-title {
@@ -1229,6 +1516,7 @@ useHead({
             outline: none;
             color: $primary;
             border-bottom: 1px dotted $primary;
+            cursor: pointer;
         }
     }
 }

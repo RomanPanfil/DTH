@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
     // Логируем входящие данные для отладки
-    console.log('Входящие данные для регистрации:', body)
+    // console.log('Входящие данные для регистрации:', body)
 
     // Проверка на наличие всех обязательных полей
     if (!body.name || !body.last_name || !body.phone || !body.email || !body.password || !body.confirm_password) {
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Логируем тело запроса, чтобы убедиться, что данные передаются
-    console.log('Тело запроса для Bitrix API:', requestBody)
+    // console.log('Тело запроса для Bitrix API:', requestBody)
 
     try {
         const response = await $fetch(`${apiUrl}?method=register&act=auth`, {
@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
         })
 
         // Логируем ответ от Bitrix API
-        console.log('Ответ от Bitrix API:', response)
+        // console.log('Ответ от Bitrix API:', response)
 
         // Проверяем успешность ответа
         if (response.USER_ID && response.TOKEN && response.EXPIRES) {

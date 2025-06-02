@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export type ModalType = 'login' | string
+export type ModalType = 'login' | 'recover' | string
 
 export interface ModalPayload {
     type: ModalType

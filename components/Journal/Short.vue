@@ -16,7 +16,7 @@
         </div>
         <div class="journal-cards">
             <Swiper
-                :modules="[SwiperNavigation]"
+                :modules="[SwiperNavigation, Pagination]"
                 :slides-per-view="4"
                 :space-between="30"
                 :breakpoints="{
@@ -29,6 +29,7 @@
                     prevEl: '.journal-slider-prev',
                     nextEl: '.journal-slider-next',
                 }"
+                :pagination="{ clickable: true, el: '.swiper-pagination' }"
                 class="journal-swiper"
                 @swiper="onSwiper"
                 @slideChange="onSlideChange"
@@ -37,6 +38,7 @@
                 <SwiperSlide v-for="item in news" :key="item.ID">
                     <JournalCard :item="item" :rubrics="rubrics" />
                 </SwiperSlide>
+                <div class="swiper-pagination"></div>
             </Swiper>
         </div>
     </div>
@@ -45,12 +47,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation as SwiperNavigation } from 'swiper/modules';
+import { Navigation as SwiperNavigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/pagination';
 
-defineProps<{
-    news: any[];
-    rubrics: any[];
+const { excludeNewsCode } = defineProps<{
+    excludeNewsCode?: string;
 }>();
 
 const news = ref([]);
@@ -58,8 +60,12 @@ const rubrics = ref([]);
 
 const { data: newsData, error: newsError } = await useAsyncData('news', async () => {
     try {
-        const { data } = await useFetch('/api/news', {
-            query: { page: 1, limit: 12 },
+        const query: any = { page: 1, limit: 12 };
+        if (excludeNewsCode) {
+            query.excludeCode = excludeNewsCode;
+        }
+        const { data } = await useFetch('/api/news/short', {
+            query,
         });
         return data.value?.news || [];
     } catch (err) {
@@ -124,6 +130,11 @@ const slideNext = () => swiperInstance.value?.slideNext();
     padding-top: p2r(104);
     padding-bottom: p2r(26);
 
+    @media(max-width: 599px) {
+        padding-top: p2r(32);
+        padding-bottom: p2r(32);
+    }
+
     &-head {
         display: flex;
         justify-content: space-between;
@@ -133,18 +144,34 @@ const slideNext = () => swiperInstance.value?.slideNext();
 
         &-title {
             margin-bottom: 0;
+
+            @media(max-width: 599px) {
+                font-size: p2r(24);
+                line-height: 1.30;
+            }
         }
 
         &-text {
             display: flex;
+            flex-wrap: wrap;
             align-items: baseline;
             gap: p2r(24);
+
+            @media(max-width: 599px) {
+                row-gap: p2r(4);
+                flex-direction: column;
+            }
         }
 
         &-more {
             font-size: p2r(18);
             color: $font;
             border-bottom: 1px solid $border;
+
+            @media(max-width: 599px) {
+                font-size: p2r(14);
+                line-height: 1.3;
+            }
         }
     }
 }
@@ -153,6 +180,10 @@ const slideNext = () => swiperInstance.value?.slideNext();
     &-btns {
         display: flex;
         gap: p2r(20);
+
+        @media(max-width: 599px) {
+            display: none;
+        }
     }
 
     &-btn {
@@ -181,5 +212,46 @@ const slideNext = () => swiperInstance.value?.slideNext();
 
 .swiper-slide {
     height: auto;
+}
+
+:deep(.journal-card) {
+    @media(max-width: 599px) {
+        margin-bottom: 0;
+        height: 100%;
+    }
+}
+/* Стили для пагинации с использованием :deep() */
+:deep(.swiper-wrapper) {
+    padding-bottom: p2r(32);
+}
+:deep(.swiper-pagination-bullets.swiper-pagination-horizontal) {
+    width: auto;
+}
+:deep(.swiper-pagination) {
+    bottom: p2r(0);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: none;
+    gap: p2r(2);
+
+    @media(max-width: 599px) {
+        display: flex;
+    }
+}
+
+:deep(.swiper-pagination-bullet) {
+    width: p2r(8);
+    height: p2r(8);
+    background: #D9F0E8;
+    border-radius: p2r(8);
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+    background-color: $primary;
+    width: p2r(48);
 }
 </style>

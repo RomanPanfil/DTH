@@ -50,6 +50,7 @@ if (error.value) {
   border-radius: p2r(8);
   overflow: hidden;
   max-height: p2r(440);
+    aspect-ratio: 390/440;
 
   &-image {
     width: 100%;

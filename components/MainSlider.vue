@@ -12,19 +12,34 @@
             >
                 <SwiperSlide v-for="webinar in webinars" :key="webinar.ID">
                     <div class="slider-card">
-                        <!-- Фоновое изображение -->
-                        <img
-                            :src="imageBaseUrl + webinar.image || '/images/placeholder.jpg'"
-                            :alt="webinar.title"
-                            class="slider-card-image"
-                        />
+                        <picture>
+                            <source
+                                :srcset="imageBaseUrl + webinar.imageMobile"
+                                media="(max-width: 599px)"
+                                v-if="webinar.imageMobile"
+                            />
+                            <source
+                                :srcset="imageBaseUrl + webinar.imageTablet"
+                                media="(min-width: 600px) and (max-width: 1023px)"
+                                v-if="webinar.imageTablet"
+                            />
+                            <source
+                                :srcset="imageBaseUrl + webinar.imagePC"
+                                media="(min-width: 1024px)"
+                                v-if="webinar.imagePC"
+                            />
+                            <img
+                                :src="imageBaseUrl + webinar.imagePC || '/images/placeholder.jpg'"
+                                :alt="webinar.title"
+                                class="slider-card-image"
+                            />
+                        </picture>
                         <!-- Вставка HTML-кода, если он есть -->
                         <div v-if="webinar.hasHtmlCode" class="slider-card-content" v-html="getDecodedHTML(webinar.htmlContent)"></div>
                     </div>
                 </SwiperSlide>
-<!--                <div class="swiper-pagination"></div>-->
+                <div class="swiper-pagination"></div>
             </Swiper>
-            <div class="swiper-pagination"></div>
         </div>
     </div>
 </template>
@@ -39,10 +54,8 @@ import 'swiper/css/pagination';
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
 
-// Регистрация модулей Swiper
 const modules = [Autoplay, Pagination];
 
-// Загрузка данных слайдов
 const { data, error } = await useAsyncData('mainSlider', async () => {
     try {
         const response = await $fetch('/api/slider', {
@@ -61,13 +74,14 @@ const { data, error } = await useAsyncData('mainSlider', async () => {
     }
 });
 
-// Преобразование данных в формат вебинаров
 const webinars = ref(data.value?.map(slide => {
     const htmlCode = slide.PROPS.HTML_CODE?.VALUE?.TEXT;
     return {
         ID: slide.ID,
         title: slide.NAME || 'Без названия',
-        image: slide.PROPS.IMG_PC?.VALUE_PATH || '/images/placeholder.jpg',
+        imagePC: slide.PROPS.IMG_PC?.VALUE_PATH || '/images/placeholder.jpg',
+        imageTablet: slide.PROPS.IMG_TABLET?.VALUE_PATH || slide.PROPS.IMG_PC?.VALUE_PATH || '/images/placeholder.jpg',
+        imageMobile: slide.PROPS.IMG_MOBILE?.VALUE_PATH || slide.PROPS.IMG_TABLET?.VALUE_PATH || slide.PROPS.IMG_PC?.VALUE_PATH || '/images/placeholder.jpg',
         link: slide.PROPS.LINK?.VALUE || '/',
         hasHtmlCode: !!htmlCode,
         htmlContent: htmlCode || '',
@@ -78,7 +92,6 @@ if (error.value) {
     console.error('MainSlider: Ошибка useAsyncData:', error.value);
 }
 
-// Универсальная функция для декодирования HTML-сущностей
 function decodeHTML(text) {
     if (!text) return '';
 
@@ -90,13 +103,10 @@ function decodeHTML(text) {
         '&nbsp;': ' '
     };
 
-    // Заменяем экранированные HTML-сущности
     let decodedText = text.replace(/&lt;|&gt;|&quot;|&amp;|&nbsp;/g, match => entities[match]);
 
-    // Заменяем управляющие символы \r\n на пробелы
     decodedText = decodedText.replace(/\r\n/g, ' ');
 
-    // Корректируем пути к изображениям, добавляя baseUrl
     decodedText = decodedText.replace(/<img\s+[^>]*src="([^"]+)"[^>]*>/gi, (match, src) => {
         if (src.startsWith('/upload')) {
             return match.replace(src, `${baseUrl}${src}`);
@@ -107,7 +117,6 @@ function decodeHTML(text) {
     return decodedText;
 }
 
-// Вспомогательная функция для использования в шаблоне
 const getDecodedHTML = (text) => {
     return decodeHTML(text);
 };
@@ -117,6 +126,15 @@ const getDecodedHTML = (text) => {
 .slider {
     position: relative;
 
+    @media(max-width: 599px) {
+        margin-left: p2r(-30);
+        margin-right: p2r(-30);
+    }
+    @media(max-width: 420px) {
+        margin-left: p2r(-20);
+        margin-right: p2r(-20);
+    }
+
     &-cards {
         position: relative;
     }
@@ -125,11 +143,15 @@ const getDecodedHTML = (text) => {
         position: relative;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        //justify-content: space-between;
         overflow: hidden;
-        min-height: p2r(440);
+        aspect-ratio: 1229/440;
         border-radius: p2r(8);
         background-color: $primary;
+
+        @media(max-width: 599px) {
+            aspect-ratio: 360/440;
+        }
 
         &-image {
             position: absolute;
@@ -154,11 +176,27 @@ const getDecodedHTML = (text) => {
             color: $font-white;
             width: 60%;
 
-            h2 {
-                text-transform: uppercase;
+            @media(max-width: 599px) {
+                padding: p2r(20);
+                width: 100%;
             }
 
-            h2, h3,h4,h5, h6 {
+            h2 {
+                text-transform: uppercase;
+
+                @media(max-width: 599px) {
+                    font-size: p2r(24);
+                    line-height: p2r(29);
+                }
+            }
+            h3 {
+                @media(max-width: 599px) {
+                    font-size: 16px;
+                    line-height: 1.3;
+                }
+            }
+
+            h2, h3, h4, h5, h6 {
                 color: $font-white;
             }
         }
@@ -179,7 +217,6 @@ const getDecodedHTML = (text) => {
     width: auto;
 }
 :deep(.swiper-pagination) {
-    //position: absolute;
     bottom: p2r(50);
     left: 50%;
     transform: translateX(-50%);

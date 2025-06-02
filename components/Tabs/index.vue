@@ -7,7 +7,7 @@
                 :class="['tabs-header-item', { active: activeTab === tab.id }]"
                 @click="activeTab = tab.id"
             >
-                {{ tab.text }} <span class="tab-count">{{ tab.count }}</span>
+                <span class="tab-text">{{ tab.text }}</span> <span class="tab-count">{{ tab.count }}</span>
             </button>
         </div>
         <div class="tabs-content">
@@ -167,18 +167,27 @@ watch(() => props.webinars, (newVal) => {
         border: none;
         cursor: pointer;
         transition: color 0.3s, border 0.3s;
-        border-bottom: 1px solid $border;
+
+        .tab-text {
+            border-bottom: 1px solid $border;
+        }
 
         &.active {
             color: $font-grey;
             border-bottom: none;
             font-weight: p2r(500);
-            border-bottom: 1px solid transparent;
+
+            .tab-text {
+                border-bottom: 1px solid transparent;
+            }
         }
 
         &:hover {
             color: $primary;
-            border-bottom: 1px solid $primary;
+
+            .tab-text {
+                border-bottom: 1px solid $primary;
+            }
         }
     }
 }

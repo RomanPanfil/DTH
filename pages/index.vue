@@ -43,7 +43,7 @@ const fetchLectors = async (lectorIds: number[]) => {
 
 const { data: eventsData, error: eventsError } = await useAsyncData('featuredEvents', async () => {
     try {
-        const { data } = await useFetch('/api/events', {
+        const { data } = await useFetch('/api/items', {
             query: {
                 GET_ALL_FILES: 'Y',
                 isFeatured: '1',

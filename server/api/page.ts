@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString(),
         });
 
-        console.log('Page API Response:', JSON.stringify(response, null, 2));
+        // console.log('Page API Response:', JSON.stringify(response, null, 2));
 
         if (!response) {
             throw new Error('Неверная структура ответа API для страницы');

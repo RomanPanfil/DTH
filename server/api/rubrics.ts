@@ -52,11 +52,11 @@ export default defineEventHandler(async (event) => {
 
     // Логируем все входящие заголовки
     const headers = event.node.req.headers;
-    console.log('Входящие заголовки:', headers);
+    // console.log('Входящие заголовки:', headers);
 
     // Извлекаем Authorization
     const authHeader = getHeader(event, 'Authorization');
-    console.log('Заголовок Authorization:', authHeader);
+    // console.log('Заголовок Authorization:', authHeader);
 
     const requestBody = {
         key: apiKey,

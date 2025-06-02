@@ -58,6 +58,10 @@
             margin-right: p2r(50);
         }
 
+        @media(max-width: 1280px) {
+            margin-right: p2r(40);
+        }
+
         &-img {
             max-height: p2r(48);
             display: block;
@@ -70,6 +74,10 @@
 
     &-nav {
         margin-right: p2r(24);
+
+        @media(max-width: 1366px) {
+            margin-right: p2r(16);
+        }
         &-link {
             font-family: 'Inter';
             font-weight: 500;
@@ -77,10 +85,16 @@
             color: $font;
             margin-right: p2r(36);
             text-decoration: none;
+            white-space: nowrap;
 
             @media(max-width: 1680px) {
                 font-size: p2r(16);
                 margin-right: p2r(24);
+            }
+
+            @media(max-width: 1280px) {
+                font-size: p2r(14);
+                margin-right: p2r(18);
             }
         }
     }
@@ -96,7 +110,14 @@
         padding-right: p2r(20);
         display: flex;
         align-items: center;
+        white-space: nowrap;
         cursor: pointer;
+
+        @media(max-width: 1280px) {
+            font-size: p2r(14);
+            padding-left: p2r(12);
+            padding-right: p2r(12);
+        }
 
         &-icon {
             width: p2r(22);
@@ -110,6 +131,13 @@
             align-items: center;
             justify-content: center;
             margin-right: p2r(6);
+
+            @media(max-width: 1280px) {
+                width: p2r(20);
+                height: p2r(20);
+                flex: 0 0 p2r(20);
+                font-size: p2r(16);
+            }
         }
     }
 
@@ -120,7 +148,16 @@
         margin-right: p2r(30);
 
         @media(max-width: 1366px) {
-            max-width: p2r(260);
+            margin-right: p2r(24);
+        }
+
+        @media(max-width: 1280px) {
+            //max-width: p2r(200);
+            margin-right: p2r(20);
+        }
+
+        @media(max-width: 1140px) {
+            //max-width: p2r(200);
         }
 
         &-btn {
@@ -137,6 +174,10 @@
 
             &-icon {
                 font-size: p2r(22);
+
+                @media(max-width: 1280px) {
+                    font-size: p2r(18);
+                }
             }
         }
     }

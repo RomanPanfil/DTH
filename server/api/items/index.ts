@@ -42,12 +42,12 @@ export default defineEventHandler(async (event) => {
     // Добавляем GET_ALL_FILES, если указано
     if (getAllFiles === 'Y') {
         Object.assign(requestBody, {
-            'params[filter][GET_ALL_FILES]': 'Y',
+            'params[GET_ALL_FILES]': 'Y',
         });
     }
 
     try {
-        console.log(requestBody)
+        // console.log(requestBody)
         const response = await $fetch(`${apiUrl}?method=items&act=get`, {
             method: 'POST',
             headers: {

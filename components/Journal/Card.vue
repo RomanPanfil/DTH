@@ -145,6 +145,12 @@ const itemUrl = computed(() => {
       font-size: p2r(20);
       line-height: p2r(26);
       margin-bottom: p2r(20);
+
+        @media(max-width: 599px) {
+            font-size: p2r(16);
+            line-height: 1.3;
+            margin-bottom: p2r(16);
+        }
     }
 
     &-info {
@@ -182,6 +188,14 @@ const itemUrl = computed(() => {
     &.backgrounder {
       position: relative;
       color: $font-white-light;
+      filter: brightness(90%);
+      transition: filter 0.3s;
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+          filter: brightness(100%);
+        }
+      }
 
       .journal-card-content {
         position: static;

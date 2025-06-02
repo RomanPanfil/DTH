@@ -12,7 +12,15 @@ export default defineNuxtConfig({
       link: [
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap' },
         { rel: 'stylesheet', href: 'https://cdn.plyr.io/3.7.8/plyr.css' },
-      ]
+      ],
+      script: [
+        {
+          src: 'https://api-maps.yandex.ru/2.1/?apikey=ddbf0add-1333-47b0-bcc1-4614c515def2&lang=ru_RU',
+          type: 'text/javascript',
+          async: true,
+          defer: true,
+        },
+      ],
     }
   },
   vite: {

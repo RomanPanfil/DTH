@@ -7,9 +7,9 @@
             Ошибка загрузки данных: {{ error.message || 'Неизвестная ошибка' }}
         </div>
         <div v-else-if="data.items && data.items.length" class="row">
-            <div v-for="(item, index) in data.items" :key="index" class="col-md-3">
+            <div v-for="(item, index) in data.items" :key="index" class="col-md-3 col-sm-6">
                 <div class="advantages-item">
-                    <img :src="imageBaseUrl + item.icon" :alt="`Иконка преимущества ${index + 1}`" class="advantage-icon" />
+                    <img :src="imageBaseUrl + item.icon" :alt="`Иконка преимущества ${index + 1}`" class="advantages-icon" />
                     <div class="advantages-text">{{ item.text }}</div>
                 </div>
             </div>
@@ -57,11 +57,15 @@ const checkData = () => {
     &-item {
         display: flex;
         align-items: center;
-        justify-content: center;
+        //justify-content: center;
         gap: p2r(20);
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: p2r(8);
         height: 100%;
+
+        @media(max-width: 1023px) {
+            margin-bottom: p2r(20)
+        }
     }
 
     &-icon {
@@ -70,6 +74,27 @@ const checkData = () => {
         flex: 0 0 p2r(68);
         object-fit: contain;
         margin-bottom: p2r(10);
+
+        @media(max-width: 1366px) {
+            width: p2r(52);
+            height: p2r(52);
+            flex: 0 0 p2r(52);
+        }
+
+        @media(max-width: 1280px) {
+            width: p2r(52);
+            height: p2r(52);
+            flex: 0 0 p2r(52);
+        }
+    }
+
+    &-text {
+        @media(max-width: 1366px) {
+            font-size: p2r(15);
+        }
+        @media(max-width: 1280px) {
+            font-size: p2r(14);
+        }
     }
 
     &-placeholder {

@@ -105,7 +105,8 @@ const changePage = (page: number) => {
     }
 
     &-icon {
-        font-size: p2r(20);
+        font-size: p2r(22);
+        line-height: p2r(18);
         color: $font;
     }
 

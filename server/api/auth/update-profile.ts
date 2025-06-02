@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const { token, name, last_name, second_name, phone, link_inst, link_fb, link_vk, name_en, last_name_en, second_name_en, personal_birthday, country, city } = body;
 
-    console.log('Update profile request:', { token, name, last_name, phone, country, city });
+    // console.log('Update profile request:', { token, name, last_name, phone, country, city });
 
     if (!token) {
         throw createError({
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString()
         });
 
-        console.log('Bitrix API response (updateprofile):', JSON.stringify(response, null, 2));
+        // console.log('Bitrix API response (updateprofile):', JSON.stringify(response, null, 2));
 
         if (response.MESSAGE === 'PROFILE_UPDATED_SUCCESSFULLY') {
             return { message: response.MESSAGE };

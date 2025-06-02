@@ -6,22 +6,24 @@ export default defineEventHandler(async (event) => {
     const apiUrl = config.private.bitrixApiUrl;
 
     const query = getQuery(event);
+    const body = await readBody(event);
     const page = Number(query.page) || 1;
-    const iblockId = Number(query.iblockId) || 13; // Динамический IBLOCK_ID, по умолчанию 13
-    const limit = Number(query.limit) || 12; // Количество элементов на странице
-    const getAllFiles = query.GET_ALL_FILES || 'Y'; // Извлекаем GET_ALL_FILES, по умолчанию 'Y'
+    const iblockId = Number(query.iblockId) || 13;
+    // const limit = Number(query.limit) || 12;
+    const limit = Number(body?.params?.pager?.limit) || Number(query.limit) || 12; // Предпочитаем body.params.pager.limit
+    const getAllFiles = query.GET_ALL_FILES || 'Y';
 
     const requestBody = {
         key: apiKey,
         'params[filter][IBLOCK_ID]': iblockId,
         'params[filter][ACTIVE]': 'Y',
-        'params[select][0]': 'PROPERTY_*', // Все свойства
-        'params[resize][0]': 320, // Ширина для ресайза
-        'params[resize][1]': 240, // Высота для ресайза
-        'params[resize][2]': '1', // Обрезка по меньшей стороне
-        'params[resize_WHEN_GALL][0]': 640, // Ширина для галереи
-        'params[resize_WHEN_GALL][1]': 480, // Высота для галереи
-        'params[resize_WHEN_GALL][2]': '1', // Обрезка для галереи
+        'params[select][0]': 'PROPERTY_*',
+        'params[resize][0]': 390,
+        'params[resize][1]': 242,
+        'params[resize][2]': '1',
+        'params[resize_WHEN_GALL][0]': 640,
+        'params[resize_WHEN_GALL][1]': 480,
+        'params[resize_WHEN_GALL][2]': '1',
         'params[pager][start]': page,
         'params[pager][limit]': limit,
     };
@@ -33,7 +35,30 @@ export default defineEventHandler(async (event) => {
         });
     }
 
+    // Добавляем фильтр по ID, если указан
+    if (body?.params?.filter?.ID) {
+        const ids = Array.isArray(body.params.filter.ID)
+            ? body.params.filter.ID
+            : [body.params.filter.ID];
+        ids.forEach((id, index) => {
+            requestBody[`params[filter][ID][${index}]`] = Number(id);
+        });
+    }
+
+    // Добавляем fastfilter, если он есть
+    if (body?.params?.fastfilter && Object.keys(body.params.fastfilter).length > 0) {
+        Object.entries(body.params.fastfilter).forEach(([key, value]) => {
+            requestBody[`params[fastfilter][${key}]`] = value;
+        });
+    }
+
+    // Добавляем сортировку по свойству DATE_FOR_SORT, если она указана
+    if (body?.params?.sort && body.params.sort.PROPERTY_DATE_FOR_SORT) {
+        requestBody['params[sort][PROPERTY_DATE_FOR_SORT]'] = body.params.sort.PROPERTY_DATE_FOR_SORT;
+    }
+
     try {
+        console.log(requestBody)
         const response = await $fetch(`${apiUrl}?method=items&act=get`, {
             method: 'POST',
             headers: {

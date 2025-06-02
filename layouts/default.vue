@@ -14,8 +14,7 @@ import { useTokenRefresh} from "~/composables/useTokenRefresh";
 useTokenRefresh();
 const route = useRoute();
 
-const isGreyBg = computed(() => route.path.includes('register'))
-console.log(route.name === 'register')
+const isGreyBg = computed(() => route.path.includes('register') || route.path.includes('recovery'))
 
 </script>
 

@@ -17,13 +17,20 @@
             </div>
             <div class="education-cards">
                 <Swiper
-                        :modules="[SwiperNavigation]"
+                        :modules="[SwiperNavigation, Pagination]"
                         :slides-per-view="4"
                         :space-between="30"
+                        :breakpoints="{
+                            320: { slidesPerView: 1 },
+                            768: { slidesPerView: 2 },
+                            1024: { slidesPerView: 3 },
+                            1280: { slidesPerView: 4 }
+                        }"
                         :navigation="{
                         prevEl: '.education-slider-prev',
                         nextEl: '.education-slider-next',
                     }"
+                        :pagination="{ clickable: true, el: '.swiper-pagination' }"
                         class="education-swiper"
                         @swiper="onSwiper"
                         @slideChange="onSlideChange"
@@ -49,6 +56,7 @@
                             </div>
                         </div>
                     </SwiperSlide>
+                    <div class="swiper-pagination"></div>
                 </Swiper>
             </div>
         </div>
@@ -58,8 +66,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation as SwiperNavigation } from 'swiper/modules';
+import { Navigation as SwiperNavigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/pagination';
 
 const swiperInstance = ref(null);
 const isBeginning = ref(true);
@@ -135,6 +144,11 @@ const webinars = ref([
   padding-top: p2r(104);
   padding-bottom: p2r(100);
 
+  @media(max-width: 599px) {
+      padding-top: p2r(32);
+      padding-bottom: p2r(32);
+  }
+
   &-head {
     display: flex;
     justify-content: space-between;
@@ -144,8 +158,14 @@ const webinars = ref([
 
     &-text {
       display: flex;
+      flex-wrap: wrap;
       align-items: baseline;
       gap: p2r(24);
+
+      @media(max-width: 599px) {
+        row-gap: p2r(4);
+        flex-direction: column;
+      }
     }
 
     &-title {
@@ -157,6 +177,11 @@ const webinars = ref([
       font-size: p2r(18);
       color: #D9F0E8;
       border-bottom: 1px solid #D9F0E8;
+
+      @media(max-width: 599px) {
+        font-size: p2r(14);
+        line-height: 1.3;
+      }
     }
   }
 
@@ -226,6 +251,10 @@ const webinars = ref([
   &-btns {
     display: flex;
     gap: p2r(20);
+
+    @media(max-width: 599px) {
+        display: none;
+    }
   }
   &-btn {
     width: p2r(44);
@@ -257,5 +286,40 @@ const webinars = ref([
 
 .swiper-slide {
   height: auto;
+}
+
+/* Стили для пагинации с использованием :deep() */
+:deep(.swiper-wrapper) {
+    padding-bottom: p2r(32);
+}
+:deep(.swiper-pagination-bullets.swiper-pagination-horizontal) {
+    width: auto;
+}
+:deep(.swiper-pagination) {
+    bottom: p2r(0);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: none;
+    gap: p2r(2);
+
+    @media(max-width: 599px) {
+        display: flex;
+    }
+}
+
+:deep(.swiper-pagination-bullet) {
+    width: p2r(8);
+    height: p2r(8);
+    background: #D9F0E8;
+    border-radius: p2r(8);
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+    background-color: #fff;
+    width: p2r(48);
 }
 </style>

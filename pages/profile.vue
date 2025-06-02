@@ -13,7 +13,7 @@
                                     <img v-if="userProfile?.PHOTO" :src="`${imageBaseUrl}${userProfile.PHOTO}`" alt="avatar" class="sidebar-avatar-image">
                                 </div>
                                 <div class="sidebar-name">
-                                    {{ userProfile?.NAME || 'Имя' }} {{ userProfile?.LAST_NAME || 'Фамилия' }}
+                                    {{ userProfile?.NAME || 'Имя' }}<br> {{ userProfile?.LAST_NAME || 'Фамилия' }}
                                 </div>
                             </div>
                         </div>
@@ -90,12 +90,12 @@ const fetchProfile = async () => {
     }
 
     try {
-        console.log('fetchProfile: Sending request to /api/auth/profile with token:', authStore.token)
+        // console.log('fetchProfile: Sending request to /api/auth/profile with token:', authStore.token)
         const response = await $fetch('/api/auth/profile', {
             method: 'POST',
             body: { token: authStore.token }
         })
-        console.log('fetchProfile: Received response:', JSON.stringify(response, null, 2))
+        // console.log('fetchProfile: Received response:', JSON.stringify(response, null, 2))
         userProfile.value = response
     } catch (error) {
         console.error('fetchProfile: Request failed:', {
@@ -230,6 +230,17 @@ watch(() => authStore.userProfile, (newProfile) => {
 
             .sidebar-icon {
                 color: $primary;
+                transition: color 0.3s;
+            }
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                color: $primary;
+
+                .sidebar-icon {
+                    color: $primary;
+                }
             }
         }
 
@@ -243,7 +254,7 @@ watch(() => authStore.userProfile, (newProfile) => {
 
     &-icon {
         font-size: p2r(24);
-        line-height: p2r(24);
+        line-height: p2r(22);
         flex: 0 0 p2r(24);
         color: #4D5452;
         margin-right: p2r(10);
@@ -252,6 +263,16 @@ watch(() => authStore.userProfile, (newProfile) => {
     &-help {
         padding-left: p2r(30);
         padding-right: p2r(30);
+
+        .ui-btn {
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    .sidebar-icon {
+                        color: $primary;
+                    }
+                }
+            }
+        }
     }
 }
 

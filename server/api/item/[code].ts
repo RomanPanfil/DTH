@@ -27,7 +27,9 @@ export default defineEventHandler(async (event) => {
         'params[select][4]': 'PREVIEW_PICTURE',
         'params[select][5]': 'DETAIL_TEXT',
         'params[select][6]': 'CODE',
-        'params[select][7]': 'PROPERTY_*', // Все свойства
+        'params[select][7]': 'PREVIEW_TEXT',
+        'params[select][8]': 'DETAIL_PICTURE',
+        'params[select][9]': 'PROPERTY_*', // Все свойства
         'params[resize][0]': 640, // Ширина для ресайза
         'params[resize][1]': 480, // Высота для ресайза
         'params[resize][2]': 'true', // Обрезка по меньшей стороне
@@ -43,7 +45,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString(),
         });
 
-        console.log('Event API Response:', JSON.stringify(response, null, 2));
+        // console.log('Event API Response:', JSON.stringify(response, null, 2));
 
         if (!response.RESULT || !response.RESULT.ITEM || !response.RESULT.ITEM.RU) {
             throw new Error('Неверная структура ответа API');

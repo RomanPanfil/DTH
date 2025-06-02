@@ -25,14 +25,14 @@
 import { computed } from 'vue'
 import { useModalsStore } from '~/stores/modals'
 import LoginModal from '~/components/modals/LoginModal.vue'
+import RecoverModal from "~/components/modals/RecoverModal.vue";
 
 const modalsStore = useModalsStore()
 
 // Регистрация компонентов модалок
 const modalComponents: Record<string, any> = {
-    login: LoginModal
-    // Добавить новые модалки здесь, например:
-    // confirmation: ConfirmationModal
+    login: LoginModal,
+    recover: RecoverModal,
 }
 
 const modalComponent = computed(() => {
@@ -63,6 +63,10 @@ const modalComponent = computed(() => {
 
     &.modal-login {
         max-width: p2r(500); // Ширина для модалки login
+    }
+
+    &.modal-recover {
+        max-width: p2r(500); // Ширина для модалки recover
     }
 }
 

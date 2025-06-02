@@ -1,23 +1,23 @@
 import { defineEventHandler, getHeader } from 'h3';
 
 export default defineEventHandler(async (event) => {
-    console.log('Items route triggered'); // Confirm route is called
+    // console.log('Items route triggered'); // Confirm route is called
 
     const config = useRuntimeConfig(event);
     const apiKey = config.private.bitrixApiKey;
     const apiUrl = config.private.bitrixApiUrl;
 
     // Логируем конфигурацию (без ключа для безопасности)
-    console.log('API URL:', apiUrl);
-    console.log('Request body preparation started');
+    // console.log('API URL:', apiUrl);
+    // console.log('Request body preparation started');
 
     // Логируем входящие заголовки
     const headers = event.node.req.headers;
-    console.log('Входящие заголовки:', headers);
+    // console.log('Входящие заголовки:', headers);
 
     // Извлекаем Authorization
     const authHeader = getHeader(event, 'Authorization');
-    console.log('Заголовок Authorization:', authHeader);
+    // console.log('Заголовок Authorization:', authHeader);
 
     const requestBody: Record<string, string> = {
         key: apiKey,
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
         'params[filter][GET_ALL_FILES]': 'Y',
     };
 
-    console.log('Request body:', requestBody); // Log body before sending
+    // console.log('Request body:', requestBody); // Log body before sending
 
     try {
         const response = await $fetch(`${apiUrl}?method=items&act=get`, {
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString(),
         });
 
-        console.log('Items API Raw Response:', JSON.stringify(response, null, 2));
+        // console.log('Items API Raw Response:', JSON.stringify(response, null, 2));
 
         if (!response || typeof response !== 'object') {
             console.warn('Ответ API пустой или неверного формата');
@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
             return { items: [] };
         }
 
-        console.log('Returning items:', response.RESULT.ITEMS.RU.length, 'items');
+        // console.log('Returning items:', response.RESULT.ITEMS.RU.length, 'items');
         return {
             items: response.RESULT.ITEMS.RU || [],
         };

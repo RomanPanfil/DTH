@@ -49,9 +49,9 @@
                     <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
                     <span v-else-if="serverPasswordError" class="error-message">{{ serverPasswordError }}</span>
                 </div>
-                <NuxtLink to="/forgot-password" class="forgot-password">
+                <div class="forgot-password" @click="openRecoverModal">
                     {{ $t('login.forgotPassword') }}
-                </NuxtLink>
+                </div>
                 <button type="submit" class="ui-btn ui-btn__primary ui-btn__block">{{ $t('login.login') }}</button>
             </Form>
         </ClientOnly>
@@ -69,8 +69,11 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 const authStore = useAuthStore()
+import { useModalsStore } from '~/stores/modals';
 const router = useRouter()
 const { t } = useI18n()
+
+const modalsStore = useModalsStore();
 
 const loginForm = reactive<{
     email: string
@@ -106,7 +109,7 @@ const handleLogin = async () => {
 
         if (response.status >= 200 && response.status < 300 && response._data?.USER_ID && response._data?.TOKEN) {
             authStore.login(loginForm.email, response._data.USER_ID, response._data.TOKEN, response._data.EXPIRES)
-            await router.push('/')
+            // await router.push('/')
             emit('close')
         } else {
             const errorCode = response._data?.data?.error || response._data?.statusMessage || response._data?.message || 'Unknown error'
@@ -137,6 +140,11 @@ const handleLogin = async () => {
         console.error('Не удалось войти:', error.data?.details || errorCode)
     }
 }
+
+const openRecoverModal = () => {
+   modalsStore.openModal('recover');
+};
+
 </script>
 
 <style scoped lang="scss">
@@ -218,6 +226,7 @@ const handleLogin = async () => {
     margin: p2r(20) 0 p2r(40);
     text-align: right;
     transition: opacity 0.3s;
+    cursor: pointer;
 
     &:hover {
         opacity: 0.9;

@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const apiUrl = config.private.bitrixApiUrl
 
     const { token } = await readBody(event)
-    console.log('Refresh: Request received, token:', token)
+    // console.log('Refresh: Request received, token:', token)
 
     if (!token) {
         console.error('Refresh: Token missing')
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        console.log('Refresh: Sending request to Bitrix API:', apiUrl)
+        // console.log('Refresh: Sending request to Bitrix API:', apiUrl)
         const response = await $fetch(`${apiUrl}?method=refreshtoken&act=auth`, {
             method: 'POST',
             headers: {
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString()
         })
 
-        console.log('Refresh: Bitrix API response:', JSON.stringify(response, null, 2))
+        // console.log('Refresh: Bitrix API response:', JSON.stringify(response, null, 2))
 
         if (response.TOKEN && response.EXPIRES) {
             const expiresDate = new Date(response.EXPIRES)
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
                 TOKEN: response.TOKEN,
                 EXPIRES: expiresDate.toISOString()
             }
-            console.log('Refresh: Formatted response:', formattedResponse)
+            // console.log('Refresh: Formatted response:', formattedResponse)
             return formattedResponse
         }
 

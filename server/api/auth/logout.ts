@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const apiUrl = config.private.bitrixApiUrl
 
     const { token } = await readBody(event)
-    console.log('Logout request, token:', token)
+    // console.log('Logout request, token:', token)
 
     if (!token) {
         throw createError({
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString()
         })
 
-        console.log('Bitrix API response (logout):', JSON.stringify(response, null, 2))
+        // console.log('Bitrix API response (logout):', JSON.stringify(response, null, 2))
 
         if (response.MESSAGE === 'LOGGED_OUT_SUCCESSFULLY') {
             return { MESSAGE: response.MESSAGE }
