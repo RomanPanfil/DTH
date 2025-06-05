@@ -338,8 +338,14 @@
                                     </div>
                                 </div>
                                 <div class="event-card-pay">
-                                    <button class="ui-btn ui-btn__primary event-card-pay-btn" @click="takePart">
-                                        <template v-if="isFree">{{ $t('courses.takePart') }}</template>
+                                    <button
+                                        class="ui-btn ui-btn__primary event-card-pay-btn"
+                                        :disabled="isCourseAccessible || !hasAvailableSeats"
+                                        @click="takePart"
+                                    >
+                                        <template v-if="isCourseAccessible">Курс уже доступен</template>
+                                        <template v-else-if="!hasAvailableSeats">Мест нет</template>
+                                        <template v-else-if="isFree">{{ $t('courses.takePart') }}</template>
                                         <template v-else>{{ $t('courses.payPart') }}</template>
                                     </button>
                                     <button class="event-card-fav-btn" @click="addToFav">
@@ -414,6 +420,7 @@ const lectorsData = ref([]);
 const reportData = ref(null);
 const isShareLinksShow = ref(false);
 const isAddingToFav = ref(false);
+const accessibleCourses = ref<number[]>([]);
 
 // Состояние для модального окна
 const isTooltipModalOpen = ref(false);
@@ -436,6 +443,12 @@ const openMapModal = () => {
 const closeMapModal = () => {
     isMapModalOpen.value = false
 }
+
+const isCourseAccessible = computed(() => {
+    if (!event.value?.ID) return false;
+    const eventId = Number(event.value.ID);
+    return accessibleCourses.value.includes(eventId);
+});
 
 // Проверка, находится ли курс в избранном
 const isFavorite = computed(() => {
@@ -717,9 +730,34 @@ const fetchLectors = async (lectorIds) => {
 
 fetchEventData();
 
+const fetchAccessibleCourses = async () => {
+    if (!authStore.isAuthenticated || !authStore.token) {
+        console.log('User not authenticated, no accessible courses fetched');
+        accessibleCourses.value = [];
+        return;
+    }
+    try {
+        const { data, error } = await useFetch('/api/courses/getAccessible', {
+            method: 'POST',
+            body: {
+                TOKEN: authStore.token,
+                pager: { start: 1, limit: 1000 },
+            },
+        });
+        if (error.value) throw error.value;
+        accessibleCourses.value = (data.value?.COURSES || []).map(Number);
+        console.log('Accessible courses:', accessibleCourses.value);
+    } catch (error) {
+        console.error('Error fetching accessible courses:', error);
+        accessibleCourses.value = [];
+    }
+};
+
 // Логика для "липкого" поведения event-aside (без изменений)
 const eventAside = ref<HTMLElement | null>(null);
-onMounted(() => {
+onMounted(async () => {
+    await fetchAccessibleCourses(); // Получаем доступные курсы
+
     const handleStickyAside = () => {
         if (!eventAside.value) return;
         const asideWrapper = eventAside.value.parentElement;
@@ -845,23 +883,103 @@ const addToFav = async () => {
 };
 
 const isFree = computed(() => {
-    return !event.value?.PROPS?.PRICE?.VALUE || event.value.PROPS.PRICE.VALUE === '';
+    return event.value?.PROPS?.IS_FREE?.VALUE === 1;
 });
 
-const takePart = () => {
+// Проверка наличия свободных мест
+const hasAvailableSeats = computed(() => {
+    if (!event.value?.PROPS?.SEATS?.VALUE) return true; // Если мест не указано, считаем, что ограничения нет
+    const totalSeats = Number(event.value.PROPS.SEATS.VALUE);
+    const registered = Number(event.value.PROPS.REGISTERED?.VALUE || 0);
+    return totalSeats - registered > 0;
+});
+
+const takePart = async () => {
+    if (isCourseAccessible.value) {
+        router.push('/profile/courses');
+        return;
+    }
+
     if (!authStore.isAuthenticated) {
         modalsStore.openModal('login');
         // toast.error(t('courses.notAuthenticated'));
         return;
     }
 
-    router.push({
-        path: '/payment',
-        query: { code: eventCode },
-    });
+    if (!event.value?.ID) {
+        // toast.error('ID мероприятия не найден');
+        return;
+    }
 
-    // alert(t('добавлениекурсов в разработке!')); // Временная заглушка
-}
+    if (isFree.value) {
+        try {
+            const response = await $fetch('/api/orders/create', {
+                method: 'POST',
+                body: {
+                    token: authStore.token,
+                    courseId: Number(event.value.ID),
+                    paymentMethodId: 4 // Бесплатный тип оплаты
+                }
+            });
+
+            // toast.success('Заказ успешно создан!');
+            console.log('Order created:', response);
+            router.push('/profile/courses'); // Перенаправление на страницу курсов
+        } catch (error) {
+            console.error('Ошибка при создании заказа:', error);
+            const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';
+            let userFriendlyMessage = 'Ошибка при создании заказа';
+
+            switch (errorMessage) {
+                case 'ERROR_INVALID_TOKEN':
+                    userFriendlyMessage = t('errors.invalidToken');
+                    modalsStore.openModal('login');
+                    break;
+                case 'ERROR_INVALID_COURSE_ID':
+                    userFriendlyMessage = t('errors.invalidCourseId');
+                    break;
+                case 'ERROR_INVALID_PAYMENT_METHOD':
+                    userFriendlyMessage = t('errors.invalidPaymentMethod');
+                    break;
+                case 'ERROR_COURSE_NOT_FOUND':
+                    userFriendlyMessage = t('errors.courseNotFound');
+                    break;
+                case 'ERROR_NO_AVAILABLE_SEATS':
+                    userFriendlyMessage = t('errors.noAvailableSeats');
+                    break;
+                case 'ERROR_REGISTRATION_CLOSED':
+                    userFriendlyMessage = t('errors.registrationClosed');
+                    break;
+                case 'ERROR_ORDER_ALREADY_EXISTS':
+                    userFriendlyMessage = t('errors.orderAlreadyExists');
+                    router.push('/profile/courses'); // Перенаправляем, так как заказ уже существует
+                    break;
+                case 'ERROR_INVALID_BOOKING_PERIOD':
+                    userFriendlyMessage = t('errors.invalidBookingPeriod');
+                    break;
+                case 'ERROR_ORDER_CREATION_FAILED':
+                    userFriendlyMessage = t('errors.orderCreationFailed');
+                    break;
+                case 'ERROR_INVALID_PARAMS':
+                    userFriendlyMessage = t('errors.invalidParams');
+                    break;
+                case 'Invalid API key':
+                    userFriendlyMessage = t('errors.invalidApiKey');
+                    break;
+                default:
+                    userFriendlyMessage = errorMessage;
+            }
+
+            // toast.error(userFriendlyMessage);
+        }
+    } else {
+        console.log('not free');
+        router.push({
+            path: '/payment',
+            query: { code: eventCode },
+        });
+    }
+};
 
 const payTooltip = computed(() => {
     return event.value?.PROPS?.COST_ABOUT_PAY?.VALUE?.TEXT || '';

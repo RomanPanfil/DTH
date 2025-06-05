@@ -21,7 +21,7 @@
                 :space-between="30"
                 :breakpoints="{
                     320: { slidesPerView: 1 },
-                    768: { slidesPerView: 2 },
+                    599: { slidesPerView: 2 },
                     1024: { slidesPerView: 3 },
                     1280: { slidesPerView: 4 }
                 }"
@@ -90,6 +90,11 @@ const slideNext = () => swiperInstance.value?.slideNext();
 .courses {
     padding-top: p2r(104);
     padding-bottom: p2r(40);
+
+    @media(max-width: 1280px) {
+        padding-top: p2r(80);
+        padding-bottom: p2r(32);
+    }
 
     @media(max-width: 599px) {
         padding-top: p2r(40);

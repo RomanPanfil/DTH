@@ -22,7 +22,7 @@
                         :space-between="30"
                         :breakpoints="{
                             320: { slidesPerView: 1 },
-                            768: { slidesPerView: 2 },
+                            599: { slidesPerView: 2 },
                             1024: { slidesPerView: 3 },
                             1280: { slidesPerView: 4 }
                         }"
@@ -143,6 +143,21 @@ const webinars = ref([
   background-color: $primary;
   padding-top: p2r(104);
   padding-bottom: p2r(100);
+
+  @media(max-width: 1280px) {
+    padding-top: p2r(80);
+    padding-bottom: p2r(80);
+  }
+
+  @media(max-width: 992px) {
+    padding-top: p2r(60);
+    padding-bottom: p2r(60);
+  }
+
+  @media(max-width: 768px) {
+    padding-top: p2r(50);
+    padding-bottom: p2r(50);
+  }
 
   @media(max-width: 599px) {
       padding-top: p2r(32);

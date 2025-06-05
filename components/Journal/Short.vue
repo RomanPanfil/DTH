@@ -21,7 +21,7 @@
                 :space-between="30"
                 :breakpoints="{
                     320: { slidesPerView: 1 },
-                    768: { slidesPerView: 2 },
+                    599: { slidesPerView: 2 },
                     1024: { slidesPerView: 3 },
                     1280: { slidesPerView: 4 }
                 }"
@@ -130,6 +130,18 @@ const slideNext = () => swiperInstance.value?.slideNext();
     padding-top: p2r(104);
     padding-bottom: p2r(26);
 
+    @media(max-width: 1280px) {
+        padding-top: p2r(80);
+    }
+
+    @media(max-width: 992px) {
+        padding-top: p2r(60);
+    }
+
+    @media(max-width: 768px) {
+        padding-top: p2r(50);
+    }
+
     @media(max-width: 599px) {
         padding-top: p2r(32);
         padding-bottom: p2r(32);
@@ -215,6 +227,18 @@ const slideNext = () => swiperInstance.value?.slideNext();
 }
 
 :deep(.journal-card) {
+    @media(max-width: 1280px) {
+        margin-bottom: p2r(50);
+        height: calc(100% - 50px);
+    }
+    @media(max-width: 992px) {
+        margin-bottom: p2r(40);
+        height: calc(100% - 40px);
+    }
+    @media(max-width: 992px) {
+        margin-bottom: p2r(32);
+        height: calc(100% - 32px);
+    }
     @media(max-width: 599px) {
         margin-bottom: 0;
         height: 100%;

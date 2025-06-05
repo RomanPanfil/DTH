@@ -83,6 +83,10 @@ p {
   padding-top: p2r(30);
   //padding: #{$gutter}px;
 
+  @media(max-width: 599px) {
+    padding-top: p2r(12);
+  }
+
   &.grey {
     background-color: #F0F0F0;
   }

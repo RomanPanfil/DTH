@@ -6,8 +6,8 @@
         <div v-else-if="error" class="advantages-placeholder">
             Ошибка загрузки данных: {{ error.message || 'Неизвестная ошибка' }}
         </div>
-        <div v-else-if="data.items && data.items.length" class="row">
-            <div v-for="(item, index) in data.items" :key="index" class="col-md-3 col-sm-6">
+        <div v-else-if="data.items && data.items.length" class="row row__nowrap-mobile">
+            <div v-for="(item, index) in data.items" :key="index" class="col-md-3 col-sm-6 col-mobile">
                 <div class="advantages-item">
                     <img :src="imageBaseUrl + item.icon" :alt="`Иконка преимущества ${index + 1}`" class="advantages-icon" />
                     <div class="advantages-text">{{ item.text }}</div>
@@ -53,6 +53,14 @@ const checkData = () => {
 .advantages {
     padding-left: p2r(20);
     padding-right: p2r(20);
+
+    //@media (max-width: 992px) {
+    //    padding-top: p2r(40);
+    //}
+    //
+    //@media (max-width: 599px) {
+    //    padding-top: p2r(24);
+    //}
 
     &-item {
         display: flex;

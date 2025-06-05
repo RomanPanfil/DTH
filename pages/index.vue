@@ -109,5 +109,29 @@ if (eventsError.value) {
 <style scoped lang="scss">
 .slider {
     margin-bottom: p2r(70);
+
+    @media (max-width: 1280px) {
+        margin-bottom: p2r(50);
+    }
+    @media (max-width: 1024px) {
+        margin-bottom: p2r(40);
+    }
+    @media (max-width: 599px) {
+        margin-bottom: p2r(24);
+    }
+}
+
+.banner {
+    margin-bottom: p2r(70);
+
+    @media (max-width: 1280px) {
+        margin-bottom: p2r(50);
+    }
+    @media (max-width: 1024px) {
+        margin-bottom: p2r(40);
+    }
+    @media (max-width: 599px) {
+        margin-bottom: p2r(24);
+    }
 }
 </style>

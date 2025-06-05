@@ -494,3 +494,32 @@ table {
   bottom: p2r(-15);
   left: 0;
 }
+
+.sort {
+  &-tabs {
+    display: flex;
+    gap: p2r(30);
+    margin-bottom: p2r(30);
+
+    &-item {
+      font-size: p2r(20);
+      color: $font;
+      border-bottom: 1px solid $border;
+      cursor: pointer;
+      transition: color 0.3s, border 0.3s;
+
+      &.active {
+        color: $primary;
+        border-bottom: 1px solid $primary;
+        pointer-events: none;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: $primary;
+          border-bottom: 1px solid $primary;
+        }
+      }
+    }
+  }
+}

@@ -126,6 +126,11 @@ const handleRegister = () => {
         padding-bottom: p2r(80);
     }
 
+    @media(max-width: 992px) {
+        padding-top: p2r(60);
+        padding-bottom: p2r(60);
+    }
+
     @media(max-width: 768px) {
         padding-top: p2r(40);
         padding-bottom: p2r(40);

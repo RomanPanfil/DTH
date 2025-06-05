@@ -30,6 +30,14 @@
                     <NuxtIcon name="user" class="header-account-icon" filled />
                     {{ $t('header.account') }}
                 </button>
+                <button @click="toggleMenu" :class="burgerClasses" class="header-burger">
+                    <div class="header-burger-icon">
+                        <span class="burger-line line-1"></span>
+                        <span class="burger-line line-2"></span>
+                        <span class="burger-line line-3"></span>
+                    </div>
+                    меню
+                </button>
             </div>
         </div>
     </header>
@@ -41,6 +49,11 @@
     padding-bottom: p2r(26);
     background-color: $bgc;
     box-shadow: 0px 4px 35px rgba(114, 142, 174, 0.1);
+
+    @media(max-width: 599px) {
+        padding-top: p2r(13);
+        padding-bottom: p2r(13);
+    }
 
     &-wrapper {
         display: flex;
@@ -77,6 +90,10 @@
 
         @media(max-width: 1366px) {
             margin-right: p2r(16);
+        }
+
+        @media(max-width: 1024px) {
+            display: none;
         }
         &-link {
             font-family: 'Inter';
@@ -119,6 +136,10 @@
             padding-right: p2r(12);
         }
 
+        @media(max-width: 1024px) {
+            display: none;
+        }
+
         &-icon {
             width: p2r(22);
             height: p2r(22);
@@ -152,12 +173,11 @@
         }
 
         @media(max-width: 1280px) {
-            //max-width: p2r(200);
             margin-right: p2r(20);
         }
 
-        @media(max-width: 1140px) {
-            //max-width: p2r(200);
+        @media(max-width: 1024px) {
+            display: none;
         }
 
         &-btn {
@@ -181,6 +201,74 @@
             }
         }
     }
+
+    &-burger {
+        display: none;
+        width: p2r(32);
+        font-weight: 600;
+        font-size: p2r(8);
+        text-transform: uppercase;
+        color: $font;
+        cursor: pointer;
+        background-color: transparent;
+        border: none;
+        position: relative;
+
+        @media(max-width: 1024px) {
+            display: block;
+            //flex-direction: column;
+            //align-items: center;
+            //justify-content: center;
+        }
+
+        &-icon {
+            width: p2r(32);
+            height: p2r(32);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .burger-line {
+            width: p2r(18);
+            height: p2r(1.25);
+            background-color: $font;
+            border-radius: p2r(1.25);
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .line-1 {
+            top: 30%;
+        }
+
+        .line-2 {
+            top: 49%
+        }
+
+        .line-3 {
+            top: 68%;
+            top: 68%;
+        }
+
+        &.active {
+            .line-1 {
+                transform: rotate(45deg);
+                top: p2r(14);
+            }
+
+            .line-2 {
+                opacity: 0;
+            }
+
+            .line-3 {
+                transform: rotate(-45deg);
+                top: p2r(14);
+            }
+        }
+    }
 }
 </style>
 
@@ -196,23 +284,32 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
+// Состояние для бургер-меню
+const isMenuOpen = ref(false);
+
+const toggleMenu = () => {
+    isMenuOpen.value = !isMenuOpen.value;
+    console.log(isMenuOpen.value ? 'Menu opened' : 'Menu closed');
+};
+
+// Добавляем класс active при открытии меню
+const burgerClasses = computed(() => ({
+    'header-burger': true,
+    'active': isMenuOpen.value
+}));
+
 // Поиск
 const searchQuery = ref('');
 
 const handleSearch = async () => {
     if (searchQuery.value.trim()) {
-        // Сохраняем текущий запрос
         const query = searchQuery.value.trim();
 
         try {
-            // Проверяем, находимся ли мы уже на странице результатов поиска
             const isOnSearchPage = route.path === '/search-result';
 
             if (isOnSearchPage) {
-                // Сначала переходим на промежуточную страницу
-                await router.push('/'); // Можно использовать любую другую страницу
-
-                // Затем сразу возвращаемся на страницу поиска с новым запросом
+                await router.push('/');
                 setTimeout(() => {
                     router.push({
                         path: '/search-result',
@@ -220,14 +317,12 @@ const handleSearch = async () => {
                     });
                 }, 10);
             } else {
-                // Стандартный переход на страницу поиска
                 await router.push({
                     path: '/search-result',
                     query: { query: query }
                 });
             }
 
-            // Очистка инпута после перехода
             searchQuery.value = '';
         } catch (error) {
             console.error('Ошибка при навигации:', error);
@@ -235,11 +330,9 @@ const handleSearch = async () => {
     }
 };
 
-// Получаем текущий язык из стора
 const localeStore = useLocaleStore();
 const locale = computed(() => localeStore.locale);
 
-// Загружаем меню MENU_TOP
 const { data: menuData, error: menuError } = await useFetch('/api/menu', {
     method: 'GET',
     query: { type: 'MENU_TOP' },
@@ -253,7 +346,6 @@ const menu = computed(() => {
     return menuData.value?.menu?.[locale.value] || [];
 });
 
-// Обработка клика по кнопке аккаунта
 const handleAccountClick = () => {
     if (authStore.isAuthenticated) {
         router.push('/profile');
@@ -262,7 +354,6 @@ const handleAccountClick = () => {
     }
 };
 
-// Отслеживаем изменения параметра query в URL
 watch(() => route.query.query, (newQuery) => {
     console.log('Current search query:', newQuery);
 });

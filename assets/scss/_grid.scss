@@ -191,6 +191,49 @@
     margin-left: -10px;
     margin-right: -10px;
   }
+
+  &__nowrap-mobile {
+    @media (max-width: 768px) {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-left: p2r(25);
+      padding-right: p2r(25);
+      margin-left: p2r(-55);
+      margin-right: p2r(-55);
+    }
+
+    @media (max-width: 599px) {
+      padding-left: p2r(20);
+      padding-right: p2r(20);
+      margin-left: p2r(-50);
+      margin-right: p2r(-50);
+    }
+
+    @media (max-width: 420px) {
+      padding-left: p2r(10);
+      padding-right: p2r(10);
+      margin-left: p2r(-40);
+      margin-right: p2r(-40);
+    }
+  }
+}
+
+.col-mobile {
+  @media (max-width: 768px) {
+    flex: 0 0 45%;
+    max-width: 45%;
+  }
+
+  @media (max-width: 599px) {
+    flex: 0 0 80%;
+    max-width: 80%;
+  }
+
+  @media (max-width: 420px) {
+    flex: 0 0 88%;
+    max-width: 88%;
+  }
 }
 
 [class*="col-"] {
