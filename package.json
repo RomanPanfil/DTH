@@ -12,6 +12,7 @@
   "dependencies": {
     "-": "^0.0.1",
     "@pinia/nuxt": "^0.10.1",
+    "@sidebase/nuxt-session": "^0.2.8",
     "@vee-validate/i18n": "^4.15.0",
     "@vee-validate/rules": "^4.15.0",
     "axios": "^1.8.4",

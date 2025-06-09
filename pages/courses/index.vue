@@ -209,7 +209,7 @@
                     {{ eventsError?.details || 'Ошибка загрузки мероприятий' }}
                 </div>
                 <div v-else class="row">
-                    <div v-for="event in uniqueEvents" :key="event.ID" class="col-md-4">
+                    <div v-for="event in uniqueEvents" :key="event.ID" class="col-lg-4 col-sm-6">
                         <CourcesCard :event="event" />
                     </div>
                 </div>
@@ -628,7 +628,7 @@ useHead({
 
 <style scoped lang="scss">
 .error-message {
-    color: $error;
+    //color: $error;
     padding: p2r(20);
 }
 
@@ -639,6 +639,10 @@ useHead({
         align-items: center;
         padding-top: p2r(10);
         margin-bottom: p2r(34);
+
+        @media (max-width: 1366px) {
+            font-size: p2r(14);
+        }
 
         &-sort {
             display: flex;
@@ -690,11 +694,28 @@ useHead({
         box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
         border-radius: p2r(6);
 
+        @media (max-width: 1366px) {
+            padding: p2r(40);
+        }
+
+        @media (max-width: 1280px) {
+            padding: p2r(32);
+        }
+
+        @media (max-width: 1140px) {
+            padding: p2r(24);
+        }
+
         .filter {
             &-section {
                 margin-bottom: p2r(30);
                 padding-bottom: p2r(30);
                 border-bottom: 1px solid $border;
+
+                @media (max-width: 1366px) {
+                    margin-bottom: p2r(24);
+                    padding-bottom: p2r(24);
+                }
 
                 &:last-child {
                     margin-bottom: 0;
@@ -710,6 +731,11 @@ useHead({
                     margin-bottom: p2r(14);
                     color: $bgc-dark;
                     cursor: pointer;
+
+                    @media (max-width: 1366px) {
+                        font-size: p2r(16);
+                        margin-bottom: p2r(12);
+                    }
 
                     .filter-icon {
                         font-size: p2r(14);
@@ -792,6 +818,10 @@ useHead({
                         margin-top: p2r(12);
                         outline: none;
 
+                        @media (max-width: 1366px) {
+                            padding: p2r(12) p2r(8);
+                        }
+
                         &[type='number'] {
                             -moz-appearance: textfield;
 
@@ -836,12 +866,48 @@ useHead({
 .courses {
     padding-bottom: p2r(80);
 
+    @media(max-width: 1366px) {
+        padding-bottom: p2r(70);
+    }
+
+    @media(max-width: 768px) {
+        padding-bottom: p2r(60);
+    }
+
+    @media(max-width: 599px) {
+        padding-bottom: p2r(50);
+    }
+
+    @media(max-width: 420px) {
+        margin-top: p2r(40);
+    }
+
     &-description {
         margin-top: p2r(90);
+
+        @media(max-width: 1366px) {
+            margin-top: p2r(80);
+        }
+
+        @media(max-width: 768px) {
+            margin-top: p2r(70);
+        }
+
+        @media(max-width: 599px) {
+            margin-top: p2r(60);
+        }
+
+        @media(max-width: 420px) {
+            margin-top: p2r(40);
+        }
     }
 
     .page-title {
         margin-bottom: p2r(64);
+
+        @media (max-width: 1366px) {
+            margin-bottom: p2r(50);
+        }
     }
 }
 

@@ -340,7 +340,7 @@
                                 <div class="event-card-pay">
                                     <button
                                         class="ui-btn ui-btn__primary event-card-pay-btn"
-                                        :disabled="isCourseAccessible || !hasAvailableSeats"
+                                        :disabled="isCourseAccessible || !hasAvailableSeats || isCoursePaidComputed"
                                         @click="takePart"
                                     >
                                         <template v-if="isCourseAccessible">Курс уже доступен</template>
@@ -428,8 +428,10 @@ const tooltipContent = ref('');
 const tooltipTitle = ref('');
 
 const isMapModalOpen = ref(false);
-const mapLatitude = ref(53.90257)
-const mapLongitude = ref(27.557088)
+const mapLatitude = ref(53.90257);
+const mapLongitude = ref(27.557088);
+
+const isCoursePaid = ref<boolean | null>(null)
 
 const openMapModal = () => {
     if (event.value?.PROPS?.WHEN_MAP?.VALUE) {
@@ -753,10 +755,43 @@ const fetchAccessibleCourses = async () => {
     }
 };
 
+// Асинхронный запрос к API
+const checkPaymentStatus = async () => {
+    if (!event.value.ID || !authStore.token) {
+        isCoursePaid.value = false
+        return
+    }
+
+    try {
+        const { data, error } = await useFetch('/api/courses/checkCourseBuy', {
+            method: 'POST',
+            body: {
+                params: {
+                    TOKEN: authStore.token,
+                    COURSE_ID: Number(event.value.ID)
+                }
+            }
+        })
+
+        if (error.value) {
+            console.error('Ошибка проверки оплаты:', error.value)
+            isCoursePaid.value = false // По умолчанию считаем не оплаченным при ошибке
+        } else if (data.value?.PAY_EXISTS === 1) {
+            isCoursePaid.value = true
+        } else {
+            isCoursePaid.value = false
+        }
+    } catch (err) {
+        console.error('Ошибка при запросе статуса оплаты:', err)
+        isCoursePaid.value = false
+    }
+}
+
 // Логика для "липкого" поведения event-aside (без изменений)
 const eventAside = ref<HTMLElement | null>(null);
 onMounted(async () => {
     await fetchAccessibleCourses(); // Получаем доступные курсы
+    await checkPaymentStatus();
 
     const handleStickyAside = () => {
         if (!eventAside.value) return;
@@ -804,6 +839,8 @@ onMounted(async () => {
         window.removeEventListener('resize', handleStickyAside);
     });
 });
+
+const isCoursePaidComputed = computed(() => isCoursePaid.value !== null ? isCoursePaid.value : false);
 
 // Устанавливаем метатеги (без изменений)
 useHead({
@@ -922,9 +959,23 @@ const takePart = async () => {
                 }
             });
 
+            // Сохранение данных заказа в куки
+            const orderCookie = useCookie('orderData', {
+                maxAge: 60 * 60 * 24, // 24 часа
+                path: '/',
+                sameSite: 'lax',
+            });
+            orderCookie.value = {
+                orderId: response.orderId,
+                amount: response.amount,
+                name: event.value.NAME || 'Unknown Course',
+                paymentMethod: 4
+            };
+
             // toast.success('Заказ успешно создан!');
-            console.log('Order created:', response);
-            router.push('/profile/courses'); // Перенаправление на страницу курсов
+            router.push('/payment/success'); // Перенаправление на страницу курсов
+
+            // router.push('/profile/courses'); // Перенаправление на страницу курсов
         } catch (error) {
             console.error('Ошибка при создании заказа:', error);
             const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';

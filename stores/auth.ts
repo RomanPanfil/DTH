@@ -280,14 +280,16 @@ export const useAuthStore = defineStore('auth', {
                 if (process.client) {
                     const authToken = useCookie('auth_token', {
                         maxAge: 3600,
-                        secure: process.env.NODE_ENV === 'production',
+                        // secure: process.env.NODE_ENV === 'production', // Раскомментировать на проде
+                        secure: false, // Закомментировать на проде
                         sameSite: 'strict'
                     })
                     authToken.value = token
 
                     const tokenExpires = useCookie('token_expires', {
                         maxAge: 3600,
-                        secure: process.env.NODE_ENV === 'production',
+                        // secure: process.env.NODE_ENV === 'production', // Раскомментировать на проде
+                        secure: false, // Закомментировать на проде
                         sameSite: 'strict'
                     })
                     tokenExpires.value = expires
@@ -384,14 +386,16 @@ export const useAuthStore = defineStore('auth', {
                     if (process.client) {
                         const authToken = useCookie('auth_token', {
                             maxAge: 3600,
-                            secure: process.env.NODE_ENV === 'production',
+                            // secure: process.env.NODE_ENV === 'production', // Раскомментировать на проде
+                            secure: false, // Закомментировать на проде
                             sameSite: 'strict'
                         })
                         authToken.value = response.TOKEN
 
                         const tokenExpires = useCookie('token_expires', {
                             maxAge: 3600,
-                            secure: process.env.NODE_ENV === 'production',
+                            // secure: process.env.NODE_ENV === 'production', // Раскомментировать на проде
+                            secure: false, // Закомментировать на проде
                             sameSite: 'strict'
                         })
                         tokenExpires.value = isoExpires

@@ -2,6 +2,13 @@
 export default defineNuxtConfig({
   plugins: ['~/plugins/auth.ts', '~/plugins/vee-validate.ts'],
   modules: ['@nuxt/image',  'nuxt-icons', 'nuxt-swiper', '@pinia/nuxt'],
+  session: {
+    storage: 'cookie',
+    cookie: {
+      maxAge: 60 * 60 * 24 * 7, // 7 дней
+    },
+    password: process.env.SESSION_PASSWORD
+  },
   css: ["~/assets/scss/main.scss", 'plyr/dist/plyr.css'],
   // css: ["~/assets/scss/main.scss"],
   app: {

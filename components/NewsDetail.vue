@@ -17,7 +17,7 @@
                 <div class="report-content">
                     <div class="row">
                         <!-- Video Previews -->
-                        <div class="col-md-3" v-for="(video, index) in reportVideos" :key="'video-' + index">
+                        <div class="col-lg-3 col-md-4 col-xs-6" v-for="(video, index) in reportVideos" :key="'video-' + index">
                             <a
                                 href="#"
                                 class="report-image report-video"
@@ -31,7 +31,7 @@
                             </a>
                         </div>
                         <!-- Photo Gallery -->
-                        <div class="col-md-3" v-for="(photo, index) in reportGallery" :key="'gallery-' + index">
+                        <div class="col-lg-3 col-md-4 col-xs-6" v-for="(photo, index) in reportGallery" :key="'gallery-' + index">
                             <a
                                 href="#"
                                 class="report-image"
@@ -556,10 +556,18 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
 .news {
     &-title {
         margin-bottom: p2r(34);
+
+        @media (max-width: 1024px) {
+            margin-bottom: p2r(24);
+        }
     }
     &-wrapper {
         display: flex;
         gap: p2r(24);
+
+        @media (max-width: 1024px) {
+            flex-direction: column-reverse;
+        }
     }
     &-main {
         flex-grow: 1;
@@ -573,11 +581,43 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
         position: relative;
         width: p2r(388);
         flex: 0 0 p2r(388);
+
+        @media (max-width: 1366px) {
+            width: p2r(326);
+            flex: 0 0 p2r(326);
+        }
+
+        @media (max-width: 1280px) {
+            width: p2r(180);
+            flex: 0 0 p2r(180);
+        }
+
+        @media (max-width: 1024px) {
+            width: 100%;
+            flex: auto;
+        }
     }
     &-meta {
         font-size: p2r(16);
         margin-bottom: p2r(62);
         display: flex;
+        flex-wrap: wrap;
+        row-gap: p2r(12);
+
+        @media (max-width: 1024px) {
+            margin-bottom: p2r(40);
+        }
+
+        @media (max-width: 599px) {
+            font-size: p2r(14);
+            row-gap: p2r(10);
+            margin-bottom: p2r(32);
+        }
+
+        @media (max-width: 420px) {
+            font-size: p2r(13);
+            row-gap: p2r(8);
+        }
 
         &-item {
             &:not(:last-child) {
@@ -628,10 +668,18 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
     }
     &-share {
         transition: position 0.3s;
+
+        @media (max-width: 1024px) {
+           position: static !important;
+        }
         &-head {
             text-align: right;
             margin-bottom: p2r(8);
             cursor: pointer;
+
+            @media (max-width: 1024px) {
+                text-align: left;
+            }
 
             &-title {
                 border-bottom: 1px dotted $font;
@@ -653,6 +701,15 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
             box-shadow: 0px 4px 35px rgba(114, 142, 174, 0.1);
             border-radius: p2r(8);
             padding: p2r(20);
+
+            @media(max-width: 1366px) {
+                gap: p2r(8);
+                padding: p2r(16);
+            }
+
+            @media (max-width: 1024px) {
+                justify-content: flex-start;
+            }
         }
 
         &-link {
@@ -661,6 +718,11 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
                 display: block;
                 font-size: p2r(48);
                 line-height: p2r(32);
+
+                @media(max-width: 1366px) {
+                    font-size: p2r(42);
+                    line-height: p2r(28);
+                }
             }
         }
     }
@@ -672,10 +734,33 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
 .report {
     &-wrapper {
         margin-top: p2r(40);
+
+        @media (max-width: 768px) {
+            margin-top: p2r(32);
+        }
+        @media (max-width: 599px) {
+            margin-top: 0;
+        }
     }
 
     &-content {
         margin-bottom: p2r(70);
+
+        @media (max-width: 1366px) {
+            margin-bottom: p2r(60);
+        }
+
+        @media (max-width: 1024px) {
+            margin-bottom: p2r(50);
+        }
+
+        @media (max-width: 768px) {
+            margin-bottom: p2r(40);
+        }
+
+        @media (max-width: 599px) {
+            margin-bottom: p2r(32);
+        }
     }
 
     &-image {
@@ -683,10 +768,15 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
         border-radius: p2r(6);
         overflow: hidden;
         margin-bottom: p2r(30);
-        height: calc(100% - 30px);
+        height: calc(100% - 1.875rem);
         aspect-ratio: 1.3;
         filter: brightness(0.8);
         transition: filter 0.3s;
+
+        @media (max-width: 599px) {
+            margin-bottom: p2r(20);
+            height: calc(100% - 1.25rem);
+        }
 
         &:hover {
             filter: brightness(1);

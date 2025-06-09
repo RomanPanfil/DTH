@@ -23,6 +23,18 @@
     padding: 0;
     margin-bottom: p2r(70);
 
+    @media(max-width: 1366px) {
+        margin-bottom: p2r(60);
+    }
+
+    @media(max-width: 768px) {
+        margin-bottom: p2r(50);
+    }
+
+    @media(max-width: 599px) {
+        margin-bottom: p2r(40);
+    }
+
     &-list {
         display: flex;
         flex-wrap: wrap;
@@ -31,6 +43,14 @@
     &-item {
         display: flex;
         align-items: center;
+
+        @media(max-width: 768px) {
+            font-size: p2r(14);
+        }
+
+        @media(max-width: 599px) {
+            font-size: p2r(13);
+        }
     }
 
     &-link {

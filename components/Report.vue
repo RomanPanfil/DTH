@@ -35,9 +35,20 @@ defineEmits(['open-popup']);
     display: flex;
     align-items: baseline;
     margin-bottom: p2r(40);
+
+    @media (max-width: 599px) {
+        row-gap: p2r(4);
+        flex-direction: column;
+        margin-bottom: p2r(30);
+    }
 }
 .report-head-title {
     margin-right: p2r(24);
+
+    @media (max-width: 599px) {
+        font-size: p2r(24);
+        margin-bottom: 0;
+    }
 }
 .report-head-more {
     font-weight: 500;
@@ -45,6 +56,11 @@ defineEmits(['open-popup']);
     line-height: p2r(18);
     color: $font;
     border-bottom: 1px solid $border-grey;
+
+    @media (max-width: 599px) {
+        font-size: p2r(14);
+        line-height: 1.3;
+    }
 }
 .report-photos {
     display: flex;

@@ -48,10 +48,53 @@ const isActive = (code) => {
 .rubrics {
   margin-bottom: p2r(60);
 
+  @media(max-width: 1366px) {
+    margin-bottom: p2r(50);
+  }
+
+  @media(max-width: 768px) {
+    margin-bottom: p2r(40);
+  }
+
+    @media(max-width: 599px) {
+        margin-bottom: p2r(32);
+    }
+
+    @media(max-width: 420px) {
+        margin-bottom: p2r(24);
+    }
+
   &-list {
     display: flex;
     flex-wrap: wrap;
     gap: p2r(36);
+
+    @media(max-width: 1024px) {
+      flex-wrap: nowrap;
+      overflow-y: auto;
+      margin-left: p2r(-35);
+      margin-right: p2r(-35);
+      padding-left: p2r(35);
+      padding-right: p2r(35);
+      scrollbar-width: none;
+      gap: p2r(32);
+    }
+
+    @media(max-width: 599px) {
+      margin-left: p2r(-30);
+      margin-right: p2r(-30);
+      padding-left: p2r(30);
+      padding-right: p2r(30);
+      gap: p2r(28);
+    }
+
+    @media(max-width: 420px) {
+      margin-left: p2r(-20);
+      margin-right: p2r(-20);
+      padding-left: p2r(20);
+      padding-right: p2r(20);
+      gap: p2r(24);
+    }
   }
 
   &-link {
@@ -59,6 +102,24 @@ const isActive = (code) => {
     line-height: p2r(36);
     color: $font;
     border-bottom: 1px solid $border;
+    white-space: nowrap;
+
+    @media(max-width: 1366px) {
+      font-size: p2r(22);
+      line-height: 1.3;
+    }
+
+    @media(max-width: 768px) {
+      font-size: p2r(20);
+    }
+
+    @media(max-width: 599px) {
+      font-size: p2r(18);
+    }
+
+      @media(max-width: 420px) {
+          font-size: p2r(16);
+      }
 
     &.active {
       font-weight: 500;

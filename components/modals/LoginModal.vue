@@ -109,7 +109,14 @@ const handleLogin = async () => {
 
         if (response.status >= 200 && response.status < 300 && response._data?.USER_ID && response._data?.TOKEN) {
             authStore.login(loginForm.email, response._data.USER_ID, response._data.TOKEN, response._data.EXPIRES)
-            // await router.push('/')
+
+            const currentRoute = router.currentRoute.value
+            if (currentRoute.name === 'register') {
+                // Если находимся на странице регистрации, переходим на главную
+                await router.push('/')
+            }
+            // В остальных случаях остаемся на той же странице
+
             emit('close')
         } else {
             const errorCode = response._data?.data?.error || response._data?.statusMessage || response._data?.message || 'Unknown error'

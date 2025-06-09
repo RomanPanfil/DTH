@@ -86,19 +86,31 @@ const close = () => {
 
 .gallery-popup-close {
     position: fixed;
-    top: 60px;
-    right: 60px;
-    font-size: 30px;
+    top: p2r(60);
+    right: p2r(60);
+    font-size: p2r(30);
     color: $font-black;
     border: none;
     background: none;
-    width: 52px;
-    height: 52px;
+    width: p2r(52);
+    height: p2r(52);
     border-radius: 50%;
     background-color: $bgc;
     cursor: pointer;
     z-index: 1001;
     transition: background-color 0.3s;
+
+    @media (max-width: 1366px) {
+        right: p2r(54);
+        width: p2r(46);
+        height: p2r(46);
+        font-size: p2r(26);
+    }
+
+    @media (max-width: 1280px) {
+        right: p2r(16);
+        top: p2r(16);
+    }
 
     &:hover {
         background-color: rgba(255, 255, 255, 0.3);
@@ -143,8 +155,8 @@ const close = () => {
 
 .swiper-button-prev,
 .swiper-button-next {
-    width: 64px;
-    height: 64px;
+    width: p2r(64);
+    height: p2r(64);
     background: $bgc;
     color: $font-black;
     border-radius: 50%;
@@ -155,9 +167,18 @@ const close = () => {
     z-index: 10;
     transition: background-color 0.3s;
 
+    @media (max-width: 1366px) {
+        width: p2r(50);
+        height: p2r(50);
+    }
+
     &:after {
-        font-size: 22px;
+        font-size: p2r(22);
         font-weight: 600;
+
+        @media (max-width: 1366px) {
+            font-size: p2r(18);
+        }
     }
 
     &:hover {
@@ -166,11 +187,19 @@ const close = () => {
 }
 
 .swiper-button-prev {
-    left: -110px;
+    left: p2r(-110);
+
+    @media (max-width: 1366px) {
+        left: p2r(0);
+    }
 }
 
 .swiper-button-next {
-    right: -110px;
+    right: p2r(-110);
+
+    @media (max-width: 1366px) {
+        right: p2r(0);
+    }
 }
 
 .gallery-popup-info {

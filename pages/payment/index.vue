@@ -58,7 +58,7 @@
 <!--                    <img src="/images/pay-systems.svg" alt="systems">-->
 <!--                </div>-->
 <!--            </div>-->
-<!--            <div class="payment-side">-->
+<!--            <div v-if="event" class="payment-side">-->
 <!--                <div class="event-aside" ref="eventAside">-->
 <!--                    <div class="event-card-image">-->
 <!--                        <img :src="getImageUrl(event?.PREVIEW_PICTURE)" :alt="event.NAME" />-->
@@ -67,29 +67,27 @@
 <!--                        {{ event.NAME }}-->
 <!--                    </NuxtLink>-->
 <!--                    <div class="event-card-info">-->
-<!--                        <div v-if="event.PROPS.WHEN_DATE?.VALUE" class="event-card-info-item">-->
-<!--                            {{ formatEventDates(event.PROPS.WHEN_DATE?.VALUE) }}-->
+<!--                        <div v-if="event.PROPS?.WHEN_DATE?.VALUE" class="event-card-info-item">-->
+<!--                            {{ formatEventDates(event.PROPS.WHEN_DATE.VALUE) }}-->
 <!--                        </div>-->
-<!--                        <div v-if="event.PROPS.WHEN_ADDR?.VALUE" class="event-card-info-item">-->
+<!--                        <div v-if="event.PROPS?.WHEN_ADDR?.VALUE" class="event-card-info-item">-->
 <!--                            <NuxtIcon name="pin" filled class="event-card-info-icon" />-->
-<!--                            {{ event.PROPS.CITY.VALUE}}-->
+<!--                            {{ event.PROPS.CITY?.VALUE }}-->
 <!--                        </div>-->
-<!--                        <div v-if="event.PROPS.FORMAT?.VALUE && event.PROPS.FORMAT?.VALUE==='Online'" class="event-card-info-item">-->
-<!--                            {{ event.PROPS.FORMAT?.VALUE }}-->
+<!--                        <div v-if="event.PROPS?.FORMAT?.VALUE && event.PROPS.FORMAT.VALUE === 'Online'" class="event-card-info-item">-->
+<!--                            {{ event.PROPS.FORMAT.VALUE }}-->
 <!--                        </div>-->
 <!--                    </div>-->
 <!--                    <div v-if="event?.PROPS?.PRICE?.VALUE || event?.PROPS?.SEATS?.VALUE" class="event-card-price">-->
-<!--                        <div v-if="event?.PROPS?.PRICE?.VALUE" class="event-card-price-value">-->
-<!--                            <span>{{ event.PROPS.PRICE?.VALUE }}</span> бел.руб.-->
+<!--                        <div v-if="event.PROPS.PRICE?.VALUE" class="event-card-price-value">-->
+<!--                            <span>{{ event.PROPS.PRICE.VALUE }}</span> бел.руб.-->
 <!--                        </div>-->
-<!--                        <div v-if="event?.PROPS?.SEATS?.VALUE" class="event-card-seats">-->
+<!--                        <div v-if="event.PROPS.SEATS?.VALUE" class="event-card-seats">-->
 <!--                            <div class="event-card-seats-title">Осталось мест:</div>-->
-<!--                            {{ Math.max(0, event.PROPS.SEATS?.VALUE - (event.PROPS.REGISTERED?.VALUE || 0)) }}-->
-<!--                            из {{ event.PROPS.SEATS?.VALUE }}-->
+<!--                            {{ Math.max(0, event.PROPS.SEATS.VALUE - (event.PROPS.REGISTERED?.VALUE || 0)) }}-->
+<!--                            из {{ event.PROPS.SEATS.VALUE }}-->
 <!--                        </div>-->
 <!--                    </div>-->
-
-
 <!--                </div>-->
 <!--            </div>-->
 <!--        </div>-->
@@ -134,12 +132,10 @@
 <!--    }-->
 <!--}-->
 
-<!--fetchPaymentMethods();-->
-
 <!--const config = useRuntimeConfig();-->
 <!--const imageBaseUrl = config.public.imageBaseUrl;-->
 
-<!--const getImageUrl = (path) => {-->
+<!--const getImageUrl = (path: string | undefined) => {-->
 <!--    return path ? `${imageBaseUrl}${path}` : '';-->
 <!--};-->
 
@@ -199,36 +195,39 @@
 <!--};-->
 
 <!--const fetchEventData = async () => {-->
+<!--    if (!eventCode.value) return;-->
+
 <!--    try {-->
-<!--        const { data, error } = await useFetch(`/api/item/${eventCode.value}`, {-->
+<!--        const response = await $fetch(`/api/item/${eventCode.value}`, {-->
 <!--            method: 'GET',-->
 <!--            query: {-->
 <!--                iblockId: 13,-->
 <!--            },-->
 <!--        });-->
 
-<!--        if (error.value) {-->
-<!--            eventError.value = error.value.data;-->
-<!--            return;-->
-<!--        }-->
-
-<!--        if (!data.value?.event) {-->
+<!--        if (!response?.event) {-->
 <!--            eventError.value = { details: 'Мероприятие не найдено' };-->
 <!--            return;-->
 <!--        }-->
 
-<!--        event.value = data.value.event;-->
+<!--        event.value = response.event;-->
 
-<!--    } catch (error) {-->
+<!--    } catch (error: any) {-->
 <!--        eventError.value = { details: error.message || 'Ошибка загрузки мероприятия' };-->
 <!--    }-->
 <!--};-->
 
-<!--fetchEventData();-->
-
 <!--const getEventUrl = (event: any) => {-->
 <!--    return `/courses/${event.CODE}`;-->
 <!--};-->
+
+<!--// Загружаем данные при инициализации компонента-->
+<!--if (eventCode.value) {-->
+<!--    fetchEventData();-->
+<!--}-->
+
+<!--// Также загружаем методы оплаты-->
+<!--fetchPaymentMethods();-->
 <!--</script>-->
 
 <!--<style scoped lang="scss">-->
@@ -527,56 +526,158 @@
             </div>
         </div>
     </div>
+    <div class="webpay-form"></div>
 </template>
 
 <script setup lang="ts">
 import { Field, ErrorMessage } from 'vee-validate';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'nuxt/app';
+import { useRoute, useRouter } from 'nuxt/app';
+import { useAuthStore } from '~/stores/auth';
+import { useModalsStore } from '~/stores/modals';
+import { useCookie } from '#imports';
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
 
-const paymentMethods = ref<any[]>([]);
+const authStore = useAuthStore();
+const modalsStore = useModalsStore();
+
 const selectedMethod = ref<string | null>(null);
 const agreement = ref<boolean>(false);
-const eventCode = ref<string | null>(route.query.code as string | null);
-const event = ref(null);
-const eventError = ref(null);
+const eventCode = route.query.code as string | null;
 
-async function fetchPaymentMethods() {
-    try {
-        const response = await $fetch('/api/payment-methods');
-        paymentMethods.value = response.methods || [];
-        selectedMethod.value = null;
-    } catch (error) {
-        console.error('Ошибка при получении способов оплаты:', error);
-        paymentMethods.value = [];
+// Загрузка данных о мероприятии на сервере
+const { data: eventData, error: eventFetchError } = await useAsyncData('event', async () => {
+    if (!eventCode) {
+        return null;
     }
-}
+    const response = await $fetch(`/api/item/${eventCode}`, {
+        method: 'GET',
+        query: {
+            iblockId: 13,
+        },
+    });
+    if (!response?.event) {
+        throw new Error('Мероприятие не найдено');
+    }
+    return response.event;
+});
+
+const event = eventData;
+const eventError = ref(eventFetchError?.value?.message || null);
+
+// Загрузка способов оплаты на сервере
+const { data: paymentMethodsData } = await useAsyncData('payment-methods', async () => {
+    const response = await $fetch('/api/payment-methods');
+    return response?.methods || [];
+});
+
+const paymentMethods = ref(paymentMethodsData.value || []);
 
 async function handleSubmit() {
     if (!agreement.value || !selectedMethod.value) return;
 
     try {
-        console.log('Выбран способ оплаты:', selectedMethod.value);
-        // Здесь будет логика отправки выбранного способа оплаты
+        const response = await $fetch('/api/orders/create', {
+            method: 'POST',
+            body: {
+                token: authStore.token,
+                courseId: Number(eventData?.value?.ID),
+                paymentMethodId: Number(selectedMethod.value)
+            }
+        });
+
+        // Сохранение данных заказа в куки
+        const orderCookie = useCookie('orderData', {
+            maxAge: 60 * 60 * 24, // 24 часа
+            path: '/', // Доступно на всех путях
+            sameSite: 'lax', // Безопасность для CSRF
+        });
+        orderCookie.value = {
+            orderId: response.orderId,
+            amount: response.amount,
+            name: eventData?.value?.NAME || 'Unknown Course',
+            paymentMethod: response.paymentMethod
+        };
+
+        // Условный редирект в зависимости от paymentMethod
+        if (response.paymentMethod === 2 || response.paymentMethod === 3) {
+            router.push('/payment/success');
+        } else {
+            const webpayFormContainer = document.querySelector('.webpay-form');
+            if (webpayFormContainer && response.form) {
+                webpayFormContainer.innerHTML = response.form;
+                const form = webpayFormContainer.querySelector('form');
+                if (form) {
+                    form.submit();
+                }
+            } else {
+                router.push('/profile/courses');
+            }
+        }
     } catch (error) {
-        console.error('Ошибка при обработке оплаты:', error);
+        console.error('Error creating order:', error);
+        const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';
+        let userFriendlyMessage = errorMessage;
+
+        switch (errorMessage) {
+            case 'ERROR_INVALID_TOKEN':
+                userFriendlyMessage = t('errors.invalidToken');
+                modalsStore.openModal('login');
+                break;
+            case 'ERROR_INVALID_COURSE_ID':
+                userFriendlyMessage = t('errors.invalidCourseId');
+                break;
+            case 'ERROR_INVALID_PAYMENT_METHOD':
+                userFriendlyMessage = t('errors.invalidPaymentMethodId');
+                break;
+            case 'ERROR_COURSE_NOT_FOUND':
+                userFriendlyMessage = t('errors.courseNotFound');
+                break;
+            case 'ERROR_NO_AVAILABLE_SEATS':
+                userFriendlyMessage = t('errors.noAvailableSeats');
+                break;
+            case 'ERROR_REGISTRATION_CLOSED':
+                userFriendlyMessage = t('errors.registrationClosed');
+                break;
+            case 'ERROR_ORDER_ALREADY_EXISTS':
+                userFriendlyMessage = t('errors.orderAlreadyExists');
+                router.push('/profile/courses');
+                break;
+            case 'ERROR_INVALID_BOOKING_PERIOD':
+                userFriendlyMessage = t('errors.invalidBookingPeriod');
+                break;
+            case 'ERROR_ORDER_CREATION_FAILED':
+                userFriendlyMessage = t('errors.orderCreationFailed');
+                break;
+            case 'ERROR_INVALID_PARAM':
+                userFriendlyMessage = t('errors.invalidParams');
+                break;
+            case 'Invalid API key':
+                userFriendlyMessage = t('errors.invalidApiKey');
+                break;
+            default:
+                userFriendlyMessage = errorMessage;
+        }
+
+        // toast.error(userFriendlyMessage);
     }
 }
 
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
 
-const getImageUrl = (path: string | undefined) => {
+function getImageUrl(path?: string) {
     return path ? `${imageBaseUrl}${path}` : '';
-};
+}
 
 const formatEventDates = (dateStrings: string[]) => {
     if (!dateStrings || !Array.isArray(dateStrings) || dateStrings.length === 0)
-        return 'Дата не указана';
+        return t('date.notSpecified');
+
     const sortedDates = [...dateStrings].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
     const dates = sortedDates.map(dateString => {
         const date = new Date(dateString);
@@ -591,6 +692,7 @@ const formatEventDates = (dateStrings: string[]) => {
     });
 
     const groupedByMonth: { [key: string]: number[] } = {};
+
     dates.forEach(dateObj => {
         const monthKey = dateObj.monthFormatted;
         if (!groupedByMonth[monthKey]) {
@@ -629,40 +731,9 @@ const formatEventDates = (dateStrings: string[]) => {
     return formattedGroups.join(', ');
 };
 
-const fetchEventData = async () => {
-    if (!eventCode.value) return;
-
-    try {
-        const response = await $fetch(`/api/item/${eventCode.value}`, {
-            method: 'GET',
-            query: {
-                iblockId: 13,
-            },
-        });
-
-        if (!response?.event) {
-            eventError.value = { details: 'Мероприятие не найдено' };
-            return;
-        }
-
-        event.value = response.event;
-
-    } catch (error: any) {
-        eventError.value = { details: error.message || 'Ошибка загрузки мероприятия' };
-    }
-};
-
 const getEventUrl = (event: any) => {
     return `/courses/${event.CODE}`;
 };
-
-// Загружаем данные при инициализации компонента
-if (eventCode.value) {
-    fetchEventData();
-}
-
-// Также загружаем методы оплаты
-fetchPaymentMethods();
 </script>
 
 <style scoped lang="scss">
@@ -720,12 +791,6 @@ fetchPaymentMethods();
 .custom-checkbox:deep() {
     align-items: flex-start;
 }
-//.payment-form {
-//    display: flex;
-//    flex-direction: column;
-//    gap: 15px;
-//}
-
 .error-message {
     color: red;
     font-size: 0.9em;
@@ -789,7 +854,6 @@ fetchPaymentMethods();
                 text-transform: uppercase;
                 color: $font-white;
                 display: flex;
-                //align-items: center;
                 gap: 2px;
                 background: $primary;
                 border-radius: p2r(2);
@@ -861,5 +925,11 @@ fetchPaymentMethods();
             margin-right: auto;
         }
     }
+}
+.webpay-form {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
 }
 </style>

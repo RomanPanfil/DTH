@@ -55,9 +55,35 @@ h6 {
   font-weight: $headings_font_weight;
   margin: $headings_margin;
   text-transform: $headings_text_transform;
+
+  @media(max-width: 768px) {
+    margin: 0 0 p2r(20);
+  }
+
+  @media(max-width: 599px) {
+    margin: 0 0 p2r(18);
+  }
+
+  @media(max-width: 420px) {
+    margin: 0 0 p2r(16);
+  }
 }
 
-h1 {font-size: p2r($h1); }
+h1 {
+  font-size: p2r($h1);
+
+  @media(max-width: 1366px) {
+    font-size: p2r(38);
+  }
+
+  @media(max-width: 768px) {
+    font-size: p2r(36);
+  }
+
+  @media(max-width: 599px) {
+    font-size: p2r(28);
+  }
+}
 h2 { font-size: p2r($h2); }
 h3 { font-size: p2r($h3); }
 h4 { font-size: p2r($h4); }
@@ -66,6 +92,14 @@ h6 { font-size: p2r($h6); }
 
 p {
   margin: $paragraph_margin;
+
+  @media (max-width: 1024px) {
+    margin: 0 0 p2r(22);
+  }
+
+  @media (max-width: 599px) {
+    margin: 0 0 p2r(12);
+  }
 }
 
 .page-wrapper {
@@ -76,6 +110,22 @@ p {
 
 .page-main {
   margin-bottom: p2r(80);
+
+  @media(max-width: 1366px) {
+    margin-bottom: p2r(70);
+  }
+
+  @media(max-width: 768px) {
+    margin-bottom: p2r(50);
+  }
+
+  @media(max-width: 599px) {
+    margin-bottom: p2r(32);
+  }
+
+  @media(max-width: 420px) {
+    margin-bottom: p2r(24);
+  }
 }
 
 .main-content {
@@ -116,7 +166,7 @@ footer {
 
     img {
       display: block;
-      max-width: p2r(265);
+      //max-width: p2r(265);
       height: auto;
     }
   }
@@ -126,6 +176,21 @@ footer {
     padding-right: p2r(5);
     width: 25%;
     flex: 0 0 25%;
+
+    @media (max-width: 1280px) {
+      width: 33.33%;
+      flex: 0 0 33.33%;
+    }
+
+    @media (max-width: 768px) {
+      width: 50%;
+      flex: 0 0 50%;
+    }
+
+    @media (max-width: 599px) {
+      width: 100%;
+      flex: 0 0 100%;
+    }
 
     &-image {
       display: block;
@@ -140,6 +205,11 @@ footer {
 .article {
   max-width: p2r(1370);
   flex: 0 0 p2r(1370);
+
+  @media (max-width: 1366px) {
+    flex: auto;
+    margin-left: auto;
+  }
 
   &-title {
     margin-bottom: p2r(60);
@@ -159,6 +229,18 @@ footer {
 .block-quote {
   font-size: p2r(24);
   line-height: 1.35;
+
+  @media (max-width: 1366px) {
+    font-size: p2r(22);
+  }
+
+  @media (max-width: 768px) {
+    font-size: p2r(20);
+  }
+
+  @media (max-width: 599px) {
+    font-size: p2r(18);
+  }
 }
 
 :root {

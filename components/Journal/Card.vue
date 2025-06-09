@@ -101,6 +101,26 @@ const itemUrl = computed(() => {
     display: flex;
     flex-direction: column;
 
+    @media(max-width: 1366px) {
+      margin-bottom: p2r(50);
+      height: calc(100% - 3.125rem);
+    }
+
+    @media(max-width: 768px) {
+      margin-bottom: p2r(40);
+      height: calc(100% - 2.5rem);
+    }
+
+    @media(max-width: 599px) {
+      margin-bottom: p2r(32);
+      height: calc(100% - 2rem);
+    }
+
+    @media(max-width: 420px) {
+      margin-bottom: p2r(24);
+      height: calc(100% - 1.5rem);
+    }
+
     &-image {
       aspect-ratio: 2;
       border-radius: p2r(6);

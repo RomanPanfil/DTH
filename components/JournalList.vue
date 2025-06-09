@@ -28,7 +28,7 @@
             </div>
             <div v-else class="journal-cards">
                 <div class="row">
-                    <div v-for="item in news" :key="item.ID" class="col-lg-3">
+                    <div v-for="item in news" :key="item.ID" class="col-lg-3 col-md-4 col-xs-6">
                         <JournalCard
                             :item="item"
                             :rubrics="rubrics"
@@ -256,6 +256,12 @@ watch(() => route.query.page, () => {
         border-radius: 50%;
         border: 1px solid $border;
 
+        @media(max-width: 1366px) {
+            width: p2r(44);
+            height: p2r(44);
+            flex: 0 0 p2r(44);
+        }
+
         &-icon {
             position: absolute;
             left: 50%;
@@ -263,6 +269,11 @@ watch(() => route.query.page, () => {
             transform: translate(-50%, -50%);
             font-size: p2r(24);
             line-height: p2r(22);
+
+            @media(max-width: 1366px) {
+                font-size: p2r(22);
+                line-height: p2r(20);
+            }
         }
     }
 }
