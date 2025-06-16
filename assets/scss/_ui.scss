@@ -24,14 +24,42 @@ h1, .h1 {
   font-size: p2r($h1);
   margin-top: 0;
   line-height: 1;
+
+  @media(max-width: 1366px) {
+    font-size: p2r(38);
+  }
+
+  @media(max-width: 768px) {
+    font-size: p2r(36);
+  }
+
+  @media(max-width: 599px) {
+    font-size: p2r(28);
+  }
 }
 h2, .h2, .ui-h2 {
   font-size: p2r($h2);
   line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: p2r(28);
+  }
+
+  @media (max-width: 599px) {
+    font-size: p2r(24);
+  }
 }
 h3, .h3, .ui-h3 {
-  font-size: p2r($h2);
+  font-size: p2r($h3);
   line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: p2r(22);
+  }
+
+  @media (max-width: 599px) {
+    font-size: p2r(20);
+  }
 }
 h4, .h4, .ui-h4 {
   font-size: p2r($h4);
@@ -126,6 +154,16 @@ table {
   font-size: p2r(32);
   line-height: 1.3;
   margin-bottom: p2r(40);
+
+  @media (max-width: 768px) {
+    font-size: p2r(28);
+    margin-bottom: p2r(32);
+  }
+
+  @media (max-width: 599px) {
+    font-size: p2r(24);
+    margin-bottom: p2r(24);
+  }
 }
 
 .ui-section {
@@ -133,6 +171,21 @@ table {
   margin-bottom: p2r(40);
   background: $bgc;
   border-radius: p2r(8);
+
+  @media (max-width: 1366px) {
+    padding: p2r(32);
+    margin-bottom: p2r(32);
+  }
+
+  @media (max-width: 768px) {
+    padding: p2r(24);
+    margin-bottom: p2r(24);
+  }
+
+  @media (max-width: 599px) {
+    padding: p2r(20);
+    margin-bottom: p2r(20);
+  }
 }
 
 .article, .text-section {
@@ -194,6 +247,11 @@ table {
     font-size: p2r(14);
   }
 
+  @media (max-width: 599px) {
+    padding: p2r(12) p2r(32) p2r(12) p2r(10);
+    height: p2r(48);
+  }
+
   &.active {
     padding: p2r(25) p2r(14) p2r(10) p2r(16);
   }
@@ -242,6 +300,10 @@ table {
   margin-bottom: p2r(15);
   display: inline-block;
 
+  @media (max-width: 599px) {
+    margin-bottom: p2r(6);
+  }
+
   &-required {
     color: $error;
   }
@@ -263,6 +325,17 @@ table {
   padding-right: p2r(32);
   cursor: pointer;
   transition: color 0.3s, background-color 0.3s, opacity 0.3s;
+
+  @media (max-width: 1024px) {
+    padding-left: p2r(24);
+    padding-right: p2r(24);
+  }
+
+  @media (max-width: 599px) {
+    font-size: p2r(14);
+    height: p2r(48);
+    line-height: p2r(48);
+  }
 
   &-icon {
     fill: none;
@@ -505,6 +578,7 @@ table {
     display: inline-block;
     width: p2r(20);
     height: p2r(20);
+    flex: 0 0 p2r(20);
     border: 1px solid $border;
     border-radius: 50%; // Круглый индикатор, как на макете
     position: relative;
@@ -526,6 +600,35 @@ table {
     display: flex;
     gap: p2r(30);
     margin-bottom: p2r(30);
+    overflow-x: auto;
+
+    @media(max-width: 1023px) {
+      margin-left: p2r(-35);
+      margin-right: p2r(-35);
+      padding-left: p2r(35);
+      padding-right: p2r(35);
+
+      -ms-overflow-style: none;
+      overflow: -moz-scrollbars-none;
+      &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+    }
+
+    @media(max-width: 599px) {
+      margin-left: p2r(-30);
+      margin-right: p2r(-30);
+      padding-left: p2r(30);
+      padding-right: p2r(30);
+    }
+
+    @media(max-width: 420px) {
+      margin-left: p2r(-20);
+      margin-right: p2r(-20);
+      padding-left: p2r(20);
+      padding-right: p2r(20);
+    }
 
     &-item {
       font-size: p2r(20);
@@ -533,6 +636,7 @@ table {
       border-bottom: 1px solid $border;
       cursor: pointer;
       transition: color 0.3s, border 0.3s;
+      white-space: nowrap;
 
       &.active {
         color: $primary;
@@ -547,5 +651,17 @@ table {
         }
       }
     }
+  }
+}
+
+.hidden-desktop {
+  @media (min-width: 1025px) {
+    display: none !important;
+  }
+}
+
+.hidden-tablet {
+  @media(max-width: 1024px) {
+    display: none !important;
   }
 }

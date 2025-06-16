@@ -421,7 +421,11 @@ onUnmounted(() => {
     width: 100%;
     display: flex;
     align-items: center;
-    max-width: p2r(1090);
+    max-width: min(p2r(1090), 80vw);
+
+    @media (max-width: 768px) {
+        max-width: 90vw;
+    }
 }
 
 .modal-content {
@@ -430,9 +434,13 @@ onUnmounted(() => {
     border-radius: p2r(16);
     padding: p2r(20);
     width: 100%;
-    height: 69vh;
-    max-height: 80vh;
+    //height: 69vh;
+    //max-height: 80vh;
     z-index: 1000;
+    
+    @media (max-width: 1280px) {
+        height: auto;
+    }
 }
 
 .close-btn {
@@ -451,6 +459,17 @@ onUnmounted(() => {
     padding: 0;
     z-index: 1001;
 
+    @media (max-width: 768px) {
+        top: p2r(-62);
+        right: p2r(0);
+    }
+
+    @media (max-width: 599px) {
+        top: p2r(-52);
+        width: p2r(40);
+        height: p2r(40);
+    }
+
     &:hover {
         background: #f5f5f5;
     }
@@ -466,8 +485,10 @@ onUnmounted(() => {
     height: 100%;
     border-radius: p2r(12);
     overflow: hidden;
-    min-width: p2r(300);
+    min-width: min(p2r(300), 76vw);
     min-height: p2r(400);
+    max-height: 80vh;
+
 }
 
 /* Анимации */

@@ -70,7 +70,43 @@
                 </div>
             </div>
         </div>
+        <div class="footer-indent" :class="{'search':isSearchShow}"></div>
     </footer>
+    <div class="mobile-nav">
+        <div class="container">
+            <form v-if="isSearchShow" class="mobile-nav-search" @submit.prevent="handleSearch">
+                <input
+                    v-model="searchQuery"
+                    type="search"
+                    :placeholder="$t('header.searchPlaceholder')"
+                    class="ui-input ui-input__search"
+                >
+                <button class="mobile-nav-search-btn" type="submit">
+                    <NuxtIcon name="search" class="icon" filled />
+                </button>
+            </form>
+            <div class="mobile-nav-links">
+                <button class="mobile-nav-link" :class="{'active': isSearchShow}" @click="toggleShowSearch">
+                    <img src="/images/search.svg" alt="search" class="mobile-nav-link-icon">
+                    {{ $t('mobileNav.search') }}
+                </button>
+                <NuxtLink
+                    v-for="item in menu"
+                    :key="item.ID"
+                    :to="item.URL"
+                    class="mobile-nav-link"
+                    :class="{ 'active': isActive(item.URL) }"
+                >
+                    <img :src="getImageUrl(item.ICON)" :alt="item.NAME" class="mobile-nav-link-icon">
+                    {{ item.NAME }}
+                </NuxtLink>
+                <button @click="handleAccountClick" class="mobile-nav-link" :class="{ 'active': isProfileActive }">
+                    <img src="/images/person.svg" alt="cabinet" class="mobile-nav-link-icon">
+                    {{ $t('mobileNav.cabinet') }}
+                </button>
+            </div>
+        </div>
+    </div>
 </template>
 
 <style scoped lang="scss">
@@ -337,17 +373,183 @@
             font-size: p2r(36);
         }
     }
+
+    &-indent {
+        @media (max-width: 1024px) {
+            height: p2r(64);
+            transition: height 0.3s;
+
+            &.search {
+                height: p2r(124);
+            }
+        }
+    }
+}
+
+.mobile-nav {
+    display: none;
+
+    @media (max-width: 1024px) {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: $bgc;
+        z-index: 1000;
+
+    }
+
+    &-links {
+       display: flex;
+       justify-content: space-around;
+       gap: p2r(32);
+
+        @media (max-width: 768px) {
+            gap: p2r(24);
+        }
+
+        @media (max-width: 599px) {
+            gap: 0;
+        }
+    }
+
+    &-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: p2r(8);
+        text-transform: uppercase;
+        color: $font;
+        width: p2r(64);
+        height: p2r(64);
+        background-color: transparent;
+        border: none;
+        transition: color 0.3s;
+
+        &.active {
+            color: $primary;
+
+            .mobile-nav-link-icon {
+                filter:
+                    brightness(0)
+                    saturate(100%)
+                    invert(48%)
+                    sepia(99%)
+                    saturate(748%)
+                    hue-rotate(123deg)
+                    brightness(68%)
+                    contrast(105%);
+            }
+        }
+
+        &-icon {
+            width: p2r(32);
+            height: p2r(32);
+            margin-bottom: p2r(2);
+            transition: filter 0.3s;
+        }
+    }
+
+    &-search {
+        position: relative;
+        display: flex;
+        margin-top: p2r(12);
+
+        &-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background-color: transparent;
+            padding-left: p2r(12);
+            padding-right: p2r(12);
+            color: $font;
+            cursor: pointer;
+
+            .icon {
+                display: block;
+                font-size: p2r(16);
+                line-height: p2r(10);
+            }
+        }
+    }
 }
 </style>
 
 <script setup lang="ts">
 import { useLocaleStore } from '~/stores/locale';
+import { useAuthStore } from '~/stores/auth';
+import { useModalsStore } from '~/stores/modals';
+import { useRouter, useRoute } from 'nuxt/app';
+import {ref} from "vue";
+
+const modalsStore = useModalsStore();
+const authStore = useAuthStore();
+const router = useRouter();
+const route = useRoute();
+
 
 const currentYear = new Date().getFullYear();
 
 // Получаем текущий язык из стора
 const localeStore = useLocaleStore();
 const locale = computed(() => localeStore.locale);
+
+const config = useRuntimeConfig();
+const imageBaseUrl = config.public.imageBaseUrl;
+
+const isSearchShow = ref(false);
+const searchQuery = ref('');
+
+// Функция для определения активного состояния ссылки
+const isActive = (url: string) => {
+    const normalizedRoutePath = route.path.replace(/\/$/, '');
+    const normalizedUrl = url.replace(/\/$/, '');
+    return normalizedRoutePath === normalizedUrl || route.path === url || normalizedRoutePath.startsWith(normalizedUrl);
+};
+
+// Проверка, является ли текущая страница профилем
+const isProfileActive = computed(() => {
+    const normalizedRoutePath = route.path.replace(/\/$/, '');
+    return normalizedRoutePath === '/profile' || route.path === '/profile/' || normalizedRoutePath.startsWith('/profile/');
+});
+
+const toggleShowSearch = () => {
+    isSearchShow.value = !isSearchShow.value;
+}
+
+const handleSearch = async () => {
+    if (searchQuery.value.trim()) {
+        const query = searchQuery.value.trim();
+
+        try {
+            const isOnSearchPage = route.path === '/search-result';
+
+            if (isOnSearchPage) {
+                await router.push('/');
+                setTimeout(() => {
+                    router.push({
+                        path: '/search-result',
+                        query: { query: query }
+                    });
+                }, 10);
+            } else {
+                await router.push({
+                    path: '/search-result',
+                    query: { query: query }
+                });
+            }
+
+            searchQuery.value = '';
+        } catch (error) {
+            console.error('Ошибка при навигации:', error);
+        }
+    }
+};
 
 // Загружаем меню MENU_BOTTOM для .footer-nav
 const { data: menuTopData, error: menuTopError } = await useFetch('/api/menu', {
@@ -376,4 +578,29 @@ const menuBottom = computed(() => {
     }
     return menuBottomData.value?.menu?.[locale.value] || [];
 });
+
+const { data: menuMobileData, error: menuError } = await useFetch('/api/menu', {
+    method: 'GET',
+    query: { type: 'MENU_MOBILE' },
+});
+
+const menu = computed(() => {
+    if (menuError.value) {
+        console.error('Ошибка загрузки меню:', menuError.value);
+        return [];
+    }
+    return menuMobileData.value?.menu?.[locale.value] || [];
+});
+
+const getImageUrl = (path: string) => {
+    return `${imageBaseUrl}${path}`;
+};
+
+const handleAccountClick = () => {
+    if (authStore.isAuthenticated) {
+        router.push('/profile');
+    } else {
+        modalsStore.openModal('login');
+    }
+};
 </script>

@@ -432,6 +432,7 @@
 
 
 
+```vue
 <template>
     <div class="container">
         <div class="payment-content">
@@ -455,17 +456,22 @@
                                 :rules="{ required: true }"
                             />
                             <span class="radio-indicator"></span>
-                            <span class="payment-type-name">{{ method.NAME }}</span>
-                            <span v-if="method.DESCRIPTION" class="payment-type-description"> ({{ method.DESCRIPTION }})</span>
+                            <div>
+                                <span class="payment-type-name">{{ method.NAME }}</span>
+                                <span v-if="method.DESCRIPTION" class="payment-type-description"> ({{ method.DESCRIPTION }})</span>
+                            </div>
                         </label>
                     </div>
-                    <button
-                        type="submit"
-                        class="payment-submit ui-btn ui-btn__primary"
-                        :disabled="!agreement || !selectedMethod"
-                    >
-                        {{ $t('payment.submit') }}
-                    </button>
+                    <div class="payment-submit">
+                        <button
+                            type="submit"
+                            class="ui-btn ui-btn__primary"
+                            :disabled="!agreement || !selectedMethod"
+                        >
+                            {{ $t('payment.submit') }}
+                        </button>
+                        <div v-if="errorText" class="error-text">{{ errorText }}</div>
+                    </div>
                     <div class="payment-agree form-field checkbox-field">
                         <div class="custom-checkbox">
                             <Field
@@ -485,7 +491,6 @@
                                 <a href="/privacy" target="_blank">{{ $t('agree.politics') }}</a>
                             </label>
                         </div>
-                        <ErrorMessage name="agreement" class="error-message" />
                     </div>
                 </form>
                 <div class="payment-systems">
@@ -548,6 +553,7 @@ const modalsStore = useModalsStore();
 const selectedMethod = ref<string | null>(null);
 const agreement = ref<boolean>(false);
 const eventCode = route.query.code as string | null;
+const errorText = ref<string | null>(null);
 
 // Загрузка данных о мероприятии на сервере
 const { data: eventData, error: eventFetchError } = await useAsyncData('event', async () => {
@@ -579,6 +585,8 @@ const paymentMethods = ref(paymentMethodsData.value || []);
 
 async function handleSubmit() {
     if (!agreement.value || !selectedMethod.value) return;
+
+    errorText.value = null; // Сбрасываем предыдущую ошибку перед новым запросом
 
     try {
         const response = await $fetch('/api/orders/create', {
@@ -620,50 +628,8 @@ async function handleSubmit() {
         }
     } catch (error) {
         console.error('Error creating order:', error);
-        const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';
-        let userFriendlyMessage = errorMessage;
-
-        switch (errorMessage) {
-            case 'ERROR_INVALID_TOKEN':
-                userFriendlyMessage = t('errors.invalidToken');
-                modalsStore.openModal('login');
-                break;
-            case 'ERROR_INVALID_COURSE_ID':
-                userFriendlyMessage = t('errors.invalidCourseId');
-                break;
-            case 'ERROR_INVALID_PAYMENT_METHOD':
-                userFriendlyMessage = t('errors.invalidPaymentMethodId');
-                break;
-            case 'ERROR_COURSE_NOT_FOUND':
-                userFriendlyMessage = t('errors.courseNotFound');
-                break;
-            case 'ERROR_NO_AVAILABLE_SEATS':
-                userFriendlyMessage = t('errors.noAvailableSeats');
-                break;
-            case 'ERROR_REGISTRATION_CLOSED':
-                userFriendlyMessage = t('errors.registrationClosed');
-                break;
-            case 'ERROR_ORDER_ALREADY_EXISTS':
-                userFriendlyMessage = t('errors.orderAlreadyExists');
-                router.push('/profile/courses');
-                break;
-            case 'ERROR_INVALID_BOOKING_PERIOD':
-                userFriendlyMessage = t('errors.invalidBookingPeriod');
-                break;
-            case 'ERROR_ORDER_CREATION_FAILED':
-                userFriendlyMessage = t('errors.orderCreationFailed');
-                break;
-            case 'ERROR_INVALID_PARAM':
-                userFriendlyMessage = t('errors.invalidParams');
-                break;
-            case 'Invalid API key':
-                userFriendlyMessage = t('errors.invalidApiKey');
-                break;
-            default:
-                userFriendlyMessage = errorMessage;
-        }
-
-        // toast.error(userFriendlyMessage);
+        const errorMessage = error.data?.message || error.statusMessage || 'Произошла ошибка';
+        errorText.value = errorMessage; // Устанавливаем текст ошибки напрямую из ответа
     }
 }
 
@@ -741,23 +707,60 @@ const getEventUrl = (event: any) => {
     &-content {
         display: flex;
         padding-bottom: p2r(100);
+
+        @media (max-width: 1366px) {
+            padding-bottom: p2r(90);
+        }
+
+        @media (max-width: 1024px) {
+            padding-bottom: p2r(60);
+        }
+
+        @media (max-width: 768px) {
+            padding-bottom: p2r(40);
+        }
+
+        @media (max-width: 992px) {
+            flex-direction: column;
+        }
     }
     &-main {
         flex-grow: 1;
         padding-right: p2r(40);
+
+        @media (max-width: 992px) {
+            padding-right: 0;
+        }
     }
     &-side {
-        width: p2r(390);
+        max-width: p2r(390);
         flex: 0 0 p2r(390);
+
+        @media (max-width: 1280px) {
+            max-width: p2r(320);
+            flex: auto;
+        }
     }
     &-form {
         margin-bottom: p2r(60);
+
+        @media (max-width: 768px) {
+            margin-bottom: p2r(40);
+        }
     }
     &-instructions {
         margin-bottom: p2r(60);
+
+        @media (max-width: 768px) {
+            margin-bottom: p2r(40);
+        }
     }
     &-types {
         margin-bottom: p2r(60);
+
+        @media (max-width: 768px) {
+            margin-bottom: p2r(40);
+        }
     }
     &-type {
         margin-bottom: p2r(20);
@@ -780,6 +783,10 @@ const getEventUrl = (event: any) => {
             font-size: p2r(16);
             line-height: 1.4;
             margin-left: p2r(8);
+
+            @media(max-width: 599px) {
+                font-size: p2r(14);
+            }
         }
     }
 
@@ -791,10 +798,11 @@ const getEventUrl = (event: any) => {
 .custom-checkbox:deep() {
     align-items: flex-start;
 }
-.error-message {
-    color: red;
-    font-size: 0.9em;
-    margin-top: 5px;
+.error-text {
+    color: $error;
+    font-size: p2r(14);
+    padding-top: p2r(6);
+    padding-bottom: p2r(6);
 }
 
 .event {

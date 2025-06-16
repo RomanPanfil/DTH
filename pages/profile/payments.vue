@@ -3,19 +3,21 @@
         <h1 class="page-title">{{ $t('accountSidebar.paymentHistory') }}</h1>
         <div v-if="isLoading" class="loading">Загрузка...</div>
         <div v-else-if="orders.length === 0" class="no-orders">Нет заказов</div>
-        <div v-else class="orders-table">
-            <div class="orders-table-header">
-                <div class="header-cell">Дата и время</div>
-                <div class="header-cell">Сумма</div>
-                <div class="header-cell">Метод оплаты</div>
-                <div class="header-cell">Название продукта</div>
-            </div>
-            <div class="orders-table-body">
-                <div v-for="order in orders" :key="order.ID" class="order-row">
-                    <div class="cell" v-html="formatDate(order.CREATED)"></div>
-                    <div class="cell">{{ order.AMOUNT }} BYN</div>
-                    <div class="cell">{{ order.PAYMENT_METHOD }}</div>
-                    <div class="cell">{{ order.COURSE_NAME }}</div>
+        <div v-else class="table-wrapper">
+            <div class="orders-table">
+                <div class="orders-table-header">
+                    <div class="header-cell">Дата и время</div>
+                    <div class="header-cell">Сумма</div>
+                    <div class="header-cell">Метод оплаты</div>
+                    <div class="header-cell">Название продукта</div>
+                </div>
+                <div class="orders-table-body">
+                    <div v-for="order in orders" :key="order.ID" class="order-row">
+                        <div class="cell" v-html="formatDate(order.CREATED)"></div>
+                        <div class="cell">{{ order.AMOUNT }} BYN</div>
+                        <div class="cell">{{ order.PAYMENT_METHOD }}</div>
+                        <div class="cell">{{ order.COURSE_NAME }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -130,10 +132,35 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+.table-wrapper {
+    @media(max-width: 768px) {
+        overflow-x: auto;
+
+        &::-webkit-scrollbar {
+            height: p2r(6);
+        }
+
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: p2r(3);
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: $primary;
+            border-radius: p2r(3);
+        }
+    }
+}
 .orders-table {
     overflow: hidden;
     margin-top: p2r(24);
     margin-bottom: p2r(40);
+
+    @media(max-width: 768px) {
+        font-size: p2r(15);
+        min-width: p2r(700);
+        margin-bottom: 0;
+    }
 }
 
 .orders-table-header {
@@ -145,6 +172,18 @@ onMounted(async () => {
 .header-cell {
     padding: p2r(20) p2r(30);
     text-align: left;
+
+    @media(max-width: 1366px) {
+        padding: p2r(18) p2r(24);
+    }
+
+    @media(max-width: 1280px) {
+        padding: p2r(16) p2r(20);
+    }
+
+    @media(max-width: 599px) {
+        padding: p2r(12);
+    }
 }
 
 .orders-table-body {
@@ -162,6 +201,18 @@ onMounted(async () => {
 .cell {
     padding: p2r(30);
     border-bottom: 1px solid $border;
+
+    @media(max-width: 1366px) {
+        padding: p2r(24);
+    }
+
+    @media(max-width: 1280px) {
+        padding: p2r(20);
+    }
+
+    @media(max-width: 599px) {
+        padding: p2r(12);
+    }
 
     :deep(.time) {
         color: $font-grey;

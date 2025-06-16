@@ -69,26 +69,26 @@ h6 {
   }
 }
 
-h1 {
-  font-size: p2r($h1);
-
-  @media(max-width: 1366px) {
-    font-size: p2r(38);
-  }
-
-  @media(max-width: 768px) {
-    font-size: p2r(36);
-  }
-
-  @media(max-width: 599px) {
-    font-size: p2r(28);
-  }
-}
-h2 { font-size: p2r($h2); }
-h3 { font-size: p2r($h3); }
-h4 { font-size: p2r($h4); }
-h5 { font-size: p2r($h5); }
-h6 { font-size: p2r($h6); }
+//h1 {
+//  font-size: p2r($h1);
+//
+//  @media(max-width: 1366px) {
+//    font-size: p2r(38);
+//  }
+//
+//  @media(max-width: 768px) {
+//    font-size: p2r(36);
+//  }
+//
+//  @media(max-width: 599px) {
+//    font-size: p2r(28);
+//  }
+//}
+//h2 { font-size: p2r($h2); }
+//h3 { font-size: p2r($h3); }
+//h4 { font-size: p2r($h4); }
+//h5 { font-size: p2r($h5); }
+//h6 { font-size: p2r($h6); }
 
 p {
   margin: $paragraph_margin;
@@ -164,6 +164,30 @@ footer {
     margin-right: p2r(-5);
     margin-left: p2r(-5);
 
+    //@media (max-width: 768px) {
+    //  flex-wrap: nowrap;
+    //  overflow-x: auto;
+    //  scrollbar-width: none;
+    //  padding-left: p2r(25);
+    //  padding-right: p2r(25);
+    //  margin-left: p2r(-55);
+    //  margin-right: p2r(-55);
+    //}
+    //
+    //@media (max-width: 599px) {
+    //  padding-left: p2r(20);
+    //  padding-right: p2r(20);
+    //  margin-left: p2r(-50);
+    //  margin-right: p2r(-50);
+    //}
+    //
+    //@media (max-width: 420px) {
+    //  padding-left: p2r(10);
+    //  padding-right: p2r(10);
+    //  margin-left: p2r(-40);
+    //  margin-right: p2r(-40);
+    //}
+
     img {
       display: block;
       //max-width: p2r(265);
@@ -191,6 +215,21 @@ footer {
       width: 100%;
       flex: 0 0 100%;
     }
+
+    //@media (max-width: 768px) {
+    //  flex: 0 0 45%;
+    //  max-width: 45%;
+    //}
+    //
+    //@media (max-width: 599px) {
+    //  flex: 0 0 80%;
+    //  max-width: 80%;
+    //}
+    //
+    //@media (max-width: 420px) {
+    //  flex: 0 0 88%;
+    //  max-width: 88%;
+    //}
 
     &-image {
       display: block;
@@ -241,6 +280,10 @@ footer {
   @media (max-width: 599px) {
     font-size: p2r(18);
   }
+}
+
+.non-scroll {
+  overflow: hidden;
 }
 
 :root {

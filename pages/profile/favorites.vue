@@ -9,7 +9,7 @@
         </div>
         <div v-else>
             <div class="row">
-                <div v-for="event in uniqueEvents" :key="event.ID" class="col-md-4">
+                <div v-for="event in uniqueEvents" :key="event.ID" class="col-lg-4 col-xs-6">
                     <CourcesCard :event="event" :is-fav="true" />
                 </div>
             </div>

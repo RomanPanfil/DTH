@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     if (!menuType) {
         return {
             error: 'Не указан тип меню',
-            details: 'Параметр type обязателен (MENU_TOP, MENU_BOTTOM, MENU_TEH)',
+            details: 'Параметр type обязателен (MENU_TOP, MENU_BOTTOM, MENU_TEH, MENU_MOBILE)',
         };
     }
 

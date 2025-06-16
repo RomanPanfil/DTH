@@ -19,7 +19,7 @@
                     <div
                         v-for="item in props.journal.value.items"
                         :key="item.ID"
-                        class="col-md-3"
+                        class="col-lg-3 col-sm-6"
                     >
                         <JournalCard :item="item" :rubrics="rubrics" />
                     </div>
@@ -39,7 +39,7 @@
                     <div
                         v-for="item in props.webinars.value.items"
                         :key="item.ID"
-                        class="col-md-3"
+                        class="col-lg-3 col-sm-6"
                     >
                         <div class="placeholder-card">
                             {{ item.NAME || 'Вебинар без названия' }}
@@ -61,7 +61,7 @@
                     <div
                         v-for="item in props.courses.value.items"
                         :key="item.ID"
-                        class="col-md-3"
+                        class="col-lg-3 col-sm-6"
                     >
                         <CourcesCard :event="item" />
                     </div>
@@ -154,11 +154,51 @@ watch(() => props.webinars, (newVal) => {
     margin-top: p2r(40);
     padding-bottom: p2r(40);
 
+    @media(max-width: 1023px) {
+        margin-top: p2r(32);
+        padding-bottom: p2r(32);
+    }
+
+    @media(max-width: 768px) {
+        margin-top: p2r(24);
+        padding-bottom: p2r(24);
+    }
+
     &-header {
         display: flex;
         flex-wrap: wrap;
         gap: p2r(40);
         margin-bottom: p2r(40);
+
+        @media(max-width: 1023px) {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            margin-left: p2r(-35);
+            margin-right: p2r(-35);
+            padding-left: p2r(35);
+            padding-right: p2r(35);
+
+            -ms-overflow-style: none;
+            overflow: -moz-scrollbars-none;
+            &::-webkit-scrollbar {
+                width: 0;
+                height: 0;
+            }
+        }
+
+        @media(max-width: 599px) {
+            margin-left: p2r(-30);
+            margin-right: p2r(-30);
+            padding-left: p2r(30);
+            padding-right: p2r(30);
+        }
+
+        @media(max-width: 420px) {
+            margin-left: p2r(-20);
+            margin-right: p2r(-20);
+            padding-left: p2r(20);
+            padding-right: p2r(20);
+        }
     }
 
     &-header-item {
@@ -167,6 +207,7 @@ watch(() => props.webinars, (newVal) => {
         border: none;
         cursor: pointer;
         transition: color 0.3s, border 0.3s;
+        white-space: nowrap;
 
         .tab-text {
             border-bottom: 1px solid $border;

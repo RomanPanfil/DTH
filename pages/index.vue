@@ -19,6 +19,10 @@
 </template>
 
 <script setup lang="ts">
+const config = useRuntimeConfig();
+const imageBaseUrl = config.public.imageBaseUrl;
+const baseUrl = config.public.baseUrl;
+
 const fetchLectors = async (lectorIds: number[]) => {
     if (!lectorIds || lectorIds.length === 0) return {};
     try {
@@ -104,6 +108,19 @@ const featuredEvents = ref(eventsData.value || []);
 if (eventsError.value) {
     console.error('Ошибка useAsyncData для событий:', eventsError.value);
 }
+
+// метатеги
+useHead({
+    title: 'Главная страница',
+    meta: [
+        { name: 'description', content: 'Присоединяйтесь к нашим образовательным курсам и событиям! Узнайте новое от лучших лекторов и развивайте свои навыки.' },
+        { property: 'og:title', content: 'Образовательные курсы и события' },
+        { property: 'og:description', content: 'Образовательные курсы и события' },
+        { property: 'og:image', content: `${baseUrl}/images/logo.png` },
+        { property: 'og:url', content: '${baseUrl}${currentPath.value}' },
+        { property: 'og:type', content: 'website' },
+           ],
+});
 </script>
 
 <style scoped lang="scss">

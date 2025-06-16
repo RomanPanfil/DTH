@@ -28,6 +28,10 @@ const emit = defineEmits<{
 .login-modal {
   padding: p2r(80) p2r(60);
 
+  @media(max-width: 599px) {
+    padding: p2r(60) p2r(24) p2r(24) p2r(24);
+  }
+
   &-title {
     font-weight: 500;
     font-size: p2r(32);

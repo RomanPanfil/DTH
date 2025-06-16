@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, onMounted, onUnmounted } from 'vue'
 import { useModalsStore } from '~/stores/modals'
 import LoginModal from '~/components/modals/LoginModal.vue'
 import RecoverModal from "~/components/modals/RecoverModal.vue";
@@ -39,6 +39,25 @@ const modalComponent = computed(() => {
     const type = modalsStore.modalPayload?.type
     return type && modalComponents[type] ? modalComponents[type] : null
 })
+
+// Отслеживание состояния модалки
+watch(() => modalsStore.isModalOpen, (newValue) => {
+    if (newValue) {
+        document.body.classList.add('non-scroll');
+    } else {
+        document.body.classList.remove('non-scroll');
+    }
+});
+
+onMounted(() => {
+    if (modalsStore.isModalOpen) {
+        document.body.classList.add('non-scroll');
+    }
+});
+
+onUnmounted(() => {
+    document.body.classList.remove('non-scroll');
+});
 </script>
 
 <style scoped lang="scss">
@@ -63,10 +82,21 @@ const modalComponent = computed(() => {
 
     &.modal-login {
         max-width: p2r(500); // Ширина для модалки login
+        @media(max-width: 599px) {
+            max-width: 100%;
+        }
     }
 
     &.modal-recover {
         max-width: p2r(500); // Ширина для модалки recover
+        @media(max-width: 599px) {
+            max-width: 100%;
+        }
+    }
+
+    @media(max-width: 599px) {
+        margin-left: p2r(-30);
+        margin-right: p2r(-30);
     }
 }
 
@@ -79,6 +109,18 @@ const modalComponent = computed(() => {
     background: #0ab271;
     border-top-left-radius: p2r(4);
     border-bottom-left-radius: p2r(4);
+
+    @media(max-width: 1366px) {
+        width: p2r(18);
+    }
+
+    @media(max-width: 1024px) {
+        width: p2r(12);
+    }
+
+    @media(max-width: 768px) {
+        width: p2r(8);
+    }
 }
 
 .modal-content {
@@ -87,6 +129,18 @@ const modalComponent = computed(() => {
     border-radius: p2r(32);
     box-shadow: 0 p2r(4) p2r(35) rgba(114, 142, 174, 0.1);
     flex: 1;
+
+    @media(max-width: 599px) {
+        border-radius: 0;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        overflow-y: auto;
+        display: flex;
+        align-items: center;
+    }
 }
 
 .close-btn {
@@ -105,6 +159,12 @@ const modalComponent = computed(() => {
     cursor: pointer;
     padding: 0;
     z-index: 1001;
+
+    @media(max-width: 768px) {
+        transform: unset;
+        right: p2r(12);
+        top: p2r(12);
+    }
 
     &-icon {
         font-size: p2r(24);

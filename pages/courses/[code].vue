@@ -74,7 +74,7 @@
                 <div class="event-wrapper">
                     <div class="event-main">
                         <!-- Блок Видео -->
-                        <div v-if="event?.PROPS?.AFISHA_VIDEO_FILE?.VALUE_PATH || event?.PROPS?.AFISHA_VIDEO_LINK?.VALUE" class="video-section">
+                        <div v-if="(event?.PROPS?.AFISHA_VIDEO_FILE?.VALUE_PATH || event?.PROPS?.AFISHA_VIDEO_LINK?.VALUE) && isCourseAccessStatus" class="video-section">
                             <Video
                                 :preview="event.PROPS.AFISHA_IMG?.VALUE_RESIZE ? `${baseUrl}${event.PROPS.AFISHA_IMG.VALUE_RESIZE}` : ''"
                                 :file="event.PROPS.AFISHA_VIDEO_FILE?.VALUE_PATH ? `${baseUrl}${event.PROPS.AFISHA_VIDEO_FILE.VALUE_PATH}` : ''"
@@ -117,7 +117,7 @@
                         <div v-if="event?.PROPS?.WHY_ICONS?.VALUE" class="ui-section why-attend-section article">
                             <h2 class="ui-block-title">{{ event.PROPS.WHY_TITLE.VALUE || 'Почему стоит посетить курс?' }}</h2>
                             <div class="why-attend-items row">
-                                <div v-for="(item, index) in event.PROPS.WHY_ICONS.VALUE" :key="index" class="col-md-6">
+                                <div v-for="(item, index) in event.PROPS.WHY_ICONS.VALUE" :key="index" class="col-md-6 col-sm-12">
                                     <div class="why-attend-item">
                                         <div class="why-attend-icon">
                                             <img :src="item.ICON ? `${baseUrl}${item.ICON}` : ''" alt="Icon" />
@@ -147,7 +147,7 @@
                             <h2 class="ui-block-title">Где и когда</h2>
                             <div class="when-info">
                                 <div class="row">
-                                    <div v-if="event?.PROPS?.WHEN_ADDR?.VALUE" class="col-md-4">
+                                    <div v-if="event?.PROPS?.WHEN_ADDR?.VALUE" class="col-lg-4 col-md-6 col-sm-4 col-xs-6">
                                         <div class="when-info-item">
                                             <NuxtIcon name="pin" class="when-info-icon" filled />
                                             <div class="when-info-text">
@@ -161,7 +161,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-if="event?.PROPS?.WHEN_DATE?.VALUE" class="col-md-4">
+                                    <div v-if="event?.PROPS?.WHEN_DATE?.VALUE" class="col-lg-4 col-md-6 col-sm-4 col-xs-6">
                                         <div class="when-info-item">
                                             <NuxtIcon name="calendar" class="when-info-icon" filled />
                                             <div class="when-info-text">
@@ -177,7 +177,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-if="event?.PROPS?.WHEN_PHONE?.VALUE || event.PROPS?.WHEN_EMAIL?.VALUE" class="col-md-4">
+                                    <div v-if="event?.PROPS?.WHEN_PHONE?.VALUE || event.PROPS?.WHEN_EMAIL?.VALUE" class="col-lg-4 col-md-6 col-sm-4 col-xs-6">
                                         <div class="when-info-item">
                                             <NuxtIcon name="engagement" class="when-info-icon" filled />
                                             <div>
@@ -210,24 +210,26 @@
                                 </div>
                                 <div>
                                     <Swiper
-                                        :modules="[SwiperNavigation]"
+                                        :modules="[SwiperNavigation, Pagination]"
                                         :slides-per-view="3"
                                         :space-between="20"
                                         :breakpoints="{
-                                        0: { slidesPerView: 1, spaceBetween: 10 },
-                                        768: { slidesPerView: 2, spaceBetween: 15 },
-                                        1024: { slidesPerView: 3, spaceBetween: 20 }
-                                    }"
+                                            0: { slidesPerView: 1, spaceBetween: 10 },
+                                            768: { slidesPerView: 2, spaceBetween: 15 },
+                                            1024: { slidesPerView: 3, spaceBetween: 20 }
+                                        }"
                                         :navigation="{
-                                        prevEl: '.when-gallery-arrow__prev',
-                                        nextEl: '.when-gallery-arrow__next'
-                                    }"
+                                            prevEl: '.when-gallery-arrow__prev',
+                                            nextEl: '.when-gallery-arrow__next'
+                                        }"
+                                        :pagination="{ clickable: true, el: '.swiper-pagination' }"
                                         :loop="event.PROPS?.WHEN_GALL?.VALUE_PATH?.length > 3"
                                         class="when-gallery-swiper"
                                     >
                                         <SwiperSlide v-for="(image, index) in event.PROPS?.WHEN_GALL?.VALUE_PATH" :key="index">
                                             <img :src="image ? `${baseUrl}${image}` : ''" alt="Gallery image" class="when-gallery-image" />
                                         </SwiperSlide>
+                                        <div class="swiper-pagination"></div>
                                     </Swiper>
                                 </div>
 
@@ -280,7 +282,7 @@
                         </div>
 
                         <!--   Блок Теги  -->
-                        <div v-if="event?.value?.TAGS" class="ui-section tags-section">
+                        <div v-if="event?.TAGS" class="ui-section tags-section">
                             <h2 class="ui-block-title">Теги мероприятия</h2>
                             <div class="tags-list">
                                 <div v-for="(tag, index) in eventTags" :key="index" class="tag-item">
@@ -311,7 +313,7 @@
                         <div class="event-aside-wrapper">
                             <div class="event-aside" ref="eventAside">
                                 <div class="event-card-image">
-                                    <img :src="getImageUrl(event.PREVIEW_PICTURE)" :alt="event.NAME" />
+                                    <img v-if="event.PREVIEW_PICTURE" :src="getImageUrl(event.PREVIEW_PICTURE)" :alt="event.NAME" />
                                 </div>
                                 <div class="event-card-info">
                                     <div v-if="event.PROPS.WHEN_DATE?.VALUE" class="event-card-info-item">
@@ -340,11 +342,10 @@
                                 <div class="event-card-pay">
                                     <button
                                         class="ui-btn ui-btn__primary event-card-pay-btn"
-                                        :disabled="isCourseAccessible || !hasAvailableSeats || isCoursePaidComputed"
+                                        :disabled="!hasAvailableSeats || isCoursePaidComputed"
                                         @click="takePart"
                                     >
-                                        <template v-if="isCourseAccessible">Курс уже доступен</template>
-                                        <template v-else-if="!hasAvailableSeats">Мест нет</template>
+                                        <template v-if="!hasAvailableSeats">Мест нет</template>
                                         <template v-else-if="isFree">{{ $t('courses.takePart') }}</template>
                                         <template v-else>{{ $t('courses.payPart') }}</template>
                                     </button>
@@ -387,16 +388,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import {ref, computed, onMounted} from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
 import { useModalsStore } from '~/stores/modals';
 import { useI18n } from 'vue-i18n';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation as SwiperNavigation } from 'swiper/modules';
+import { Navigation as SwiperNavigation, Pagination } from 'swiper/modules';
 import { useLocaleStore } from '~/stores/locale';
 import 'swiper/css';
 import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 const route = useRoute();
 const router = useRouter();
@@ -420,7 +422,6 @@ const lectorsData = ref([]);
 const reportData = ref(null);
 const isShareLinksShow = ref(false);
 const isAddingToFav = ref(false);
-const accessibleCourses = ref<number[]>([]);
 
 // Состояние для модального окна
 const isTooltipModalOpen = ref(false);
@@ -431,7 +432,9 @@ const isMapModalOpen = ref(false);
 const mapLatitude = ref(53.90257);
 const mapLongitude = ref(27.557088);
 
-const isCoursePaid = ref<boolean | null>(null)
+const isCoursePaid = ref<boolean | null>(null);
+const isCourseAccessStatus = ref<boolean | null>(null);
+
 
 const openMapModal = () => {
     if (event.value?.PROPS?.WHEN_MAP?.VALUE) {
@@ -445,12 +448,6 @@ const openMapModal = () => {
 const closeMapModal = () => {
     isMapModalOpen.value = false
 }
-
-const isCourseAccessible = computed(() => {
-    if (!event.value?.ID) return false;
-    const eventId = Number(event.value.ID);
-    return accessibleCourses.value.includes(eventId);
-});
 
 // Проверка, находится ли курс в избранном
 const isFavorite = computed(() => {
@@ -492,7 +489,7 @@ if (settings.value) {
 }
 
 const getImageUrl = (path) => {
-    return path ? `${imageBaseUrl}${path}` : '/images/examples/new-image.jpg';
+    return `${imageBaseUrl}${path}`;
 };
 
 // Форматирование дат мероприятия (без изменений)
@@ -706,6 +703,54 @@ const fetchEventData = async () => {
     } catch (error) {
         eventError.value = { details: error.message || 'Ошибка загрузки мероприятия' };
     }
+
+    try {
+        const { data, error } = await useFetch('/api/courses/checkCourseBuy', {
+            method: 'POST',
+            body: {
+                params: {
+                    TOKEN: authStore.token,
+                    COURSE_ID: Number(event.value.ID)
+                }
+            }
+        })
+
+        if (error.value) {
+            console.error('Ошибка проверки оплаты:', error.value)
+            isCoursePaid.value = false // По умолчанию считаем не оплаченным при ошибке
+        } else if (data.value?.PAY_EXISTS === 1) {
+            isCoursePaid.value = true
+        } else {
+            isCoursePaid.value = false
+        }
+    } catch (err) {
+        console.error('Ошибка при запросе статуса оплаты:', err)
+        isCoursePaid.value = false
+    }
+
+    try {
+        const { data, error } = await useFetch('/api/courses/checkCourseAccess', {
+            method: 'POST',
+            body: {
+                params: {
+                    TOKEN: authStore.token,
+                    COURSE_ID: Number(event.value.ID)
+                }
+            }
+        })
+
+        if (error.value) {
+            console.error('Ошибка проверки доступа:', error.value)
+            isCourseAccessStatus.value = false
+        } else if (data.value?.ACCESS === 1) {
+            isCourseAccessStatus.value = true
+        } else {
+            isCourseAccessStatus.value = false
+        }
+    } catch (err) {
+        console.error('Ошибка при запросе статуса оплаты:', err)
+        isCourseAccessStatus.value = false
+    }
 };
 
 const fetchLectors = async (lectorIds) => {
@@ -732,67 +777,9 @@ const fetchLectors = async (lectorIds) => {
 
 fetchEventData();
 
-const fetchAccessibleCourses = async () => {
-    if (!authStore.isAuthenticated || !authStore.token) {
-        console.log('User not authenticated, no accessible courses fetched');
-        accessibleCourses.value = [];
-        return;
-    }
-    try {
-        const { data, error } = await useFetch('/api/courses/getAccessible', {
-            method: 'POST',
-            body: {
-                TOKEN: authStore.token,
-                pager: { start: 1, limit: 1000 },
-            },
-        });
-        if (error.value) throw error.value;
-        accessibleCourses.value = (data.value?.COURSES || []).map(Number);
-        console.log('Accessible courses:', accessibleCourses.value);
-    } catch (error) {
-        console.error('Error fetching accessible courses:', error);
-        accessibleCourses.value = [];
-    }
-};
-
-// Асинхронный запрос к API
-const checkPaymentStatus = async () => {
-    if (!event.value.ID || !authStore.token) {
-        isCoursePaid.value = false
-        return
-    }
-
-    try {
-        const { data, error } = await useFetch('/api/courses/checkCourseBuy', {
-            method: 'POST',
-            body: {
-                params: {
-                    TOKEN: authStore.token,
-                    COURSE_ID: Number(event.value.ID)
-                }
-            }
-        })
-
-        if (error.value) {
-            console.error('Ошибка проверки оплаты:', error.value)
-            isCoursePaid.value = false // По умолчанию считаем не оплаченным при ошибке
-        } else if (data.value?.PAY_EXISTS === 1) {
-            isCoursePaid.value = true
-        } else {
-            isCoursePaid.value = false
-        }
-    } catch (err) {
-        console.error('Ошибка при запросе статуса оплаты:', err)
-        isCoursePaid.value = false
-    }
-}
-
 // Логика для "липкого" поведения event-aside (без изменений)
 const eventAside = ref<HTMLElement | null>(null);
 onMounted(async () => {
-    await fetchAccessibleCourses(); // Получаем доступные курсы
-    await checkPaymentStatus();
-
     const handleStickyAside = () => {
         if (!eventAside.value) return;
         const asideWrapper = eventAside.value.parentElement;
@@ -842,19 +829,30 @@ onMounted(async () => {
 
 const isCoursePaidComputed = computed(() => isCoursePaid.value !== null ? isCoursePaid.value : false);
 
-// Устанавливаем метатеги (без изменений)
-useHead({
-    title: event.value?.NAME || 'Мероприятие DTH',
-    meta: [
-        { name: 'description', content: event.value?.DETAIL_TEXT?.substring(0, 200) || 'Детали мероприятия от Dental Training House' },
-        { property: 'og:title', content: event.value?.NAME || 'Мероприятие DTH' },
-        { property: 'og:description', content: event.value?.DETAIL_TEXT?.substring(0, 200) || 'Детали мероприятия от Dental Training House' },
-        { property: 'og:image', content: event.value?.PREVIEW_PICTURE ? `${imageBaseUrl}${event.value.PREVIEW_PICTURE}` : `${baseUrl}/images/logo.png` },
-        { property: 'og:url', content: `${baseUrl}${route.fullPath}` },
-        { property: 'og:type', content: 'article' },
-        { property: 'og:site_name', content: 'DTH Events' },
-    ],
+// Устанавливаем метатеги
+onMounted(() => {
+    if (event.value) {
+        useHead(computed(() => {
+            const meta = [];
+
+                meta.push(
+                    { name: 'description', content: event?.value?.PREVIEW_TEXT },
+                    { property: 'og:title', content: event?.value?.NAME },
+                    { property: 'og:description', content: event.value?.DETAIL_TEXT?.substring(0, 200) || 'Детали мероприятия от Dental Training House' },
+                    { property: 'og:image', content: event.value?.PREVIEW_PICTURE ? `${imageBaseUrl}${event.value.PREVIEW_PICTURE}` : `${baseUrl}/images/logo.png` },
+                    { property: 'og:url', content: `${baseUrl}${route.fullPath}` },
+                    { property: 'og:type', content: 'article' },
+                    { property: 'og:site_name', content: 'DTH Events' },
+                );
+
+            return {
+                title: event?.value?.NAME,
+                meta,
+            };
+        }));
+    }
 });
+
 
 const addToFav = async () => {
     if (!authStore.isAuthenticated) {
@@ -932,11 +930,6 @@ const hasAvailableSeats = computed(() => {
 });
 
 const takePart = async () => {
-    if (isCourseAccessible.value) {
-        router.push('/profile/courses');
-        return;
-    }
-
     if (!authStore.isAuthenticated) {
         modalsStore.openModal('login');
         // toast.error(t('courses.notAuthenticated'));
@@ -1070,22 +1063,54 @@ const closeTooltipModal = () => {
     padding-bottom: p2r(6);
 }
 .container {
-    padding-left: p2r(180);
+
+
+    @media (min-width: 1367px) {
+        padding-left: p2r(180);
+    }
 }
 .event {
     &-wrapper {
         display: flex;
         gap: p2r(30);
         flex-grow: 1;
+
+        @media(max-width: 1024px) {
+            flex-direction: column-reverse;
+        }
+
+        @media (max-width: 599px) {
+            gap: p2r(20);
+        }
     }
 
     &-main {
         width: calc(100% - 26.25rem);
         flex: 0 0 calc(100% - 26.25rem);
+
+        @media(max-width: 1280px) {
+            width: calc(100% - 20rem);
+            flex: 0 0 calc(100% - 20rem);
+        }
+
+        @media(max-width: 1024px) {
+            width: 100%;
+            flex: auto;
+        }
     }
     &-right {
         width: p2r(390);
         flex: 0 0 p2r(390);
+
+        @media(max-width: 1280px) {
+            width: p2r(320);
+            flex: 0 0 p2r(320);
+        }
+
+        @media(max-width: 1024px) {
+            width: 100%;
+            flex: auto;
+        }
     }
     &-detail {
         margin-top: p2r(-30);
@@ -1098,6 +1123,7 @@ const closeTooltipModal = () => {
         flex-direction: column;
 
         .event-main {
+            position: relative;
             display: flex;
             flex-direction: column;
         }
@@ -1112,6 +1138,8 @@ const closeTooltipModal = () => {
             position: absolute;
             top: 0;
             right: 0;
+            height: 100%;
+            object-fit: cover;
         }
     }
     &-preview {
@@ -1124,19 +1152,46 @@ const closeTooltipModal = () => {
         background-color: #F5F5F5;
         padding-top: p2r(20);
         padding-bottom: p2r(98);
+
+        @media (max-width: 1366px) {
+            padding-bottom: p2r(90);
+        }
+
+        @media (max-width: 1024px) {
+            padding-bottom: p2r(80);
+        }
+
+        @media (max-width: 768px) {
+            padding-bottom: p2r(60);
+        }
+
+        @media (max-width: 599px) {
+            padding-bottom: p2r(40);
+        }
     }
 
     &-props {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        row-gap: p2r(24);
         margin-bottom: p2r(54);
         margin-top: auto;
+
+        @media(max-width: 1280px) {
+            margin-bottom: p2r(48);
+        }
+
+        @media(max-width: 1024px) {
+            margin-bottom: p2r(40);
+        }
 
         &-list {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
+            row-gap: p2r(12);
         }
 
         &-item {
@@ -1175,6 +1230,7 @@ const closeTooltipModal = () => {
             align-items: center;
             gap: p2r(4);
             margin-right: p2r(10);
+            margin-left: auto;
 
             &-icon {
                 font-size: p2r(20);
@@ -1204,6 +1260,15 @@ const closeTooltipModal = () => {
             box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
             border-radius: p2r(8);
             z-index: 2;
+
+            @media (max-width: 599px) {
+                width: calc(100vw - 60px);
+                flex-wrap: wrap;
+            }
+
+            @media (max-width: 420px) {
+                width: calc(100vw - 40px);
+            }
         }
 
         &-link {
@@ -1219,8 +1284,16 @@ const closeTooltipModal = () => {
         margin-top: p2r(-354);
         padding: p2r(20);
         background-color: $bgc;
-        box-shadow: 0px 4px 35px rgba(114, 142, 174, 0.1);
+        box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
         border-radius: p2r(8);
+
+        @media(max-width: 1024px) {
+            position: static !important;
+            margin-top: 0;
+            max-width: p2r(390);
+            margin-left: auto;
+            margin-right: auto;
+        }
 
         &-wrapper {
             position: relative;
@@ -1234,6 +1307,11 @@ const closeTooltipModal = () => {
             border-radius: p2r(6);
             overflow: hidden;
             margin-bottom: p2r(20);
+            background-color: $placeholder;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_14" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g transform="translate(1 1)"><g><g><path d="M255-1C114.2-1-1,114.2-1,255s115.2,256,256,256s256-115.2,256-256S395.8-1,255-1z M255,16.067 c63.054,0,120.598,24.764,163.413,65.033l-65.336,64.802L334.36,97.987c-0.853-2.56-4.267-5.12-7.68-5.12H185.027 c-3.413,0-5.973,1.707-7.68,5.12L156.013,152.6h-48.64c-17.067,0-30.72,13.653-30.72,30.72v168.96 c0,17.067,13.653,30.72,30.72,30.72h6.653l-34.26,33.981C40.285,374.319,16.067,317.354,16.067,255 C16.067,123.587,123.587,16.067,255,16.067z M314.733,255c0,33.28-26.453,59.733-59.733,59.733 c-13.563,0-25.99-4.396-35.957-11.854l84.125-83.438C310.449,229.34,314.733,241.616,314.733,255z M195.267,255 c0-33.28,26.453-59.733,59.733-59.733c13.665,0,26.174,4.467,36.179,12.028l-84.183,83.495 C199.613,280.852,195.267,268.487,195.267,255z M303.374,195.199C290.201,184.558,273.399,178.2,255,178.2 c-42.667,0-76.8,34.133-76.8,76.8c0,18.17,6.206,34.779,16.61,47.877l-63.576,63.057H106.52c-7.68,0-13.653-5.973-13.653-13.653 V183.32c0-7.68,5.973-13.653,13.653-13.653h54.613c3.413,0,6.827-2.56,7.68-5.12l21.333-54.613h129.707l19.404,49.675 L303.374,195.199z M206.848,314.974C219.987,325.509,236.703,331.8,255,331.8c42.667,0,76.8-34.133,76.8-76.8 c0-18.068-6.138-34.592-16.436-47.655l37.988-37.678h49.274c7.68,0,13.653,5.973,13.653,13.653v168.96 c0,7.68-5.973,13.653-13.653,13.653H155.469L206.848,314.974z M255,493.933c-62.954,0-120.415-24.686-163.208-64.843L138.262,383 H403.48c17.067,0,30.72-13.653,31.573-30.72V183.32c0-17.067-13.653-30.72-30.72-30.72H370.56l59.865-59.376 c39.368,42.639,63.509,99.521,63.509,161.776C493.933,386.413,386.413,493.933,255,493.933z" style="fill: %23E0E0E0"/><path d="M383,186.733c-9.387,0-17.067,7.68-17.067,17.067c0,9.387,7.68,17.067,17.067,17.067s17.067-7.68,17.067-17.067 C400.067,194.413,392.387,186.733,383,186.733z" style="fill: %23E0E0E0"/></g></g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><script xmlns=""/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: p2r(60);
 
             @media (hover: hover) {
                 &:hover {
@@ -1467,6 +1545,18 @@ const closeTooltipModal = () => {
         margin-left: p2r(-40);
         margin-right: p2r(-40);
         max-width: calc(100% + 80px);
+
+        @media (max-width: 1366px) {
+            margin-left: p2r(-32);
+            margin-right: p2r(-32);
+            max-width: calc(100% + 64px);
+        }
+
+        @media (max-width: 768px) {
+            margin-left: p2r(-24);
+            margin-right: p2r(-24);
+            max-width: calc(100% + 48px);
+        }
     }
 }
 
@@ -1474,6 +1564,26 @@ const closeTooltipModal = () => {
     &-section {
         padding-top: p2r(60);
         padding-bottom: p2r(60);
+
+        @media (max-width: 1366px) {
+            padding-top: p2r(50);
+            padding-bottom: p2r(50);
+        }
+
+        @media (max-width: 1024px) {
+            padding-top: p2r(40);
+            padding-bottom: p2r(40);
+        }
+
+        @media (max-width: 768px) {
+            padding-top: p2r(40);
+            padding-bottom: p2r(32);
+        }
+
+        @media (max-width: 599px) {
+            padding-top: p2r(32);
+            padding-bottom: p2r(24);
+        }
     }
 
     &-items {
@@ -1482,11 +1592,26 @@ const closeTooltipModal = () => {
         margin-bottom: p2r(40);
         padding-top: p2r(40);
         padding-bottom: p2r(10);
+
+        @media (max-width: 768px) {
+            margin-bottom: p2r(32);
+            padding-top: p2r(32);
+        }
+
+        @media (max-width: 599px) {
+            margin-bottom: p2r(24);
+            padding-top: p2r(24);
+        }
     }
     &-item {
         display: flex;
         gap: p2r(20);
         margin-bottom: p2r(30);
+
+        @media (max-width: 599px) {
+            flex-direction: column;
+            align-items: center;
+        }
     }
 
     &-icon {
@@ -1494,6 +1619,12 @@ const closeTooltipModal = () => {
         width: p2r(66);
         height: p2r(66);
         flex: 0 0 p2r(66);
+        
+        @media (max-width: 599px) {
+            width: p2r(58);
+            height: p2r(58);
+            flex: 0 0 p2r(58);
+        }
 
         img {
             position: absolute;
@@ -1505,6 +1636,10 @@ const closeTooltipModal = () => {
     }
 
     &-text {
+        @media (max-width: 599px) {
+            text-align: center;
+        }
+
         &-title {
             font-weight: 600;
             font-size: p2r(18);
@@ -1517,6 +1652,20 @@ const closeTooltipModal = () => {
     border-bottom: 1px solid $border;
     padding-bottom: p2r(40);
     margin-bottom: p2r(40);
+
+    @media (max-width: 768px) {
+        padding-bottom: p2r(32);
+        margin-bottom: p2r(32);
+    }
+
+    @media (max-width: 599px) {
+        padding-bottom: p2r(24);
+        margin-bottom: p2r(24);
+    }
+
+    .row {
+        row-gap: p2r(24);
+    }
 
     &-item {
         display: flex;
@@ -1566,6 +1715,10 @@ const closeTooltipModal = () => {
         gap: p2r(20);
         margin-left: auto;
         margin-bottom: p2r(40);
+        
+        @media(max-width: 599px) {
+            display: none;
+        }
     }
 
     &-arrow {
@@ -1604,6 +1757,22 @@ const closeTooltipModal = () => {
     background-color: $bgc;
     margin-bottom: p2r(40);
 
+    @media (max-width: 1024px) {
+        padding: p2r(40);
+    }
+
+    @media (max-width: 768px) {
+        padding: p2r(32);
+    }
+
+    @media (max-width: 599px) {
+        padding: p2r(24);
+    }
+
+    @media (max-width: 420px) {
+        padding: p2r(20);
+    }
+
     &-icon {
         font-size: p2r(40);
         line-height: p2r(40);
@@ -1616,6 +1785,10 @@ const closeTooltipModal = () => {
         font-size: p2r(20);
         text-align: center;
         text-transform: uppercase;
+
+        @media (max-width: 599px) {
+            font-size: p2r(18);
+        }
 
         span {
             color: $primary;
@@ -1711,10 +1884,46 @@ const closeTooltipModal = () => {
         margin-bottom: 0;
         padding-top: p2r(20);
         padding-bottom: p2r(10);
+        overflow: hidden;
     }
 }
 
 :deep(.report-head) {
     margin-bottom: p2r(18);
+}
+
+/* Стили для пагинации с использованием :deep() */
+:deep(.swiper-wrapper) {
+    padding-bottom: p2r(32);
+}
+:deep(.swiper-pagination-bullets.swiper-pagination-horizontal) {
+    width: auto;
+}
+:deep(.swiper-pagination) {
+    bottom: p2r(0);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: none;
+    gap: p2r(2);
+
+    @media(max-width: 599px) {
+        display: flex;
+    }
+}
+
+:deep(.swiper-pagination-bullet) {
+    width: p2r(8);
+    height: p2r(8);
+    background: #D9F0E8;
+    border-radius: p2r(8);
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+    background-color: $primary;
+    width: p2r(48);
 }
 </style>

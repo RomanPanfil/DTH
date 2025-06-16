@@ -73,6 +73,14 @@ onUnmounted(() => {
   width: 90%;
   //max-height: 80vh;
   //overflow-y: auto;
+
+    @media (max-width: 599px) {
+        padding: p2r(40) p2r(16) p2r(40) p2r(32);
+    }
+
+    @media (max-width: 420px) {
+        padding: p2r(32) p2r(12) p2r(32) p2r(24);
+    }
 }
 
 .close-btn {
@@ -91,6 +99,18 @@ onUnmounted(() => {
     cursor: pointer;
     padding: 0;
     z-index: 1001;
+
+    @media (max-width: 768px) {
+        top: p2r(-62);
+        right: p2r(0);
+        transform: unset;
+    }
+
+    @media (max-width: 599px) {
+        top: p2r(-52);
+        width: p2r(40);
+        height: p2r(40);
+    }
 
     &-icon {
         font-size: p2r(24);
@@ -119,6 +139,10 @@ onUnmounted(() => {
     max-height: 40vh;
     overflow-y: auto;
 
+    @media (max-width: 420px) {
+        font-size: p2r(14);
+    }
+
       &::-webkit-scrollbar {
         width: p2r(6);
         height: p2r(6);
@@ -135,11 +159,21 @@ onUnmounted(() => {
 
   :deep(p) {
     margin-bottom: p2r(16);
+
+      @media (max-width: 420px) {
+          margin-bottom: p2r(10);
+      }
   }
 
   :deep(ul), :deep(ol) {
     margin-bottom: p2r(16);
     padding-left: p2r(20);
+
+      @media (max-width: 420px) {
+          margin-top: p2r(12);
+          margin-bottom: p2r(10);
+          padding-left: p2r(12);
+      }
   }
 
   :deep(li) {

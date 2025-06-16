@@ -391,9 +391,30 @@ const handleAccountClick = () => {
         background-color: $bgc;
         padding: p2r(80) p2r(60);
         border-radius: p2r(32);
-        box-shadow: 0px 4px 35px rgba(114, 142, 174, 0.1);
+        box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
         max-width: p2r(860);
         margin: p2r(100) auto;
+
+        @media (max-width: 1366px) {
+            padding: p2r(60) p2r(50);
+            margin: p2r(70) auto;
+        }
+
+        @media (max-width: 1280px) {
+            padding: p2r(50) p2r(40);
+            margin: p2r(40) auto;
+        }
+
+        @media (max-width: 1024px) {
+            padding: p2r(32) p2r(32);
+            margin: p2r(24) auto;
+        }
+        
+        @media (max-width: 599px) {
+           border-radius: 0;
+            margin-left: p2r(-30);
+            margin-right: p2r(-30);
+        }
 
         &::before {
             content: '';
@@ -406,6 +427,18 @@ const handleAccountClick = () => {
             height: 70%;
             border-top-left-radius: p2r(4);
             border-bottom-left-radius: p2r(4);
+
+            @media(max-width: 1366px) {
+                width: p2r(18);
+            }
+
+            @media(max-width: 1024px) {
+                width: p2r(12);
+            }
+
+            @media(max-width: 768px) {
+                width: p2r(8);
+            }
         }
 
         @media(max-width: 768px) {

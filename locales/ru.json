@@ -147,7 +147,9 @@
     "webinars": "Вебинары",
     "favorites": "Избранное",
     "paymentHistory": "История покупок",
-    "logout": "Выйти из аккаунта"
+    "logout": "Выйти из аккаунта",
+    "myCourses": "Мои курсы",
+    "myBalance": "Мой баланс"
   },
   "courses": {
     "title": "Курсы",
@@ -161,7 +163,16 @@
     "priceFrom": "Цена, от",
     "priceTo": "Цена, до",
     "takePart": "Принять участие",
-    "payPart": "Оплатить участие"
+    "payPart": "Оплатить участие",
+    "apply": "Применить фильтр",
+    "filter": "Фильтр",
+    "noCourses": "Нет курсов",
+    "error": "Ошибка"
+  },
+  "coursesTabs": {
+    "all": "Все мероприятия",
+    "future": "Будущие",
+    "past": "Прошедшие"
   },
   "page": {
     "loading": "загрузка...",
@@ -178,5 +189,23 @@
     "userAgreement": "Договора публичной оферты",
     "and": "и",
     "politics": "Политики конфиденциальности"
+  },
+  "mobileNav": {
+    "search": "Поиск",
+    "cabinet": "Кабинет"
+  },
+  "payments": {
+    "loading": "загрузка",
+    "noOrders": "заказы отсутствуют",
+    "productName": "Дата и время",
+    "dateTime": "Дата и время",
+    "amount": "Сумма",
+    "status": "Статус оплаты",
+    "totalEarned": "Всего заработано:"
+  },
+  "mobMenu": {
+    "menu": "меню",
+    "close": "закрыть",
+    "weInSocials": "Мы в соцсетях:"
   }
 }

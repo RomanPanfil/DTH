@@ -558,14 +558,10 @@ const submitForm = async () => {
             city: profilerForm.city
         };
 
-        console.log('Submitting profile data:', profileData);
-
         const profileResponse = await $fetch('/api/auth/update-profile', {
             method: 'POST',
             body: profileData
         });
-
-        console.log('Profile update response:', profileResponse);
 
         if (profileResponse.message === 'PROFILE_UPDATED_SUCCESSFULLY') {
             $toast?.success(t('account.profileUpdated'));
@@ -590,14 +586,10 @@ const submitForm = async () => {
                 formData.append('photo', profilerForm.avatar);
             }
 
-            console.log('Submitting photo data:', formData);
-
             const photoResponse = await $fetch('/api/auth/update-photo', {
                 method: 'POST',
                 body: formData
             });
-
-            console.log('Photo update response:', photoResponse);
 
             if (photoResponse.message === 'PHOTO_UPDATED_SUCCESSFULLY') {
                 $toast?.success(t('account.photoUpdated'));
@@ -652,12 +644,10 @@ const submitForm = async () => {
 onMounted(() => {
     document.addEventListener('click', closeDropdownOnClickOutside);
     if (authStore.token) {
-        console.log('personal-data: Loading profile data');
         $fetch('/api/auth/profile', {
             method: 'POST',
             body: { token: authStore.token }
         }).then(response => {
-            console.log('personal-data: Profile data loaded:', response);
             profilerForm.name = response.NAME || '';
             profilerForm.last_name = response.LAST_NAME || '';
             profilerForm.surname = response.SECOND_NAME || '';
@@ -722,6 +712,14 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         column-gap: p2r(20);
+
+        @media(max-width: 768px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media(max-width: 599px) {
+            grid-template-columns: repeat(1, 1fr);
+        }
     }
 
     .change-password {
@@ -744,6 +742,14 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         column-gap: p2r(20);
+
+        @media(max-width: 768px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media(max-width: 599px) {
+            grid-template-columns: repeat(1, 1fr);
+        }
     }
 
     &-avatar {

@@ -1,8 +1,8 @@
 <template>
     <div class="container">
-        <div class="register-container">
-            <div class="register-header">
-                <div class="register-title">Заказ сформирован</div>
+        <div class="payment-container">
+            <div class="payment-header">
+                <div class="payment-title">Заказ сформирован</div>
             </div>
             <div v-if="order" class="order-details">
                 <!-- Динамическое отображение текста для всех методов оплаты -->
@@ -149,7 +149,7 @@ const parsedSuccessText = computed(() => {
 </script>
 
 <style scoped lang="scss">
-.register {
+.payment {
     &-container {
         position: relative;
         background-color: $bgc;
@@ -170,10 +170,42 @@ const parsedSuccessText = computed(() => {
             height: 70%;
             border-top-left-radius: p2r(4);
             border-bottom-left-radius: p2r(4);
+
+            @media(max-width: 1366px) {
+                width: p2r(18);
+            }
+
+            @media(max-width: 1024px) {
+                width: p2r(12);
+            }
+
+            @media(max-width: 768px) {
+                width: p2r(8);
+            }
+        }
+
+        @media(max-width: 1366px) {
+            margin: p2r(80) auto;
+        }
+
+        @media(max-width: 1280px) {
+            margin: p2r(60) auto;
+        }
+
+        @media(max-width: 1024px) {
+            padding: p2r(70) p2r(50);
+            margin: p2r(40) auto;
+        }
+
+        @media(max-width: 992px) {
+            padding: p2r(60) p2r(40);
+            border-radius: p2r(24);
+            margin: p2r(32) auto;
         }
 
         @media(max-width: 768px) {
             padding: p2r(32) p2r(24);
+            margin: p2r(24) auto;
         }
     }
 
@@ -181,11 +213,19 @@ const parsedSuccessText = computed(() => {
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: p2r(6);
         align-items: center;
         margin-bottom: p2r(40);
         padding-bottom: p2r(16);
         border-bottom: 1px solid $border;
+
+        @media (max-width: 768px) {
+            margin-bottom: p2r(32);
+        }
+
+        @media (max-width: 599px) {
+            margin-bottom: p2r(24);
+        }
 
         &-text {
             font-size: p2r(14);
@@ -195,6 +235,7 @@ const parsedSuccessText = computed(() => {
 
     &-btn {
         width: calc(50% - 10px);
+        text-align: center;
 
         @media(max-width: 768px) {
             width: 100%;
@@ -205,6 +246,26 @@ const parsedSuccessText = computed(() => {
         font-weight: 500;
         font-size: p2r(32);
         color: $font-dark-grey;
+
+        @media (max-width: 768px) {
+            font-size: p2r(28);
+        }
+
+        @media (max-width: 599px) {
+            font-size: p2r(24);
+        }
+    }
+}
+
+.order-details {
+    margin-bottom: p2r(40);
+
+    @media (max-width: 1024px) {
+        margin-bottom: p2r(32);
+    }
+    @media (max-width: 599px) {
+        font-size: p2r(14);
+        margin-bottom: p2r(24);
     }
 }
 </style>

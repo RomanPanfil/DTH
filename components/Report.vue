@@ -30,6 +30,10 @@ defineEmits(['open-popup']);
 <style scoped lang="scss">
 .report {
     margin: p2r(20) 0;
+
+    @media (max-width: 768px) {
+        margin: 0;
+    }
 }
 .report-head {
     display: flex;

@@ -165,9 +165,9 @@ if (page.value) {
     useHead({
         title: page.value[locale.value]?.NAME || 'О нас',
         meta: [
-            { name: 'description', content: page.value[locale.value]?.DETAIL_TEXT?.substring(0, 200) || '' },
-            { property: 'og:title', content: page.value[locale.value]?.NAME || 'О нас' },
-            { property: 'og:description', content: page.value[locale.value]?.DETAIL_TEXT?.substring(0, 200) || '' },
+            { name: 'description', content: page.value[locale.value]?.PREVIEW_TEXT || '' },
+            { property: 'og:title', content: page.value[locale.value]?.NAME },
+            { property: 'og:description', content: page.value[locale.value]?.PREVIEW_TEXT || '' },
         ],
     });
 }
