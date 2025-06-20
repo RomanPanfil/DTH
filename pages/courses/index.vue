@@ -1413,7 +1413,9 @@
             </div>
         </div>
     </div>
-    <EducationCards />
+<!--    <EducationCards />-->
+    <CourcesColored :courses="featuredWebinars" />
+
     <div class="filter-mobile" :class="{ 'show': filterPopupOpen }">
         <NuxtIcon name="cross" class="filter-popup-close hidden-desktop" @click="closeFilterPopup"></NuxtIcon>
         <div class="filter">
@@ -1578,6 +1580,7 @@ import { useRoute, useRouter } from 'nuxt/app';
 import { Field } from 'vee-validate';
 import { useI18n } from 'vue-i18n';
 import { useLocaleStore } from '~/stores/locale';
+
 
 const route = useRoute();
 const router = useRouter();
@@ -1904,8 +1907,12 @@ const { data: eventsData, refresh: refreshEvents } = await useAsyncData(
             eventsError.value = null;
             const fastfilter = filterValues.value.fastfilter || {};
             const sortDirection = selectedSortOption.value === 'Сначала ближайшие' ? 'ASC' : 'DESC';
+            const query = { page: currentPage.value, iblockId, GET_ALL_FILES: 'Y', locale: locale.value };
+            if (isFree.value) {
+                query.PROPERTY_IS_FREE = 1;
+            }
             const response = await $fetch('/api/events', {
-                query: { page: currentPage.value, iblockId, GET_ALL_FILES: 'Y', locale: locale.value },
+                query,
                 method: 'POST',
                 body: {
                     params: {
@@ -2113,6 +2120,100 @@ const activeFiltersCount = computed(() => {
 
     return count;
 });
+
+// слайдер курсов внизу
+const fetchLectors = async (lectorIds: number[]) => {
+    if (!lectorIds || lectorIds.length === 0) return {};
+    try {
+        const requestBody = {
+            params: {
+                USER_IDS: lectorIds,
+            },
+        };
+        const response = await $fetch('/api/getprofilesbyids', {
+            method: 'POST',
+            body: requestBody,
+        });
+        if (!response || Object.keys(response).length === 0) {
+            throw new Error('Нет данных о лекторах');
+        }
+        return response;
+    } catch (error) {
+        console.error('Ошибка получения лекторов:', error);
+        throw new Error(`Не удалось загрузить лекторов: ${error.message || 'Неизвестная ошибка'}`);
+    }
+};
+
+const { data: webinarsData, error: webinarsError } = await useAsyncData('featuredWebinars', async () => {
+    try {
+        const { data } = await useFetch('/api/events', {
+            query: {
+                iblockId: '13',
+                GET_ALL_FILES: 'Y',
+                isFeatured: '1',
+            },
+            method: 'POST',
+            body: {
+                params: {
+                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PROPERTY_*'],
+                },
+            },
+        });
+
+        if (!data.value || !data.value.events || !Array.isArray(data.value.events)) {
+            console.error('Неверная структура ответа:', data.value);
+            return [];
+        }
+
+        const allLectorIds = new Set<number>();
+        data.value.events.forEach(event => {
+            const lectorSet = event.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                lectorSet.forEach(lector => {
+                    const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                    if (id) allLectorIds.add(id);
+                });
+            }
+        });
+
+        let profiles = {};
+        if (allLectorIds.size > 0) {
+            profiles = await fetchLectors([...allLectorIds]);
+        }
+
+        const processedEvents = data.value.events.map(event => {
+            const processedEvent = { ...event };
+            const lectorSet = processedEvent.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                processedEvent.lectors = lectorSet
+                    .map(lector => {
+                        const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                        return {
+                            id,
+                            name: profiles[id]
+                                ? `${profiles[id].NAME} ${profiles[id].LAST_NAME || ''}`.trim()
+                                : 'Неизвестный лектор',
+                        };
+                    })
+                    .filter(lector => lector.id);
+            } else {
+                processedEvent.lectors = [];
+            }
+            return processedEvent;
+        });
+
+        return processedEvents;
+    } catch (err) {
+        console.error('Ошибка при загрузке избранных курсов:', err);
+        return [];
+    }
+});
+
+const featuredWebinars = ref(webinarsData.value || []);
+
+if (webinarsError.value) {
+    console.error('Ошибка useAsyncData для событий:', WebinarsError.value);
+}
 </script>
 
 <style scoped lang="scss">

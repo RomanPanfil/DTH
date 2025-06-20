@@ -4,6 +4,7 @@
     "journal": "Журнал DTH",
     "profile": "Личный кабинет",
     "courses": "Курсы",
+    "webinars": "Вебинары",
     "search-result": "Результаты поиска",
     "payment": "Оформление оплаты"
   },
@@ -29,7 +30,9 @@
   },
   "report": {
     "photo": "фото",
-    "video": "видео"
+    "video": "видео",
+    "webinarTitle": "Галерея вебинара",
+    "lookAll": "Смотреть все фото"
   },
   "advantages": {
     "title": "Отчеты о мероприятиях"
@@ -149,6 +152,7 @@
     "paymentHistory": "История покупок",
     "logout": "Выйти из аккаунта",
     "myCourses": "Мои курсы",
+    "myWebinars": "Мои вебинары",
     "myBalance": "Мой баланс"
   },
   "courses": {
@@ -167,12 +171,27 @@
     "apply": "Применить фильтр",
     "filter": "Фильтр",
     "noCourses": "Нет курсов",
-    "error": "Ошибка"
+    "error": "Ошибка",
+    "currency": "бел.руб."
+  },
+  "webinars": {
+    "title": "Вебирары",
+    "payPart": "Оплатить вебинар",
+    "payAccess": "Оплатить доступ",
+    "payAll": "Оплатить весь курс",
+    "getAccess": "Получить доступ",
+    "showAll": "Показать все уроки",
+    "hide": "Скрыть"
+  },
+  "date": {
+    "hour": "ч"
   },
   "coursesTabs": {
     "all": "Все мероприятия",
     "future": "Будущие",
-    "past": "Прошедшие"
+    "past": "Прошедшие",
+    "courses": "Курсы",
+    "webinars": "Вебинары"
   },
   "page": {
     "loading": "загрузка...",

@@ -32,8 +32,8 @@ export default defineEventHandler(async (event) => {
         'params[select][4]': 'PREVIEW_PICTURE',
         'params[select][5]': 'CODE',
         'params[select][6]': 'PROPERTY_*', // Все свойства
-        'params[resize][0]': 320, // Ширина для ресайза
-        'params[resize][1]': 240, // Высота для ресайза
+        'params[resize][0]': 390, // Ширина для ресайза
+        'params[resize][1]': 242, // Высота для ресайза
         'params[resize][2]': 'true', // Обрезка по меньшей стороне
         'params[pager][start]': page,
         'params[pager][limit]': limit,

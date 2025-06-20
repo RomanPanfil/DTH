@@ -2,7 +2,10 @@
     <div class="courses" ref="topRef">
         <h1 class="page-title">{{ $t('courses.title') }}</h1>
         <div v-if="eventsError" class="error-message">
-            {{ eventsError?.details || 'Ошибка загрузки мероприятий' }}
+            {{ eventsError?.details || $t('courses.error') }}
+        </div>
+        <div v-else-if="!eventsData?.courses?.length && isLoadedCourses" class="no-courses">
+            {{ $t('courses.noCourses') }}
         </div>
         <div v-else>
             <div class="sort-tabs">
@@ -29,17 +32,17 @@
                 </div>
             </div>
             <div class="row">
-                <div v-for="event in filteredEvents" :key="event.ID" class="col-lg-4 col-xs-6">
-                    <CourcesCard :event="event" />
+                <div v-for="event in eventsData?.courses" :key="event.ID" class="col-lg-4 col-xs-6">
+                    <LazyCourcesCard :event="event" />
                 </div>
             </div>
+            <Pagination
+                v-if="totalPages > 0"
+                :current-page="currentPage"
+                :total-pages="totalPages"
+                @page-change="handlePageChange"
+            />
         </div>
-        <Pagination
-            v-if="totalPages > 1"
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-change="handlePageChange"
-        />
     </div>
 </template>
 
@@ -47,27 +50,33 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
+import { useLocaleStore } from '~/stores/locale';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const localeStore = useLocaleStore();
 
 const eventsError = ref(null);
 const currentPage = computed(() => Number(route.query.page) || 1);
 const topRef = ref(null);
 const activeTab = ref('all');
+const locale = computed(() => localeStore.locale);
+const isLoadedCourses = ref(false);
 
-const fetchCourseIds = async () => {
-    if (!authStore.isAuthenticated || !authStore.token) return [];
-    const { data, error } = await useFetch('/api/courses/getAccessible', {
-        method: 'POST',
-        body: {
-            TOKEN: authStore.token,
-            pager: { start: 1, limit: 10 },
-        },
-    });
-    if (error.value) throw new Error(error.value.data?.error || 'Ошибка при загрузке ID курсов');
-    return data.value?.COURSES || [];
+const today = new Date().toISOString().split('T')[0];
+
+const getFilter = () => {
+    if (activeTab.value === 'all') {
+        return undefined;
+    }
+    if (activeTab.value === 'future') {
+        return { '>PROPERTY_DATE_FOR_SORT': today };
+    }
+    if (activeTab.value === 'past') {
+        return { '<PROPERTY_DATE_FOR_SORT': today };
+    }
+    return undefined;
 };
 
 const { data: eventsData, refresh: refreshEvents } = await useAsyncData(
@@ -75,28 +84,34 @@ const { data: eventsData, refresh: refreshEvents } = await useAsyncData(
     async () => {
         try {
             eventsError.value = null;
-            const courseIds = await fetchCourseIds();
-            if (courseIds.length === 0) {
-                return { events: [], pagination: { currentPage: 1, limit: 12, total: 0 } };
+
+            if (!authStore.isAuthenticated || !authStore.token) {
+                isLoadedCourses.value = true;
+                return { courses: [], pagination: { currentPage: 1, limit: 12, total: 0 } };
             }
 
-            const response = await $fetch('/api/events', {
-                query: { page: currentPage.value, iblockId: 13, GET_ALL_FILES: 'Y' },
+            const response = await $fetch('/api/courses/GetUserCoursesList', {
                 method: 'POST',
                 body: {
-                    params: {
-                        filter: { IBLOCK_ID: 13, ACTIVE: 'Y', ID: courseIds },
-                        select: ['NAME', 'IBLOCK_ID', 'ID', 'PROPERTY_*'],
-                        pager: { start: currentPage.value, limit: 12 },
-                    },
+                    TOKEN: authStore.token,
+                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PREVIEW_PICTURE', 'PROPERTY_*'],
+                    resize: [390, 242, true],
+                    GET_ALL_FILES: 'Y',
+                    pager: { start: currentPage.value, limit: 12 },
+                    sort: { 'ACTIVE_FROM': 'DESC' },
+                    filter: getFilter(),
                 },
             });
 
-            if (!response?.events) throw new Error('Ошибка загрузки мероприятий');
+            if (!response?.ITEMS?.[locale.value]) {
+                throw new Error('Ошибка загрузки курсов для текущей локали');
+            }
 
-            const allLectorIds = new Set<number>();
-            response.events.forEach((event) => {
-                const lectorSet = event.PROPS?.LECTOR_SET?.VALUE;
+            const courses = response.ITEMS[locale.value];
+
+             const allLectorIds = new Set<number>();
+            courses.forEach((course) => {
+                const lectorSet = course.PROPS?.LECTOR_SET?.VALUE;
                 if (Array.isArray(lectorSet)) {
                     lectorSet.forEach((lector) => {
                         const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
@@ -107,77 +122,61 @@ const { data: eventsData, refresh: refreshEvents } = await useAsyncData(
 
             let profiles = {};
             if (allLectorIds.size > 0) {
-                profiles = await $fetch('/api/getprofilesbyids', { method: 'POST', body: { params: { USER_IDS: [...allLectorIds] } } });
-                if (!profiles || Object.keys(profiles).length === 0) throw new Error('Нет данных о лекторах');
+                profiles = await $fetch('/api/getprofilesbyids', {
+                    method: 'POST',
+                    body: { params: { USER_IDS: [...allLectorIds] } },
+                });
+                if (!profiles || Object.keys(profiles).length === 0) {
+                    console.warn('Нет данных о лекторах');
+                }
             }
 
-            response.events = response.events.map((event) => {
-                const lectorSet = event.PROPS?.LECTOR_SET?.VALUE;
+            const enrichedCourses = courses.map((course) => {
+                const lectorSet = course.PROPS?.LECTOR_SET?.VALUE;
                 if (Array.isArray(lectorSet)) {
-                    event.lectors = lectorSet
+                    course.lectors = lectorSet
                         .map((lector) => {
                             const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
-                            return { id, name: profiles[id] ? `${profiles[id].NAME} ${profiles[id].LAST_NAME || ''}`.trim() : 'Неизвестный лектор' };
+                            return {
+                                id,
+                                name: profiles[id]
+                                    ? `${profiles[id].NAME} ${profiles[id].LAST_NAME || ''}`.trim()
+                                    : 'Неизвестный лектор',
+                            };
                         })
                         .filter((lector) => lector.id);
                 } else {
-                    event.lectors = [];
+                    course.lectors = [];
                 }
-                return event;
+                return course;
             });
 
-            return response;
+            const pagination = {
+                currentPage: response.PAGENAV?.PAGE || currentPage.value,
+                limit: response.PAGENAV?.LIMIT || 12,
+                total: Number(response.PAGENAV?.TOTAL) || enrichedCourses.length,
+            };
+
+            isLoadedCourses.value = true;
+            return { courses: enrichedCourses, pagination };
         } catch (error) {
+            console.error('Ошибка загрузки курсов:', error);
             eventsError.value = { details: error.message || 'Неизвестная ошибка' };
-            return { events: [], pagination: { currentPage: 1, limit: 12, total: 0 } };
+            isLoadedCourses.value = true;
+            return { courses: [], pagination: { currentPage: 1, limit: 12, total: 0 } };
         }
     },
-    { watch: [() => route.query.page] }
+    { watch: [() => route.query.page, () => authStore.token, () => locale.value, activeTab] }
 );
-
-const uniqueEvents = computed(() => {
-    const seenIds = new Set();
-    return eventsData.value?.events.filter((event) => {
-        if (seenIds.has(event.ID)) return false;
-        seenIds.add(event.ID);
-        return true;
-    }) || [];
-});
-
-const filteredEvents = computed(() => {
-    if (activeTab.value === 'all') {
-        return uniqueEvents.value;
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return uniqueEvents.value.filter((event) => {
-        const dateForSort = event.PROPS?.DATE_FOR_SORT?.VALUE;
-
-        if (!dateForSort) {
-            return activeTab.value === 'past';
-        }
-
-        const eventDate = new Date(dateForSort);
-        eventDate.setHours(0, 0, 0, 0);
-
-        if (activeTab.value === 'future') {
-            return eventDate >= today;
-        } else if (activeTab.value === 'past') {
-            return eventDate < today;
-        }
-
-        return true;
-    });
-});
 
 const pagination = computed(() => eventsData.value?.pagination || { currentPage: 1, limit: 12, total: 0 });
 const totalPages = computed(() => Math.ceil(pagination.value.total / pagination.value.limit));
 
 const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages.value) router.push({ path: route.path, query: { page } });
-    scrollToTop();
+    if (page >= 1 && page <= totalPages.value) {
+        router.push({ path: route.path, query: { page } });
+        scrollToTop();
+    }
 };
 
 const scrollToTop = () => {
@@ -186,6 +185,7 @@ const scrollToTop = () => {
 
 const setActiveTab = (tab: string) => {
     activeTab.value = tab;
+    router.push({ path: route.path, query: { page: 1 } }); // Сбрасываем на первую страницу при смене вкладки
 };
 
 onMounted(async () => {
@@ -201,12 +201,20 @@ onMounted(async () => {
 
     onUnmounted(() => clearInterval(checkInterval));
 });
+
+let checkInterval: NodeJS.Timeout | null = null;
 </script>
 
 <style scoped lang="scss">
 .error-message {
     color: $error;
     padding: p2r(20);
+}
+
+.no-courses {
+    padding: p2r(20);
+    text-align: center;
+    color: $error;
 }
 
 .courses {
@@ -241,6 +249,21 @@ onMounted(async () => {
 
         @media(max-width: 1024px) {
             margin-bottom: p2r(40);
+        }
+    }
+
+    .sort-tabs {
+        display: flex;
+        gap: p2r(16);
+        margin-bottom: p2r(32);
+    }
+
+    .sort-tabs-item {
+        padding: p2r(8) p2r(16);
+        cursor: pointer;
+        border-bottom: p2r(2) solid transparent;
+        &.active {
+            border-bottom-color: $primary;
         }
     }
 }

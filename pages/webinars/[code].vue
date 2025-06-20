@@ -5,13 +5,19 @@
         </div>
     </div>
     <div v-else-if="event" class="event-detail">
-        <div class="event-header">
+        <div
+            class="event-header"
+            :style="{
+                '--header-bg': event?.PROPS?.HEADER_BG?.VALUE || '#ffffff',
+                '--header-color': event?.PROPS?.HEADER_COLOR?.VALUE || '#f000000'
+            }"
+        >
             <img v-if="event?.PROPS?.BG_IMG?.VALUE_PATH" :src="`${imageBaseUrl}${event?.PROPS?.BG_IMG?.VALUE_PATH}`" :alt="event?.PROPS?.BG_IMG?.NAME" class="event-header-bg">
             <div class="container">
                 <div class="event-wrapper">
                     <div class="event-main">
                         <Breadcrumbs :event-title="event?.NAME" />
-                        <h1 v-if="event?.NAME" class="page-title">{{ event?.NAME }}</h1>
+                        <h1 v-if="event?.NAME" class="event-main-title page-title">{{ event?.NAME }}</h1>
                         <div v-if="event?.PREVIEW_TEXT" class="event-preview-text">{{ event?.PREVIEW_TEXT }}</div>
                         <div v-if="event?.PROPS?.LECTOR_SET?.VALUE?.length" class="lectors-previews">
                             <div v-for="(lector, index) in lectorsData" :key="index" class="lectors-preview">
@@ -74,12 +80,80 @@
                 <div class="event-wrapper">
                     <div class="event-main">
                         <!-- Блок Видео -->
-                        <div v-if="(event?.PROPS?.AFISHA_VIDEO_FILE?.VALUE_PATH || event?.PROPS?.AFISHA_VIDEO_LINK?.VALUE) && isCourseAccessStatus" class="video-section">
-                            <Video
-                                :preview="event.PROPS.AFISHA_IMG?.VALUE_RESIZE ? `${baseUrl}${event.PROPS.AFISHA_IMG.VALUE_RESIZE}` : ''"
-                                :file="event.PROPS.AFISHA_VIDEO_FILE?.VALUE_PATH ? `${baseUrl}${event.PROPS.AFISHA_VIDEO_FILE.VALUE_PATH}` : ''"
-                                :code="event.PROPS.AFISHA_VIDEO_LINK?.VALUE || ''"
-                            />
+                        <div class="video-section">
+                            <div class="video-section-main">
+                                <Video
+                                    v-if="isCourseAccessStatus && isAuth"
+                                    :preview="event?.PROPS?.VIDEO_PREVIEW?.VALUE_RESIZE ? `${baseUrl}${event?.PROPS?.VIDEO_PREVIEW.VALUE_RESIZE}` : ''"
+                                    :file="event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH ? `${baseUrl}${event?.PROPS?.PLAYER_VIDEO.VALUE_PATH}` : (childLessons.length > 0 && childLessons[0]?.PROPS?.PLAYER_VIDEO?.VALUE_PATH ? `${baseUrl}${childLessons[0].PROPS.PLAYER_VIDEO.VALUE_PATH}` : '')"
+                                    :code="event?.PROPS?.PLAYER_CODE?.VALUE ? event?.PROPS?.PLAYER_CODE?.VALUE : (childLessons.length > 0 && childLessons[0]?.PROPS?.PLAYER_CODE?.VALUE ? childLessons[0].PROPS.PLAYER_CODE.VALUE : '')"
+                                />
+                                <div v-else class="video-section-image">
+                                    <img
+                                        :src="event?.PROPS?.VIDEO_PREVIEW.VALUE_RESIZE ? `${baseUrl}${event?.PROPS?.VIDEO_PREVIEW.VALUE_RESIZE}` : (childLessons.length > 0 && childLessons[0]?.PROPS?.VIDEO_PREVIEW?.VALUE_PATH ? `${baseUrl}${childLessons[0].PROPS.VIDEO_PREVIEW.VALUE_PATH}` : `${baseUrl}/images/placeholder.jpg`)"
+                                        alt="alt"
+                                    >
+                                    <div class="video-section-access">
+                                        <div class="video-section-lock">
+                                            <NuxtIcon name="lock-keyhole" filled class="video-section-lock-icon" />
+                                        </div>
+                                        <button
+                                            class="ui-btn ui-btn__primary event-card-pay-btn"
+                                            :disabled="!hasAvailableSeats || isCoursePaidComputed || isCourseAccessStatus"
+                                            @click="takePart"
+                                        >
+                                            {{ $t('webinars.payAccess') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="video-previews">
+                                <div
+                                    v-for="(lesson, index) in isSpoilerOpen ? childLessons : childLessons.slice(0, 4)"
+                                    :key="lesson.ID"
+                                    class="video-preview"
+                                >
+                                    <NuxtLink :to="`/webinars/${lesson?.CODE}`">
+                                        <div class="video-preview-image" :class="{ active: lesson?.CODE === eventCode }">
+                                            <div class="video-preview-badge">
+                                                <div class="video-preview-badge-item">
+                                                    урок {{ index + 1}}
+                                                </div>
+                                                <div v-if="lesson?.PROPS?.VIDEO_LONG?.VALUE" class="video-preview-badge-item">
+                                                    {{ lesson.PROPS.VIDEO_LONG.VALUE}}
+                                                </div>
+                                            </div>
+                                            <img v-if="lesson?.PROPS?.VIDEO_PREVIEW?.VALUE_PATH"
+                                                 :src="`${baseUrl}${lesson.PROPS.VIDEO_PREVIEW.VALUE_PATH}`"
+                                                 :alt="lesson.NAME"
+                                            >
+                                            <div v-if="lesson?.LESSON_ACCESS !== 0 && isAuth" class="video-preview-lock">
+                                                <NuxtIcon name="play-small" filled class="video-preview-lock-icon" />
+                                            </div>
+                                            <div v-else class="video-preview-lock">
+                                                <NuxtIcon name="lock-small" filled class="video-preview-lock-icon" />
+                                            </div>
+
+                                        </div>
+                                        <div class="video-preview-title">
+                                            {{ lesson?.NAME }}
+                                        </div>
+                                    </NuxtLink>
+                                </div>
+                            </div>
+                            <button
+                                v-if="childLessons.length > 4"
+                                class="video-more ui-btn ui-btn__transparent ui-btn__block"
+                                @click="toggleSpoiler"
+                            >
+                                <template v-if="isSpoilerOpen">
+                                    {{ $t('webinars.hide') }}
+                                </template>
+                                <template v-else>
+                                    {{ $t('webinars.showAll') }} ({{ childLessons.length - 4 }})
+                                </template>
+                            </button>
                         </div>
                         <!-- Блок Лекторы -->
                         <div v-if="event.PROPS?.LECTOR_SET?.VALUE?.length" class="ui-section lectors-section">
@@ -110,19 +184,18 @@
                         </div>
                         <!-- Блок О курсе -->
                         <div v-if="event?.PROPS?.ABOUT_DESCRIPTION?.VALUE" class="ui-section course-section article">
-                            <h2 class="ui-block-title">{{ event.PROPS.ABOUT_TITLE.VALUE || 'О курсе' }}</h2>
+                            <h2 class="ui-block-title">{{ event.PROPS.ABOUT_TITLE.VALUE }}</h2>
                             <div class="course-content" v-html="decodedAboutDescription"></div>
                         </div>
                         <!-- Блок Почему стоит посетить курс -->
                         <div v-if="event?.PROPS?.WHY_ICONS?.VALUE" class="ui-section why-attend-section article">
-                            <h2 class="ui-block-title">{{ event.PROPS.WHY_TITLE.VALUE || 'Почему стоит посетить курс?' }}</h2>
+                            <h2 class="ui-block-title">{{ event.PROPS.WHY_TITLE.VALUE }}</h2>
                             <div class="why-attend-items row">
                                 <div v-for="(item, index) in event.PROPS.WHY_ICONS.VALUE" :key="index" class="col-md-6 col-sm-12">
                                     <div class="why-attend-item">
                                         <div class="why-attend-icon">
                                             <img :src="item.ICON ? `${baseUrl}${item.ICON}` : ''" alt="Icon" />
                                         </div>
-
                                         <div class="why-attend-text">
                                             <div class="why-attend-text-title">{{ item.TITLE }}</div>
                                             <div class="why-attend-text-description">{{ item.DESCRIPTION }}</div>
@@ -134,154 +207,7 @@
                                 <div class="why-attend-subtitle" v-html="getDecodedHTML(event.PROPS.WHY_DESCRIPTION.VALUE?.TEXT || '')"></div>
                             </div>
                         </div>
-                        <!--   Блок Программа  -->
-                        <div v-if="event?.PROPS?.PROGRAM_DESCRIPTION?.VALUE?.TEXT" class="ui-section program-section article">
-                            <h2 class="ui-block-title">{{ event.PROPS.PROGRAM_DESCRIPTION.NAME || 'Почему стоит посетить курс?' }}</h2>
-                            <div class="why-attend-subtitle" v-html="getDecodedHTML(event.PROPS.PROGRAM_DESCRIPTION.VALUE?.TEXT || '')"></div>
-                        </div>
-                        <!-- Блок Где и когда -->
-                        <div
-                            v-if="event?.PROPS?.WHEN_ADDR?.VALUE || event?.PROPS?.WHEN_DATE?.VALUE || event?.PROPS?.WHEN_PHONE?.VALUE || event?.PROPS?.WHEN_EMAIL?.VALUE || event?.PROPS?.WHEN_GALL?.VALUE_PATH"
-                            class="ui-section when-section article"
-                        >
-                            <h2 class="ui-block-title">Где и когда</h2>
-                            <div class="when-info">
-                                <div class="row">
-                                    <div v-if="event?.PROPS?.WHEN_ADDR?.VALUE" class="col-lg-4 col-md-6 col-sm-4 col-xs-6">
-                                        <div class="when-info-item">
-                                            <NuxtIcon name="pin" class="when-info-icon" filled />
-                                            <div class="when-info-text">
-                                                <div class="when-info-label">
-                                                    Адрес проведения:
-                                                </div>
-                                                <div class="when-info-value">
-                                                    <div>{{ event.PROPS?.WHEN_ADDR?.VALUE }}</div>
-                                                </div>
-                                                <a href="#" class="when-map-link" @click.prevent="openMapModal">Посмотреть на карте</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-if="event?.PROPS?.WHEN_DATE?.VALUE" class="col-lg-4 col-md-6 col-sm-4 col-xs-6">
-                                        <div class="when-info-item">
-                                            <NuxtIcon name="calendar" class="when-info-icon" filled />
-                                            <div class="when-info-text">
-                                                <div class="when-info-label">
-                                                    Время проведения:
-                                                </div>
-                                                <div class="when-info-value">
-                                                    <div v-for="(date, index) in event.PROPS?.WHEN_DATE?.VALUE" :key="index">
-                                                        {{ date }}
-                                                    </div>
-                                                </div>
-                                                <div class="when-timezone">Местное время {{ event.PROPS?.WHEN_UTC?.VALUE }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-if="event?.PROPS?.WHEN_PHONE?.VALUE || event.PROPS?.WHEN_EMAIL?.VALUE" class="col-lg-4 col-md-6 col-sm-4 col-xs-6">
-                                        <div class="when-info-item">
-                                            <NuxtIcon name="engagement" class="when-info-icon" filled />
-                                            <div>
-                                                <div class="when-info-label">
-                                                    Наши контакты:
-                                                </div>
-                                                <div class="when-info-value">
-                                                    <div v-for="(phone, index) in event.PROPS?.WHEN_PHONE?.VALUE" :key="index">
-                                                        <a :href="`tel:${phone}`" class="when-contact-phone">{{ phone }}</a>
-                                                    </div>
-                                                    <div>
-                                                        <a :href="`mailto:${event.PROPS?.WHEN_EMAIL?.VALUE}`" class="when-contact-link">
-                                                            {{ event.PROPS?.WHEN_EMAIL?.VALUE }}
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-if="event?.PROPS?.WHEN_GALL?.VALUE_PATH" class="when-gallery">
-                                <div class="when-gallery-arrows">
-                                    <div class="when-gallery-arrow when-gallery-arrow__prev">
-                                        <NuxtIcon name="arrow-left" class="icon" filled />
-                                    </div>
-                                    <div class="when-gallery-arrow when-gallery-arrow__next">
-                                        <NuxtIcon name="arrow-right" class="icon" filled />
-                                    </div>
-                                </div>
-                                <div>
-                                    <Swiper
-                                        :modules="[SwiperNavigation, Pagination]"
-                                        :slides-per-view="3"
-                                        :space-between="20"
-                                        :breakpoints="{
-                                            0: { slidesPerView: 1, spaceBetween: 10 },
-                                            768: { slidesPerView: 2, spaceBetween: 15 },
-                                            1024: { slidesPerView: 3, spaceBetween: 20 }
-                                        }"
-                                        :navigation="{
-                                            prevEl: '.when-gallery-arrow__prev',
-                                            nextEl: '.when-gallery-arrow__next'
-                                        }"
-                                        :pagination="{ clickable: true, el: '.swiper-pagination' }"
-                                        :loop="event.PROPS?.WHEN_GALL?.VALUE_PATH?.length > 3"
-                                        class="when-gallery-swiper"
-                                    >
-                                        <SwiperSlide v-for="(image, index) in event.PROPS?.WHEN_GALL?.VALUE_PATH" :key="index">
-                                            <img :src="image ? `${baseUrl}${image}` : ''" alt="Gallery image" class="when-gallery-image" />
-                                        </SwiperSlide>
-                                        <div class="swiper-pagination"></div>
-                                    </Swiper>
-                                </div>
-
-                            </div>
-                            <div class="when-description" v-html="getDecodedHTML(event.PROPS?.WHEN_DESCRIPTION?.VALUE?.TEXT || '')"></div>
-                        </div>
-
-                        <div v-if="event?.PROPS?.PLAYER_DATE_VIDEO_ACCESS?.VALUE" class="broadcast">
-                            <NuxtIcon name="device-monitor" class="broadcast-icon" filled />
-                            <div class="broadcast-title">
-                                онлайн-трансляция начнется<br>
-                                <span>{{ formatDate(event.PROPS.PLAYER_DATE_VIDEO_ACCESS.VALUE) }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Блок Стоимость участия -->
-                        <div v-if="event?.PROPS?.COST_GR?.VALUE" class="ui-section cost-section article">
-                            <h2 class="ui-block-title cost-section-title">Стоимость участия</h2>
-                            <div v-if="event?.PROPS?.COST_DESCRIPTION?.VALUE?.TEXT" class="cost-description" v-html="getDecodedHTML(event.PROPS?.COST_DESCRIPTION?.VALUE?.TEXT)">
-                            </div>
-                            <div class="cost-content">
-                                <div class="row">
-                                    <div v-for="(costGroup, index) in event.PROPS?.COST_GR?.VALUE" :key="index" class="col-md-4">
-                                        <div class="cost-group">
-                                            <div class="cost-group-header">
-                                                <div class="cost-group-header-text">
-                                                    <div class="cost-group-title">{{ costGroup.SUB_VALUES.COST_GR_TITLE.VALUE }}</div>
-                                                    <div v-if="costGroup.SUB_VALUES.COST_GR_SUBTITLE?.VALUE" class="cost-group-subtitle">
-                                                        {{ costGroup.SUB_VALUES.COST_GR_SUBTITLE.VALUE }}
-                                                    </div>
-                                                </div>
-                                                <NuxtIcon v-if="costGroup?.SUB_VALUES?.COST_GR_SALE_DESCRIPTION" name="discount" filled class="cost-group-header-icon"/>
-                                            </div>
-                                            <div class="cost-group-details">
-                                                <div class="cost-group-type">{{ costGroup.SUB_VALUES.COST_GR_TYPE.VALUE }}:</div>
-                                                <div class="cost-group-price">{{ costGroup.SUB_VALUES.COST_GR_PRICE.VALUE }}</div>
-                                                <button class="cost-group-btn" @click="openTooltipModal(costGroup)">
-                                                    <template v-if="costGroup?.SUB_VALUES?.COST_GR_SALE_DESCRIPTION">
-                                                        Подробнее о скидке
-                                                    </template>
-                                                    <template v-else>
-                                                        Подробнее об оплате
-                                                    </template>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!--   Блок Теги  -->
+                        <!-- Блок Теги -->
                         <div v-if="event?.TAGS" class="ui-section tags-section">
                             <h2 class="ui-block-title">Теги мероприятия</h2>
                             <div class="tags-list">
@@ -290,12 +216,11 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- Блок Отчет -->
                         <div v-if="event.PROPS?.REPORT_GALL?.VALUE_PATH?.length" class="ui-section report-section">
                             <Report
-                                :title="'Отчет с мероприятия'"
-                                :link-name="'Смотреть все фото'"
+                                :title="$t('report.webinarTitle')"
+                                :link-name="$t('report.lookAll')"
                                 :link-url="reportUrl"
                                 :photos="reportGalleryThumbs"
                                 @open-popup="openPopup"
@@ -315,39 +240,34 @@
                                 <div class="event-card-image">
                                     <img v-if="event.PREVIEW_PICTURE" :src="getImageUrl(event.PREVIEW_PICTURE)" :alt="event.NAME" />
                                 </div>
-                                <div class="event-card-info">
-                                    <div v-if="event.PROPS.WHEN_DATE?.VALUE" class="event-card-info-item">
-                                        {{ formatEventDates(event.PROPS.WHEN_DATE?.VALUE) }}
-                                    </div>
-                                    <div v-if="event.PROPS.WHEN_ADDR?.VALUE" class="event-card-info-item">
-                                        {{ event.PROPS.CITY.VALUE}}
-                                    </div>
-                                    <div v-if="event.PROPS.FORMAT?.VALUE && event.PROPS.FORMAT?.VALUE==='Online'" class="event-card-info-item">
-                                        {{ event.PROPS.FORMAT?.VALUE }}
+                                <div class="event-card-badges">
+                                    <div class="event-card-badge ui-badge">{{ event.PROPS.TYPE?.VALUE }}</div>
+                                    <div v-if="event.PROPS.LESSONS?.VALUE.length || event.PROPS.VIDEO_LONG?.VALUE" class="event-card-badge ui-badge ui-badge__dark">
+                                        <span v-if="event.PROPS.LESSONS?.VALUE.length">{{ event.PROPS.LESSONS?.VALUE.length }} {{ declineWord(event.PROPS.LESSONS?.VALUE.length, ['урок', 'урока', 'уроков']) }}</span>
+                                        <span v-if="event.PROPS.VIDEO_LONG?.VALUE">{{ event.PROPS.VIDEO_LONG?.VALUE }}</span>
                                     </div>
                                 </div>
-                                <div v-if="event.PROPS.TYPE?.VALUE" class="event-card-badge ui-badge">
-                                    {{ event.PROPS.TYPE?.VALUE || 'Без категории' }}
-                                </div>
-                                <div v-if="event?.PROPS?.PRICE?.VALUE || event?.PROPS?.SEATS?.VALUE" class="event-card-price">
-                                    <div v-if="event?.PROPS?.PRICE?.VALUE" class="event-card-price-value">
-                                        <span>{{ event.PROPS.PRICE?.VALUE }}</span> бел.руб.
+                                <div v-if="event?.PROPS?.PRICE?.VALUE" class="event-card-price">
+                                    <div v-if="isMainLesson" class="event-card-price-value">
+                                        <span>{{ event.PROPS.PRICE_FOR_ALL?.VALUE }}</span> {{ $t('courses.currency') }}
                                     </div>
-                                    <div v-if="event?.PROPS?.SEATS?.VALUE" class="event-card-seats">
-                                        <div class="event-card-seats-title">Осталось мест:</div>
-                                        {{ Math.max(0, event.PROPS.SEATS?.VALUE - (event.PROPS.REGISTERED?.VALUE || 0)) }}
-                                        из {{ event.PROPS.SEATS?.VALUE }}
+                                    <div v-else-if="isFree" class="event-card-price-value">
+                                        <span>{{ event.PROPS.IS_FREE?.NAME }}</span>
+                                    </div>
+                                    <div v-else class="event-card-price-value">
+                                        <span>{{ event.PROPS.PRICE?.VALUE }}</span> {{ $t('courses.currency') }}
                                     </div>
                                 </div>
                                 <div class="event-card-pay">
                                     <button
                                         class="ui-btn ui-btn__primary event-card-pay-btn"
-                                        :disabled="!hasAvailableSeats || isCoursePaidComputed"
+                                        :disabled="!hasAvailableSeats || isCoursePaidComputed || isCourseAccessStatus"
                                         @click="takePart"
                                     >
                                         <template v-if="!hasAvailableSeats">Мест нет</template>
-                                        <template v-else-if="isFree">{{ $t('courses.takePart') }}</template>
-                                        <template v-else>{{ $t('courses.payPart') }}</template>
+                                        <template v-else-if="isFree">{{ $t('webinars.getAccess') }}</template>
+                                        <template v-else-if="isMainLesson">{{ $t('webinars.payAll') }}</template>
+                                        <template v-else>{{ $t('webinars.payPart') }}</template>
                                     </button>
                                     <button class="event-card-fav-btn" @click="addToFav">
                                         <NuxtIcon
@@ -365,13 +285,11 @@
             </div>
         </div>
     </div>
-
     <div v-else class="container">
         <div>Loading...</div>
     </div>
-    <!--    хардкод-->
+    <!-- хардкод -->
     <EducationCards />
-
     <!-- Модальное окно -->
     <ModalsTooltipModal
         :is-open="isTooltipModalOpen"
@@ -388,7 +306,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue';
+import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
 import { useModalsStore } from '~/stores/modals';
@@ -422,6 +340,8 @@ const lectorsData = ref([]);
 const reportData = ref(null);
 const isShareLinksShow = ref(false);
 const isAddingToFav = ref(false);
+const childLessons = ref([]);
+const isSpoilerOpen = ref(false);
 
 // Состояние для модального окна
 const isTooltipModalOpen = ref(false);
@@ -435,6 +355,9 @@ const mapLongitude = ref(27.557088);
 const isCoursePaid = ref<boolean | null>(null);
 const isCourseAccessStatus = ref<boolean | null>(null);
 
+const toggleSpoiler = () => {
+    isSpoilerOpen.value = !isSpoilerOpen.value;
+}
 
 const openMapModal = () => {
     if (event.value?.PROPS?.WHEN_MAP?.VALUE) {
@@ -492,7 +415,7 @@ const getImageUrl = (path) => {
     return `${imageBaseUrl}${path}`;
 };
 
-// Форматирование дат мероприятия (без изменений)
+// Форматирование дат мероприятия
 const formatEventDates = (dateStrings: string[]) => {
     if (!dateStrings || !Array.isArray(dateStrings) || dateStrings.length === 0)
         return 'Дата не указана';
@@ -638,7 +561,7 @@ const fetchReportData = async (reportId) => {
             console.error('Ошибка загрузки отчета:', response.details);
             return null;
         }
-        return response.item; // Возвращаем весь объект item (содержит RU, EN, etc.)
+        return response.item;
     } catch (error) {
         console.error('Ошибка при запросе отчета:', error);
         return null;
@@ -649,9 +572,123 @@ const reportUrl = computed(() => {
     if (!reportData.value || !reportData.value[locale.value]?.DETAIL_PAGE_URL) {
         return '/journal/reports';
     }
-    // Удаляем .html и возвращаем DETAIL_PAGE_URL для текущего языка
     return reportData.value[locale.value].DETAIL_PAGE_URL.replace(/\.html$/, '');
 });
+
+// Функция для получения дочерних уроков
+// const fetchChildLessons = async (parentCourseId: number) => {
+//     if (!event.value?.ID) {
+//         console.error('fetchChildLessons: Event ID not found');
+//         return;
+//     }
+//
+//     try {
+//         const response = await $fetch('/api/webinars/getlessons', {
+//             method: 'POST',
+//             body: {
+//                 COURSE_ID: !parentCourseId ? Number(event.value.ID) : parentCourseId,
+//                 TOKEN: authStore.token || undefined // Передаём токен, если пользователь авторизован
+//             }
+//         });
+//
+//         if (response && response.ITEMS && response.ITEMS[locale.value]) {
+//             childLessons.value = response.ITEMS[locale.value];
+//             console.log('Child Lessons:', childLessons.value);
+//         } else {
+//             console.warn('No child lessons found or invalid response structure');
+//             childLessons.value = [];
+//         }
+//     } catch (error) {
+//         console.error('Ошибка при загрузке дочерних уроков:', error);
+//         const errorMessage = error.data?.message || error.statusMessage || 'Неизвестная ошибка';
+//         console.error('Подробности ошибки:', errorMessage);
+//         childLessons.value = [];
+//     }
+// };
+
+// Функция для получения дочерних уроков
+const fetchChildLessons = async (parentCourseId: number) => {
+    if (!event.value?.ID) {
+        console.error('fetchChildLessons: Event ID not found');
+        childLessons.value = [];
+        return;
+    }
+
+    // Формируем тело запроса
+    const requestBody: { COURSE_ID: number; TOKEN?: string } = {
+        COURSE_ID: !parentCourseId ? Number(event.value.ID) : parentCourseId,
+    };
+
+    // Добавляем TOKEN, только если пользователь авторизован
+    if (authStore.token) {
+        console.log('token')
+        requestBody.TOKEN = authStore.token;
+    }
+
+    try {
+        const response = await $fetch('/api/webinars/getlessons', {
+            method: 'POST',
+            body: requestBody
+        });
+
+        if (response && response.ITEMS && response.ITEMS[locale.value]) {
+            childLessons.value = response.ITEMS[locale.value];
+        } else {
+            console.warn('No child lessons found or invalid response structure');
+            childLessons.value = [];
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке дочерних уроков:', error);
+        const errorMessage = error.data?.message || error.statusMessage || 'Неизвестная ошибка';
+        console.error('Подробности ошибки:', errorMessage);
+        childLessons.value = [];
+    }
+};
+
+// Функция для получения родительского урока
+const fetchParentLesson = async () => {
+    if (!event.value?.ID) {
+        console.error('fetchParentLesson: Event ID not found');
+        return;
+    }
+
+    const lessonId = Number(event.value.ID);
+    if (!Number.isInteger(lessonId) || lessonId <= 0) {
+        console.error('fetchParentLesson: Invalid Lesson ID, must be a positive integer', lessonId);
+        return;
+    }
+
+    try {
+        const response = await $fetch('/api/webinars/getmainlesson', {
+            method: 'POST',
+            body: {
+                params: lessonId
+            }
+        });
+
+        if (response && response.ITEM && response.ITEM[locale.value]) {
+            const parentLesson = response.ITEM[locale.value];
+            console.log('Parent Lesson:', parentLesson);
+            console.log("Parent Lesson Id:", parentLesson.ID);
+
+            // Проверка валидности ID родительского курса
+            const parentCourseId = Number(parentLesson.ID);
+            if (!Number.isInteger(parentCourseId) || parentCourseId <= 0) {
+                console.error('fetchParentLesson: Invalid Parent Course ID, must be a positive integer', parentCourseId);
+                return;
+            }
+
+            // Вызов функции для получения дочерних уроков
+            await fetchChildLessons(parentCourseId);
+        } else {
+            console.warn('No parent lesson found or invalid response structure');
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке родительского урока:', error);
+        const errorMessage = error.data?.message || error.statusMessage || 'Неизвестная ошибка';
+        console.error('Подробности ошибки:', errorMessage);
+    }
+};
 
 // Загрузка данных мероприятия и отчета
 const fetchEventData = async () => {
@@ -659,7 +696,7 @@ const fetchEventData = async () => {
         const { data, error } = await useFetch(`/api/item/${eventCode}`, {
             method: 'GET',
             query: {
-                iblockId: 13,
+                iblockId: 19,
             },
         });
 
@@ -700,56 +737,68 @@ const fetchEventData = async () => {
         });
 
         eventError.value = null;
+
+        // Загружаем дочерние уроки, если это главный вебинар
+        if (isMainLesson.value) {
+            await fetchChildLessons();
+        } else {
+            await fetchParentLesson();
+        }
     } catch (error) {
         eventError.value = { details: error.message || 'Ошибка загрузки мероприятия' };
     }
 
-    try {
-        const { data, error } = await useFetch('/api/courses/checkCourseBuy', {
-            method: 'POST',
-            body: {
-                params: {
-                    TOKEN: authStore.token,
-                    COURSE_ID: Number(event.value.ID)
+    if(authStore.token) {
+        try {
+            const { data, error } = await useFetch('/api/courses/checkCourseBuy', {
+                method: 'POST',
+                body: {
+                    params: {
+                        TOKEN: authStore.token,
+                        COURSE_ID: Number(event.value.ID)
+                    }
                 }
-            }
-        })
+            })
 
-        if (error.value) {
-            console.error('Ошибка проверки оплаты:', error.value)
-            isCoursePaid.value = false // По умолчанию считаем не оплаченным при ошибке
-        } else if (data.value?.PAY_EXISTS === 1) {
-            isCoursePaid.value = true
-        } else {
+            if (error.value) {
+                console.error('Ошибка проверки оплаты:', error.value)
+                isCoursePaid.value = false
+            } else if (data.value?.PAY_EXISTS === 1) {
+                isCoursePaid.value = true
+            } else {
+                isCoursePaid.value = false
+            }
+        } catch (err) {
+            console.error('Ошибка при запросе статуса оплаты:', err)
             isCoursePaid.value = false
         }
-    } catch (err) {
-        console.error('Ошибка при запросе статуса оплаты:', err)
-        isCoursePaid.value = false
-    }
 
-    try {
-        const { data, error } = await useFetch('/api/courses/checkCourseAccess', {
-            method: 'POST',
-            body: {
-                params: {
-                    TOKEN: authStore.token,
-                    COURSE_ID: Number(event.value.ID)
+        try {
+            const { data, error } = await useFetch('/api/courses/checkCourseAccess', {
+                method: 'POST',
+                body: {
+                    params: {
+                        TOKEN: authStore.token,
+                        COURSE_ID: Number(event.value.ID)
+                    }
                 }
-            }
-        })
+            })
 
-        if (error.value) {
-            console.error('Ошибка проверки доступа:', error.value)
-            isCourseAccessStatus.value = false
-        } else if (data.value?.ACCESS === 1) {
-            isCourseAccessStatus.value = true
-        } else {
+            if (error.value) {
+                console.error('Ошибка проверки доступа:', error.value)
+                isCourseAccessStatus.value = false
+            } else if (data.value?.ACCESS === 1) {
+                isCourseAccessStatus.value = true
+            } else {
+                isCourseAccessStatus.value = false
+            }
+        } catch (err) {
+            console.error('Ошибка при запросе статуса оплаты:', err)
             isCourseAccessStatus.value = false
         }
-    } catch (err) {
-        console.error('Ошибка при запросе статуса оплаты:', err)
-        isCourseAccessStatus.value = false
+    } else {
+        isCoursePaid.value = false;
+        isCourseAccessStatus.value = false;
     }
 };
 
@@ -777,7 +826,7 @@ const fetchLectors = async (lectorIds) => {
 
 fetchEventData();
 
-// Логика для "липкого" поведения event-aside (без изменений)
+// Логика для "липкого" поведения event-aside
 const eventAside = ref<HTMLElement | null>(null);
 onMounted(async () => {
     const handleStickyAside = () => {
@@ -829,21 +878,23 @@ onMounted(async () => {
 
 const isCoursePaidComputed = computed(() => isCoursePaid.value !== null ? isCoursePaid.value : false);
 
+const isAuth = computed(() => !!authStore.token);
+
 // Устанавливаем метатеги
 onMounted(() => {
     if (event.value) {
         useHead(computed(() => {
             const meta = [];
 
-                meta.push(
-                    { name: 'description', content: event?.value?.PREVIEW_TEXT },
-                    { property: 'og:title', content: event?.value?.NAME },
-                    { property: 'og:description', content: event.value?.DETAIL_TEXT?.substring(0, 200) || 'Детали мероприятия от Dental Training House' },
-                    { property: 'og:image', content: event.value?.PREVIEW_PICTURE ? `${imageBaseUrl}${event.value.PREVIEW_PICTURE}` : `${baseUrl}/images/logo.png` },
-                    { property: 'og:url', content: `${baseUrl}${route.fullPath}` },
-                    { property: 'og:type', content: 'article' },
-                    { property: 'og:site_name', content: 'DTH Events' },
-                );
+            meta.push(
+                { name: 'description', content: event?.value?.PREVIEW_TEXT },
+                { property: 'og:title', content: event?.value?.NAME },
+                { property: 'og:description', content: event.value?.DETAIL_TEXT?.substring(0, 200) || 'Детали мероприятия от Dental Training House' },
+                { property: 'og:image', content: event.value?.PREVIEW_PICTURE ? `${imageBaseUrl}${event.value.PREVIEW_PICTURE}` : `${baseUrl}/images/logo.png` },
+                { property: 'og:url', content: `${baseUrl}${route.fullPath}` },
+                { property: 'og:type', content: 'article' },
+                { property: 'og:site_name', content: 'DTH Events' },
+            );
 
             return {
                 title: event?.value?.NAME,
@@ -853,10 +904,13 @@ onMounted(() => {
     }
 });
 
+// Проверка, является ли курс главным
+const isMainLesson = computed(() => {
+    return event.value?.PROPS?.MAIN_LESSON?.VALUE === 1;
+});
 
 const addToFav = async () => {
     if (!authStore.isAuthenticated) {
-        console.log('addToFav: User not authenticated, opening login modal');
         modalsStore.openModal('login');
         return;
     }
@@ -881,7 +935,6 @@ const addToFav = async () => {
                 }
             });
             authStore.removeFavorite(eventId);
-            // useToast().success('Курс удален из избранного');
         } else {
             // Добавление в избранное
             await $fetch('/api/favorites/add', {
@@ -892,9 +945,7 @@ const addToFav = async () => {
                 }
             });
             authStore.addFavorite(eventId);
-            // useToast().success('Курс добавлен в избранное');
         }
-        // Синхронизируем избранное с сервером
         await authStore.fetchProfile();
     } catch (error) {
         console.error('addToFav: Error:', error);
@@ -903,14 +954,11 @@ const addToFav = async () => {
             console.warn('addToFav: Invalid token, opening login modal');
             modalsStore.openModal('login');
         } else if (error.data?.error === 'ERROR_ITEM_ALREADY_FAVORITE') {
-            await authStore.fetchProfile(); // Синхронизируем избранное
-            // useToast().info('Курс уже в избранном');
+            await authStore.fetchProfile();
         } else if (error.data?.error === 'ERROR_ITEM_NOT_FAVORITE') {
-            await authStore.fetchProfile(); // Синхронизируем избранное
-            // useToast().info('Курс не находится в избранном');
+            await authStore.fetchProfile();
         } else {
             console.error('addToFav: Unknown error:', errorMessage);
-            // useToast().error('Не удалось изменить избранное');
         }
     } finally {
         isAddingToFav.value = false;
@@ -923,38 +971,130 @@ const isFree = computed(() => {
 
 // Проверка наличия свободных мест
 const hasAvailableSeats = computed(() => {
-    if (!event.value?.PROPS?.SEATS?.VALUE) return true; // Если мест не указано, считаем, что ограничения нет
+    if (!event.value?.PROPS?.SEATS?.VALUE) return true;
     const totalSeats = Number(event.value.PROPS.SEATS.VALUE);
     const registered = Number(event.value.PROPS.REGISTERED?.VALUE || 0);
     return totalSeats - registered > 0;
 });
 
+// const takePart = async () => {
+//     if (!authStore.isAuthenticated) {
+//         modalsStore.openModal('login');
+//         return;
+//     }
+//
+//     if (!event.value?.ID) {
+//         return;
+//     }
+//
+//     if (isFree.value) {
+//         try {
+//             const response = await $fetch('/api/orders/create', {
+//                 method: 'POST',
+//                 body: {
+//                     token: authStore.token,
+//                     courseId: Number(event.value.ID),
+//                     paymentMethodId: 4
+//                 }
+//             });
+//
+//             const orderCookie = useCookie('orderData', {
+//                 maxAge: 60 * 60 * 24,
+//                 path: '/',
+//                 sameSite: 'lax',
+//             });
+//             orderCookie.value = {
+//                 orderId: response.orderId,
+//                 amount: response.amount,
+//                 name: event.value.NAME || 'Unknown Course',
+//                 paymentMethod: 4
+//             };
+//
+//             router.push('/payment/success');
+//         } catch (error) {
+//             console.error('Ошибка при создании заказа:', error);
+//             const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';
+//             let userFriendlyMessage = 'Ошибка при создании заказа';
+//
+//             switch (errorMessage) {
+//                 case 'ERROR_INVALID_TOKEN':
+//                     userFriendlyMessage = t('errors.invalidToken');
+//                     modalsStore.openModal('login');
+//                     break;
+//                 case 'ERROR_INVALID_COURSE_ID':
+//                     userFriendlyMessage = t('errors.invalidCourseId');
+//                     break;
+//                 case 'ERROR_INVALID_PAYMENT_METHOD':
+//                     userFriendlyMessage = t('errors.invalidPaymentMethod');
+//                     break;
+//                 case 'ERROR_COURSE_NOT_FOUND':
+//                     userFriendlyMessage = t('errors.courseNotFound');
+//                     break;
+//                 case 'ERROR_NO_AVAILABLE_SEATS':
+//                     userFriendlyMessage = t('errors.noAvailableSeats');
+//                     break;
+//                 case 'ERROR_REGISTRATION_CLOSED':
+//                     userFriendlyMessage = t('errors.registrationClosed');
+//                     break;
+//                 case 'ERROR_ORDER_ALREADY_EXISTS':
+//                     userFriendlyMessage = t('errors.orderAlreadyExists');
+//                     router.push('/profile/courses');
+//                     break;
+//                 case 'ERROR_INVALID_BOOKING_PERIOD':
+//                     userFriendlyMessage = t('errors.invalidBookingPeriod');
+//                     break;
+//                 case 'ERROR_ORDER_CREATION_FAILED':
+//                     userFriendlyMessage = t('errors.orderCreationFailed');
+//                     break;
+//                 case 'ERROR_INVALID_PARAMS':
+//                     userFriendlyMessage = t('errors.invalidParams');
+//                     break;
+//                 case 'Invalid API key':
+//                     userFriendlyMessage = t('errors.invalidApiKey');
+//                     break;
+//                 default:
+//                     userFriendlyMessage = errorMessage;
+//             }
+//         }
+//     } else {
+//         router.push({
+//             path: '/payment',
+//             query: { code: eventCode },
+//         });
+//     }
+// };
+
+// Обновленная функция takePart
 const takePart = async () => {
     if (!authStore.isAuthenticated) {
         modalsStore.openModal('login');
-        // toast.error(t('courses.notAuthenticated'));
         return;
     }
 
     if (!event.value?.ID) {
-        // toast.error('ID мероприятия не найден');
         return;
     }
 
     if (isFree.value) {
         try {
+            const requestBody = {
+                token: authStore.token,
+                courseId: Number(event.value.ID),
+                paymentMethodId: 4
+            };
+
+            // Добавляем PACK для главного вебинара
+            if (isMainLesson.value) {
+                requestBody.PACK = 1;
+            }
+
             const response = await $fetch('/api/orders/create', {
                 method: 'POST',
-                body: {
-                    token: authStore.token,
-                    courseId: Number(event.value.ID),
-                    paymentMethodId: 4 // Бесплатный тип оплаты
-                }
+                body: requestBody
             });
 
-            // Сохранение данных заказа в куки
             const orderCookie = useCookie('orderData', {
-                maxAge: 60 * 60 * 24, // 24 часа
+                maxAge: 60 * 60 * 24,
                 path: '/',
                 sameSite: 'lax',
             });
@@ -965,10 +1105,7 @@ const takePart = async () => {
                 paymentMethod: 4
             };
 
-            // toast.success('Заказ успешно создан!');
-            router.push('/payment/success'); // Перенаправление на страницу курсов
-
-            // router.push('/profile/courses'); // Перенаправление на страницу курсов
+            router.push('/payment/success');
         } catch (error) {
             console.error('Ошибка при создании заказа:', error);
             const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';
@@ -996,7 +1133,7 @@ const takePart = async () => {
                     break;
                 case 'ERROR_ORDER_ALREADY_EXISTS':
                     userFriendlyMessage = t('errors.orderAlreadyExists');
-                    router.push('/profile/courses'); // Перенаправляем, так как заказ уже существует
+                    router.push('/profile/courses');
                     break;
                 case 'ERROR_INVALID_BOOKING_PERIOD':
                     userFriendlyMessage = t('errors.invalidBookingPeriod');
@@ -1014,13 +1151,16 @@ const takePart = async () => {
                     userFriendlyMessage = errorMessage;
             }
 
-            // toast.error(userFriendlyMessage);
+            throw createError({
+                statusCode: error.statusCode || 400,
+                statusMessage: userFriendlyMessage,
+                data: { error: errorMessage }
+            });
         }
     } else {
-        console.log('not free');
         router.push({
             path: '/payment',
-            query: { code: eventCode },
+            query: { code: eventCode, isMain: event.value?.PROPS?.MAIN_LESSON?.VALUE, isWebinar: 1 },
         });
     }
 };
@@ -1050,11 +1190,37 @@ const closeTooltipModal = () => {
     isTooltipModalOpen.value = false;
     tooltipContent.value = '';
 };
+
+// Функция для склонения слова
+const declineWord = (number: number, words: [string, string, string]): string => {
+    number = Math.abs(number) % 100;
+    const lastDigit = number % 10;
+
+    if (number > 10 && number < 20) {
+        return words[2];
+    }
+    if (lastDigit > 1 && lastDigit < 5) {
+        return words[1];
+    }
+    if (lastDigit === 1) {
+        return words[0];
+    }
+    return words[2];
+};
 </script>
 
 <style scoped lang="scss">
 :deep(.breadcrumbs) {
+    color: var(--header-color);
     margin-bottom: p2r(32);
+
+    .breadcrumbs-current, .breadcrumbs-link {
+        color: var(--header-color);
+    }
+
+    .breadcrumbs-separator {
+        background-color: var(--header-color);
+    }
 }
 :deep(.ui-badge) {
     font-weight: 600;
@@ -1063,8 +1229,6 @@ const closeTooltipModal = () => {
     padding-bottom: p2r(6);
 }
 .container {
-
-
     @media (min-width: 1367px) {
         padding-left: p2r(180);
     }
@@ -1097,6 +1261,10 @@ const closeTooltipModal = () => {
             width: 100%;
             flex: auto;
         }
+
+        &-title {
+            color: var(--header-color);
+        }
     }
     &-right {
         width: p2r(390);
@@ -1121,6 +1289,7 @@ const closeTooltipModal = () => {
         min-height: p2r(500);
         display: flex;
         flex-direction: column;
+        background-color: var(--header-bg);
 
         .event-main {
             position: relative;
@@ -1145,12 +1314,12 @@ const closeTooltipModal = () => {
     }
     &-preview {
         &-text {
+            color: var(--header-color);
             margin-bottom: p2r(60);
         }
     }
 
     &-content {
-        background-color: #F5F5F5;
         padding-top: p2r(20);
         padding-bottom: p2r(98);
 
@@ -1196,6 +1365,7 @@ const closeTooltipModal = () => {
         }
 
         &-item {
+            color: var(--header-color);
             position: relative;
             display: flex;
             align-items: center;
@@ -1206,7 +1376,7 @@ const closeTooltipModal = () => {
             &-icon {
                 font-size: p2r(24);
                 line-height: p2r(22);
-                color: $font;
+                color: var(--header-color);
             }
 
             &::after {
@@ -1235,7 +1405,7 @@ const closeTooltipModal = () => {
 
             &-icon {
                 font-size: p2r(20);
-                color: $font;
+                color: var(--header-color);
             }
         }
     }
@@ -1245,7 +1415,8 @@ const closeTooltipModal = () => {
             cursor: pointer;
 
             &-title {
-                border-bottom: 1px dotted $font;
+                color: var(--header-color);
+                border-bottom: 1px dotted var(--header-color);
                 margin-right: p2r(8);
             }
         }
@@ -1282,7 +1453,7 @@ const closeTooltipModal = () => {
     }
 
     &-aside {
-        margin-top: p2r(-354);
+        margin-top: p2r(-424);
         padding: p2r(20);
         background-color: $bgc;
         box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
@@ -1308,8 +1479,8 @@ const closeTooltipModal = () => {
             border-radius: p2r(6);
             overflow: hidden;
             margin-bottom: p2r(20);
-            background-color: $placeholder;
             background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_14" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><g transform="translate(1 1)"><g><g><path d="M255-1C114.2-1-1,114.2-1,255s115.2,256,256,256s256-115.2,256-256S395.8-1,255-1z M255,16.067 c63.054,0,120.598,24.764,163.413,65.033l-65.336,64.802L334.36,97.987c-0.853-2.56-4.267-5.12-7.68-5.12H185.027 c-3.413,0-5.973,1.707-7.68,5.12L156.013,152.6h-48.64c-17.067,0-30.72,13.653-30.72,30.72v168.96 c0,17.067,13.653,30.72,30.72,30.72h6.653l-34.26,33.981C40.285,374.319,16.067,317.354,16.067,255 C16.067,123.587,123.587,16.067,255,16.067z M314.733,255c0,33.28-26.453,59.733-59.733,59.733 c-13.563,0-25.99-4.396-35.957-11.854l84.125-83.438C310.449,229.34,314.733,241.616,314.733,255z M195.267,255 c0-33.28,26.453-59.733,59.733-59.733c13.665,0,26.174,4.467,36.179,12.028l-84.183,83.495 C199.613,280.852,195.267,268.487,195.267,255z M303.374,195.199C290.201,184.558,273.399,178.2,255,178.2 c-42.667,0-76.8,34.133-76.8,76.8c0,18.17,6.206,34.779,16.61,47.877l-63.576,63.057H106.52c-7.68,0-13.653-5.973-13.653-13.653 V183.32c0-7.68,5.973-13.653,13.653-13.653h54.613c3.413,0,6.827-2.56,7.68-5.12l21.333-54.613h129.707l19.404,49.675 L303.374,195.199z M206.848,314.974C219.987,325.509,236.703,331.8,255,331.8c42.667,0,76.8-34.133,76.8-76.8 c0-18.068-6.138-34.592-16.436-47.655l37.988-37.678h49.274c7.68,0,13.653,5.973,13.653,13.653v168.96 c0,7.68-5.973,13.653-13.653,13.653H155.469L206.848,314.974z M255,493.933c-62.954,0-120.415-24.686-163.208-64.843L138.262,383 H403.48c17.067,0,30.72-13.653,31.573-30.72V183.32c0-17.067-13.653-30.72-30.72-30.72H370.56l59.865-59.376 c39.368,42.639,63.509,99.521,63.509,161.776C493.933,386.413,386.413,493.933,255,493.933z" style="fill: %23E0E0E0"/><path d="M383,186.733c-9.387,0-17.067,7.68-17.067,17.067c0,9.387,7.68,17.067,17.067,17.067s17.067-7.68,17.067-17.067 C400.067,194.413,392.387,186.733,383,186.733z" style="fill: %23E0E0E0"/></g></g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><script xmlns=""/></svg>');
+            background-color: $placeholder;
             background-repeat: no-repeat;
             background-position: center;
             background-size: p2r(60);
@@ -1348,6 +1519,12 @@ const closeTooltipModal = () => {
                 border-radius: p2r(2);
                 padding: p2r(8) p2r(10) p2r(7) p2r(10);
             }
+        }
+
+        &-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: p2r(4);
         }
 
         &-price {
@@ -1421,6 +1598,7 @@ const closeTooltipModal = () => {
     }
 
     &-preview {
+        color: $font-white;
         display: flex;
         align-items: center;
         gap: p2r(8);
@@ -1620,7 +1798,7 @@ const closeTooltipModal = () => {
         width: p2r(66);
         height: p2r(66);
         flex: 0 0 p2r(66);
-        
+
         @media (max-width: 599px) {
             width: p2r(58);
             height: p2r(58);
@@ -1716,7 +1894,7 @@ const closeTooltipModal = () => {
         gap: p2r(20);
         margin-left: auto;
         margin-bottom: p2r(40);
-        
+
         @media(max-width: 599px) {
             display: none;
         }
@@ -1873,7 +2051,7 @@ const closeTooltipModal = () => {
 .tag-item {
     border: 1px solid $border;
     border-radius: p2r(4);
-    padding:  p2r(18) p2r(16);
+    padding: p2r(18) p2r(16);
 }
 
 .video-section {
@@ -1887,6 +2065,182 @@ const closeTooltipModal = () => {
         padding-bottom: p2r(10);
         overflow: hidden;
     }
+}
+
+.video {
+    &-previews {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: p2r(-5);
+        margin-left: p2r(-5);
+        row-gap: p2r(24);
+        margin-bottom: p2r(30);
+    }
+
+    &-preview {
+        width: 25%;
+        flex: 0 0 25%;
+        padding-right: p2r(5);
+        padding-left: p2r(5);
+
+        @media (max-width: 768px) {
+            width: 50%;
+            flex: 0 0 50%;
+        }
+
+        &-image {
+            position: relative;
+            display: block;
+            background-color: $placeholder;
+            aspect-ratio: 265/160;
+            margin-bottom: p2r(10);
+            border-radius: p2r(6);
+            overflow: hidden;
+
+            &.active {
+                border: p2r(4) solid $primary;
+
+                .video-preview-badge {
+                    top: p2r(6);
+                    left: p2r(6);
+                }
+            }
+
+            img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+            }
+        }
+
+        &-title {
+            font-weight: 500;
+            letter-spacing: -0.03em;
+            color: $font;
+        }
+
+        &-lock {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: p2r(52);
+            height: p2r(52);
+            border-radius: 50%;
+            background-color: $bgc;
+
+            &-icon {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                font-size: p2r(24);
+                line-height: p2r(20);
+            }
+        }
+
+        &-badge {
+            position: absolute;
+            top: p2r(10);
+            left: p2r(10);
+            display: flex;
+            align-items: center;
+            background: $font-dark-grey;
+            border-radius: p2r(2);
+            padding: p2r(6) p2r(8);
+            font-weight: 600;
+            font-size: p2r(10);
+            line-height: p2r(12);
+            text-transform: uppercase;
+            color: $font-white;
+
+            &-item {
+                &:not(:last-child) {
+                    position: relative;
+                    padding-right: p2r(6);
+                    margin-right: p2r(6);
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        top: 50%;
+                        right: 0;
+                        transform: translate(50%, -50%);
+                        height: p2r(8);
+                        width: 1px;
+                        background-color: #686464;
+                    }
+                }
+            }
+        }
+    }
+
+    &-section {
+
+        &-main {
+            margin-bottom: p2r(10);
+        }
+        &-image {
+            position: relative;
+            aspect-ratio: 16/9;
+            border-radius: p2r(6);
+            overflow: hidden;
+            background-color: $placeholder;
+
+            img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+            }
+        }
+
+        &-access {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        &-lock {
+            position: relative;
+            width: p2r(100);
+            height: p2r(100);
+            border-radius: 50%;
+            background-color: $bgc;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: p2r(20);
+
+            &-icon {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                font-size: p2r(48);
+                line-height: p2r(40);
+                color: $primary;
+            }
+        }
+    }
+
+    &-more {
+        color: $primary;
+        transition: border-color 0.3s;
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                border-color: $primary;
+            }
+        }
+    }
+}
+
+:deep(.video-player) {
+    margin-bottom: p2r(10);
 }
 
 :deep(.report-head) {

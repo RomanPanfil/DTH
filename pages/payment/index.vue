@@ -432,7 +432,7 @@
 
 
 
-```vue
+
 <template>
     <div class="container">
         <div class="payment-content">
@@ -555,6 +555,15 @@ const agreement = ref<boolean>(false);
 const eventCode = route.query.code as string | null;
 const errorText = ref<string | null>(null);
 
+const isMainLesson = computed(() => {
+    return Number(route.query.isMain) === 1;
+});
+
+const isWebinar = computed(() => {
+    return Number(route.query.isWebinar) === 1;
+});
+
+
 // Загрузка данных о мероприятии на сервере
 const { data: eventData, error: eventFetchError } = await useAsyncData('event', async () => {
     if (!eventCode) {
@@ -563,7 +572,7 @@ const { data: eventData, error: eventFetchError } = await useAsyncData('event', 
     const response = await $fetch(`/api/item/${eventCode}`, {
         method: 'GET',
         query: {
-            iblockId: 13,
+            iblockId: isWebinar.value ? 19 : 13,
         },
     });
     if (!response?.event) {
@@ -586,16 +595,23 @@ const paymentMethods = ref(paymentMethodsData.value || []);
 async function handleSubmit() {
     if (!agreement.value || !selectedMethod.value) return;
 
-    errorText.value = null; // Сбрасываем предыдущую ошибку перед новым запросом
+    errorText.value = null;
 
     try {
+        const requestBody = {
+            token: authStore.token,
+            courseId: Number(eventData?.value?.ID),
+            paymentMethodId: Number(selectedMethod.value)
+        };
+
+        // Добавляем PACK для главного вебинара
+        if (isMainLesson.value) {
+            requestBody.PACK = 1;
+        }
+
         const response = await $fetch('/api/orders/create', {
             method: 'POST',
-            body: {
-                token: authStore.token,
-                courseId: Number(eventData?.value?.ID),
-                paymentMethodId: Number(selectedMethod.value)
-            }
+            body: requestBody
         });
 
         // Сохранение данных заказа в куки

@@ -1,7 +1,13 @@
 <template>
     <div class="courses" ref="topRef">
         <h1 class="page-title">{{ $t('accountSidebar.myCourses') }}</h1>
-        <div v-if="filteredCourses.length">
+        <div v-if="eventsError" class="error-message">
+            {{ eventsError?.details || $t('courses.error') }}
+        </div>
+        <div v-else-if="!eventsData?.courses?.length && isLoadedCourses" class="no-courses">
+            {{ $t('courses.noCourses') }}
+        </div>
+        <div v-else>
             <div class="sort-tabs">
                 <div
                     class="sort-tabs-item"
@@ -26,17 +32,17 @@
                 </div>
             </div>
             <div class="row">
-                <div v-for="course in filteredCourses" :key="course.ID" class="col-lg-4 col-xs-6">
-                    <CourcesCard :event="course" />
+                <div v-for="event in eventsData?.courses" :key="event.ID" class="col-lg-4 col-xs-6">
+                    <LazyCourcesCard :event="event" />
                 </div>
             </div>
+            <Pagination
+                v-if="totalPages > 0"
+                :current-page="currentPage"
+                :total-pages="totalPages"
+                @page-change="handlePageChange"
+            />
         </div>
-        <Pagination
-            v-if="totalPages > 1"
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @page-change="handlePageChange"
-        />
     </div>
 </template>
 
@@ -45,59 +51,69 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
 import { useLocaleStore } from '~/stores/locale';
-import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const localeStore = useLocaleStore();
 
-const locale = computed(() => localeStore.locale);
-const coursesError = ref(null);
+const eventsError = ref(null);
 const currentPage = computed(() => Number(route.query.page) || 1);
 const topRef = ref(null);
 const activeTab = ref('all');
+const locale = computed(() => localeStore.locale);
+const isLoadedCourses = ref(false);
 
-const isLoadedCourses = ref(false)
+const today = new Date().toISOString().split('T')[0];
 
-const { data: coursesData, refresh: refreshCourses } = await useAsyncData(
-    'lectorCourses',
+const getFilter = () => {
+    if (activeTab.value === 'all') {
+        return undefined;
+    }
+    if (activeTab.value === 'future') {
+        return { '>PROPERTY_DATE_FOR_SORT': today };
+    }
+    if (activeTab.value === 'past') {
+        return { '<PROPERTY_DATE_FOR_SORT': today };
+    }
+    return undefined;
+};
+
+const { data: eventsData, refresh: refreshEvents } = await useAsyncData(
+    'events',
     async () => {
         try {
+            eventsError.value = null;
+
             if (!authStore.isAuthenticated || !authStore.token) {
-                throw new Error('ERROR_INVALID_TOKEN');
+                isLoadedCourses.value = true;
+                return { courses: [], pagination: { currentPage: 1, limit: 12, total: 0 } };
             }
 
-            coursesError.value = null;
             const response = await $fetch('/api/lector/lector-courses', {
                 method: 'POST',
                 body: {
-                    params: {
-                        TOKEN: authStore.token,
-                        pager: { start: currentPage.value, limit: 12 },
-                        sort: { ACTIVE_FROM: 'DESC' },
-                        select: ['NAME', 'IBLOCK_ID', 'ID', 'PREVIEW_PICTURE', 'CODE', 'PROPERTY_*'],
-                        resize: [390, 242, true],
-                        resize_WHEN_GALL: [640, 480, true],
-                        GET_ALL_FILES: 'Y',
-                    },
+                    TOKEN: authStore.token,
+                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PREVIEW_PICTURE', 'PROPERTY_*'],
+                    resize: [390, 242, true],
+                    GET_ALL_FILES: 'Y',
+                    pager: { start: currentPage.value, limit: 12 },
+                    sort: { 'ACTIVE_FROM': 'DESC' },
+                    filter: getFilter(),
                 },
             });
 
-            if (response.error) {
-                throw new Error(response.error);
+            if (!response?.ITEMS?.[locale.value]) {
+                throw new Error('Ошибка загрузки курсов для текущей локали');
             }
 
-            const courses = response.courses?.[locale.value] || [];
-            const pagination = response.pagination || { currentPage: 1, limit: 12, total: 0 };
+            const courses = response.ITEMS[locale.value];
 
-            // Обработка лекторов
             const allLectorIds = new Set<number>();
-            courses.forEach((course: any) => {
+            courses.forEach((course) => {
                 const lectorSet = course.PROPS?.LECTOR_SET?.VALUE;
                 if (Array.isArray(lectorSet)) {
-                    lectorSet.forEach((lector: any) => {
+                    lectorSet.forEach((lector) => {
                         const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
                         if (id) allLectorIds.add(id);
                     });
@@ -106,80 +122,54 @@ const { data: coursesData, refresh: refreshCourses } = await useAsyncData(
 
             let profiles = {};
             if (allLectorIds.size > 0) {
-                try {
-                    profiles = await $fetch('/api/getprofilesbyids', {
-                        method: 'POST',
-                        body: { params: { USER_IDS: [...allLectorIds] } },
-                    });
-                } catch (error) {
-                    console.error('Ошибка загрузки профилей лекторов:', error);
+                profiles = await $fetch('/api/getprofilesbyids', {
+                    method: 'POST',
+                    body: { params: { USER_IDS: [...allLectorIds] } },
+                });
+                if (!profiles || Object.keys(profiles).length === 0) {
+                    console.warn('Нет данных о лекторах');
                 }
             }
 
-            courses.forEach((course: any) => {
+            const enrichedCourses = courses.map((course) => {
                 const lectorSet = course.PROPS?.LECTOR_SET?.VALUE;
-                course.lectors = Array.isArray(lectorSet)
-                    ? lectorSet
-                        .map((lector: any) => {
+                if (Array.isArray(lectorSet)) {
+                    course.lectors = lectorSet
+                        .map((lector) => {
                             const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
                             return {
                                 id,
                                 name: profiles[id]
                                     ? `${profiles[id].NAME} ${profiles[id].LAST_NAME || ''}`.trim()
-                                    : t('courses.unknownLector'),
+                                    : 'Неизвестный лектор',
                             };
                         })
-                        .filter((lector: any) => lector.id)
-                    : [];
+                        .filter((lector) => lector.id);
+                } else {
+                    course.lectors = [];
+                }
+                return course;
             });
 
-            console.log('Courses loaded for locale', locale.value, ':', courses); // Для отладки
-            isLoadedCourses.value = true;
-            return { courses, pagination };
-        } catch (error: any) {
-            console.error('Ошибка в useAsyncData:', error);
-            coursesError.value = {
-                statusMessage: error.message || t('courses.error'),
-                statusCode: error.statusCode || 400,
-                data: error.data || { error: error.message },
+            const pagination = {
+                currentPage: response.PAGENAV?.PAGE || currentPage.value,
+                limit: response.PAGENAV?.LIMIT || 12,
+                total: Number(response.PAGENAV?.TOTAL) || enrichedCourses.length,
             };
+
+            isLoadedCourses.value = true;
+            return { courses: enrichedCourses, pagination };
+        } catch (error) {
+            console.error('Ошибка загрузки курсов:', error);
+            eventsError.value = { details: error.message || 'Неизвестная ошибка' };
+            isLoadedCourses.value = true;
             return { courses: [], pagination: { currentPage: 1, limit: 12, total: 0 } };
         }
     },
-    { watch: [currentPage, locale] }
+    { watch: [() => route.query.page, () => authStore.token, () => locale.value, activeTab] }
 );
 
-const uniqueCourses = computed(() => {
-    const seenIds = new Set();
-    return (
-        coursesData.value?.courses.filter((course: any) => {
-            if (seenIds.has(course.ID)) return false;
-            seenIds.add(course.ID);
-            return true;
-        }) || []
-    );
-});
-
-const filteredCourses = computed(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return uniqueCourses.value.filter((course: any) => {
-        if (activeTab.value === 'all') return true;
-
-        const dateForSort = course.PROPS?.DATE_FOR_SORT?.VALUE;
-        const courseDate = dateForSort ? new Date(dateForSort) : null;
-
-        if (!courseDate) {
-            return activeTab.value === 'past';
-        }
-
-        courseDate.setHours(0, 0, 0, 0);
-        return activeTab.value === 'future' ? courseDate >= today : courseDate < today;
-    });
-});
-
-const pagination = computed(() => coursesData.value?.pagination || { currentPage: 1, limit: 12, total: 0 });
+const pagination = computed(() => eventsData.value?.pagination || { currentPage: 1, limit: 12, total: 0 });
 const totalPages = computed(() => Math.ceil(pagination.value.total / pagination.value.limit));
 
 const handlePageChange = (page: number) => {
@@ -195,31 +185,30 @@ const scrollToTop = () => {
 
 const setActiveTab = (tab: string) => {
     activeTab.value = tab;
-    router.push({ path: route.path, query: { ...route.query, page: 1 } });
+    router.push({ path: route.path, query: { page: 1 } }); // Сбрасываем на первую страницу при смене вкладки
 };
 
 onMounted(async () => {
-    if(!isLoadedCourses.value) {
-        let attempts = 0;
-        const maxAttempts = 50;
-        const checkInterval = setInterval(() => {
-            attempts++;
-            if (authStore.token || attempts >= maxAttempts) {
-                clearInterval(checkInterval);
-                refreshCourses();
-            }
-        }, 100);
+    let attempts = 0;
+    const maxAttempts = 50;
+    const checkInterval = setInterval(() => {
+        attempts++;
+        if (authStore.token || attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            refreshEvents();
+        }
+    }, 100);
 
-        onUnmounted(() => clearInterval(checkInterval));
-    }
+    onUnmounted(() => clearInterval(checkInterval));
 });
+
+let checkInterval: NodeJS.Timeout | null = null;
 </script>
 
 <style scoped lang="scss">
 .error-message {
     color: $error;
     padding: p2r(20);
-    text-align: center;
 }
 
 .no-courses {
@@ -231,39 +220,50 @@ onMounted(async () => {
 .courses {
     padding-bottom: p2r(80);
 
-    @media (max-width: 1366px) {
+    @media(max-width: 1366px) {
         padding-bottom: p2r(70);
     }
 
-    @media (max-width: 1280px) {
+    @media(max-width: 1280px) {
         padding-bottom: p2r(60);
     }
 
-    @media (max-width: 1024px) {
+    @media(max-width: 1024px) {
         padding-bottom: p2r(50);
     }
 
-    @media (max-width: 768px) {
+    @media(max-width: 768px) {
         padding-bottom: p2r(40);
-        .page-title {
-            font-size: p2r(28);
-            line-height: p2r(34);
-        }
     }
 
-    @media (max-width: 599px) {
+    @media(max-width: 599px) {
         padding-bottom: p2r(32);
     }
 
     .page-title {
         margin-bottom: p2r(64);
 
-        @media (max-width: 1366px) {
+        @media(max-width: 1366px) {
             margin-bottom: p2r(52);
         }
 
-        @media (max-width: 1024px) {
+        @media(max-width: 1024px) {
             margin-bottom: p2r(40);
+        }
+    }
+
+    .sort-tabs {
+        display: flex;
+        gap: p2r(16);
+        margin-bottom: p2r(32);
+    }
+
+    .sort-tabs-item {
+        padding: p2r(8) p2r(16);
+        cursor: pointer;
+        border-bottom: p2r(2) solid transparent;
+        &.active {
+            border-bottom-color: $primary;
         }
     }
 }

@@ -28,6 +28,10 @@
                                         <NuxtIcon name="id-card" filled class="sidebar-icon" />
                                         {{ $t('accountSidebar.myCourses') }}
                                     </nuxt-link>
+                                    <nuxt-link to="/profile/my-webinars"  class="sidebar-link" active-class="active">
+                                        <NuxtIcon name="id-card" filled class="sidebar-icon" />
+                                        {{ $t('accountSidebar.myWebinars') }}
+                                    </nuxt-link>
                                     <nuxt-link to="/profile/my-balance" class="sidebar-link sidebar-link__indent" active-class="active">
                                         <NuxtIcon name="coins" filled class="sidebar-icon" />
                                         {{ $t('accountSidebar.myBalance') }}

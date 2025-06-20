@@ -1,38 +1,24 @@
 <template>
-    <div class="event-card">
-        <NuxtLink :to="getEventUrl(event)" class="event-card-image">
+    <div class="education-card">
+        <NuxtLink :to="getEventUrl(event)" class="education-card-image">
             <img v-if="event.PREVIEW_PICTURE" :src="getImageUrl(event.PREVIEW_PICTURE)" :alt="event.NAME" />
-            <div class="event-card-info">
-                <div v-if="event.PROPS.WHEN_DATE?.VALUE" class="event-card-info-item">
-                    {{ formatEventDates(event.PROPS.WHEN_DATE?.VALUE) }}
-                </div>
-                <div v-if="event.PROPS.WHEN_ADDR?.VALUE" class="event-card-info-item">
-                    {{ event.PROPS.CITY.VALUE }}
-                </div>
-                <div v-if="event.PROPS.FORMAT?.VALUE && event.PROPS.FORMAT?.VALUE === 'Online'" class="event-card-info-item">
-                    {{ event.PROPS.FORMAT?.VALUE }}
-                </div>
-            </div>
-            <div v-if="isFav" class="event-card-fav" @click.stop.prevent="handleRemoveFav">
-                <NuxtIcon name="heart-filled" filled class="event-card-fav-icon" />
+            <div v-if="isFav" class="education-card-fav" @click.stop.prevent="handleRemoveFav">
+                <NuxtIcon name="heart-filled" filled class="education-card-fav-icon" />
             </div>
         </NuxtLink>
-        <div class="event-card-content">
-            <div class="event-card-badge ui-badge">
-                {{ event.PROPS.TYPE?.VALUE || 'Без категории' }}
+        <div class="education-card-content">
+            <div class="education-card-badges">
+                <div class="education-card-badge ui-badge">{{ event.PROPS.TYPE?.VALUE }}</div>
+                <div v-if="event.PROPS.LESSONS?.VALUE.length || event.PROPS.VIDEO_LONG?.VALUE" class="education-card-badge ui-badge ui-badge__dark">
+                    <span v-if="event.PROPS.LESSONS?.VALUE.length">{{ event.PROPS.LESSONS?.VALUE.length }} {{ declineWord(event.PROPS.LESSONS?.VALUE.length, ['урок', 'урока', 'уроков']) }}</span>
+                    <span v-if="event.PROPS.VIDEO_LONG?.VALUE">{{ event.PROPS.VIDEO_LONG?.VALUE }}</span>
+                </div>
             </div>
-            <NuxtLink :to="getEventUrl(event)" class="event-card-title">
-                {{ event.NAME }}
+            <NuxtLink to="/">
+                <h4 class="education-card-title">{{ event.NAME }}</h4>
             </NuxtLink>
-            <div class="event-card-lectors">
-        <span class="event-card-lector">
-          {{ getLectorNames(event.lectors) }}
-        </span>
-            </div>
-            <div v-if="event.PROPS.SEATS?.VALUE" class="event-card-seats">
-                Осталось мест {{ Math.max(0, event.PROPS.SEATS?.VALUE - (event.PROPS.REGISTERED?.VALUE || 0)) }}
-                из {{ event.PROPS.SEATS?.VALUE }}
-            </div>
+            <div v-if="event.lectors" class="education-card-names">{{ getLectorNames(event.lectors) }}</div>
+            <div v-if="event.PROPS.IS_FREE.VALUE" class="education-card-free">{{ event.PROPS.IS_FREE.NAME }}</div>
         </div>
     </div>
 </template>
@@ -56,69 +42,26 @@ const { t } = useI18n();
 
 const isRemovingFav = ref(false);
 
+// Функция для склонения слова
+const declineWord = (number: number, words: [string, string, string]): string => {
+    number = Math.abs(number) % 100;
+    const lastDigit = number % 10;
+
+    if (number > 10 && number < 20) {
+        return words[2]; // 11–14 уроков
+    }
+    if (lastDigit > 1 && lastDigit < 5) {
+        return words[1]; // 2–4 урока
+    }
+    if (lastDigit === 1) {
+        return words[0]; // 1 урок
+    }
+    return words[2]; // 0, 5–9, 10 уроков
+};
+
 const getLectorNames = (lectors: any[]) => {
     if (!lectors || lectors.length === 0) return '';
     return lectors.map(lector => lector.name).join(', ');
-};
-
-const formatEventDates = (dateStrings: string[]) => {
-    if (!dateStrings || !Array.isArray(dateStrings) || dateStrings.length === 0)
-        return 'Дата не указана';
-
-    const sortedDates = [...dateStrings].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-
-    const dates = sortedDates.map(dateString => {
-        const date = new Date(dateString);
-        const fullMonth = date.toLocaleDateString('ru-RU', { month: 'long' });
-        const shortMonth = fullMonth.substring(0, 3);
-
-        return {
-            date: date,
-            day: date.getDate(),
-            month: date.getMonth(),
-            monthFormatted: shortMonth
-        };
-    });
-
-    const groupedByMonth: { [key: string]: number[] } = {};
-    dates.forEach(dateObj => {
-        const monthKey = dateObj.monthFormatted;
-        if (!groupedByMonth[monthKey]) {
-            groupedByMonth[monthKey] = [];
-        }
-        groupedByMonth[monthKey].push(dateObj.day);
-    });
-
-    const formattedGroups: string[] = [];
-    for (const [month, days] of Object.entries(groupedByMonth)) {
-        days.sort((a, b) => a - b);
-        const ranges: Array<[number, number]> = [];
-        let rangeStart = days[0];
-        let rangeEnd = days[0];
-
-        for (let i = 1; i < days.length; i++) {
-            if (days[i] === rangeEnd + 1) {
-                rangeEnd = days[i];
-            } else {
-                ranges.push([rangeStart, rangeEnd]);
-                rangeStart = days[i];
-                rangeEnd = days[i];
-            }
-        }
-        ranges.push([rangeStart, rangeEnd]);
-
-        const formattedDays = ranges.map(([start, end]) => {
-            if (start === end) {
-                return `${start}`;
-            } else {
-                return `${start}-${end}`;
-            }
-        }).join(', ');
-
-        formattedGroups.push(`${formattedDays} ${month}`);
-    }
-
-    return formattedGroups.join(', ');
 };
 
 const getImageUrl = (path: string) => {
@@ -126,12 +69,11 @@ const getImageUrl = (path: string) => {
 };
 
 const getEventUrl = (event: any) => {
-    return `/courses/${event.CODE}`;
+    return `/webinars/${event.CODE}`;
 };
 
 const handleRemoveFav = async () => {
     if (!authStore.isAuthenticated) {
-        console.log('handleRemoveFav: User not authenticated, opening login modal');
         modalsStore.openModal('login');
         return;
     }
@@ -145,7 +87,6 @@ const handleRemoveFav = async () => {
 
     try {
         const eventId = Number(props.event.ID);
-        console.log('handleRemoveFav: Removing from favorites, ID:', eventId, 'Current favorites:', authStore.favorites);
 
         await $fetch('/api/favorites/remove', {
             method: 'POST',
@@ -177,16 +118,16 @@ const handleRemoveFav = async () => {
 </script>
 
 <style scoped lang="scss">
-.event {
+.education {
     &-card {
-        border-radius: p2r(6);
-        box-shadow: 0 p2r(4) p2r(35) rgba(114, 142, 174, 0.1);
-        background-color: $bgc;
-        overflow: hidden;
-        margin-bottom: p2r(60);
-        height: calc(100% - 3.75rem);
         display: flex;
         flex-direction: column;
+        background-color: $bgc;
+        box-shadow: 0 p2r(4) p2r(35) rgba(114, 142, 174, 0.1);
+        border-radius: p2r(6);
+        margin-bottom: p2r(60);
+        height: calc(100% - 3.75rem);
+        overflow: hidden;
 
         @media(max-width: 1366px) {
             margin-bottom: p2r(50);
@@ -237,24 +178,34 @@ const handleRemoveFav = async () => {
             }
         }
 
-        &-info {
-            position: absolute;
-            top: p2r(20);
-            left: p2r(20);
-            display: flex;
-            flex-wrap: wrap;
-            gap: p2r(4);
+        &-content {
+            padding: p2r(20);
+        }
 
-            &-item {
-                font-weight: 600;
-                font-size: p2r(12);
-                line-height: 1.3;
-                text-transform: uppercase;
-                color: $font-white;
-                background: $primary;
-                border-radius: p2r(2);
-                padding: p2r(7) p2r(10) p2r(5) p2r(10);
-            }
+        &-badges {
+            display: flex;
+            gap: p2r(4);
+            margin-bottom: p2r(20);
+        }
+
+        &-title {
+            font-weight: 500;
+            font-size: p2r(20);
+            line-height: 1.3;
+            color: $font;
+            margin-bottom: p2r(20);
+        }
+
+        &-names {
+            font-weight: 400;
+            font-size: p2r(14);
+            color: $font-grey;
+        }
+
+        &-free {
+            font-weight: 600;
+            font-size: p2r(20);
+            margin-top: p2r(20);
         }
 
         &-fav {
@@ -281,44 +232,6 @@ const handleRemoveFav = async () => {
                 left: 50%;
                 transform: translate(-50%, -50%);
             }
-        }
-
-        &-content {
-            position: relative;
-            padding: p2r(20) p2r(20) p2r(24) p2r(20);
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        &-badge {
-            position: absolute;
-            left: p2r(20);
-            top: p2r(20);
-        }
-
-        &-title {
-            color: $font;
-            padding-top: p2r(46);
-            font-weight: 500;
-            font-size: p2r(20);
-            line-height: p2r(26);
-            margin-bottom: p2r(16);
-        }
-
-        &-lector {
-            font-size: p2r(14);
-            line-height: p2r(17);
-            color: $font-grey;
-            margin-bottom: p2r(5);
-        }
-
-        &-seats {
-            font-size: p2r(14);
-            color: $font;
-            margin-top: auto;
-            align-self: flex-end;
-            padding-top: p2r(22);
         }
     }
 }

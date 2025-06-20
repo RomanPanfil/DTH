@@ -143,6 +143,10 @@
                     height: 100%;
                 }
             }
+
+            .plyr__poster {
+                background-size: cover;
+            }
         }
     }
 </style>

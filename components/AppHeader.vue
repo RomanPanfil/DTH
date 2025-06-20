@@ -540,7 +540,7 @@ const handleAccountClick = () => {
     } else {
         modalsStore.openModal('login');
     }
-    toggleMenu();
+    isMenuOpen.value = false;
 };
 
 watch(() => route.query.query, (newQuery) => {

@@ -1,4 +1,3 @@
-// Создание заказа
 import { defineEventHandler, readBody, createError } from 'h3'
 
 export default defineEventHandler(async (event) => {
@@ -6,8 +5,9 @@ export default defineEventHandler(async (event) => {
     const apiKey = config.private.bitrixApiKey
     const apiUrl = config.private.bitrixApiUrl
 
-    const { token, courseId, paymentMethodId } = await readBody(event)
+    const { token, courseId, paymentMethodId, PACK } = await readBody(event)
 
+    // Проверка обязательных параметров
     if (!token || !courseId || !paymentMethodId) {
         throw createError({
             statusCode: 400,
@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
         })
     }
 
+    // Проверка типов courseId и paymentMethodId
     if (!Number.isInteger(Number(courseId)) || !Number.isInteger(Number(paymentMethodId))) {
         throw createError({
             statusCode: 400,
@@ -22,11 +23,21 @@ export default defineEventHandler(async (event) => {
         })
     }
 
+    // Проверка параметра PACK, если он передан
+    if (PACK !== undefined && ![0, 1].includes(Number(PACK))) {
+        throw createError({
+            statusCode: 400,
+            statusMessage: 'Параметр PACK должен быть 0 или 1'
+        })
+    }
+
+    // Формирование тела запроса
     const requestBody = {
         key: apiKey,
         'params[TOKEN]': token.trim(),
-        'params[COURSE_ID]': courseId,
-        'params[PAYMENT_METHOD_ID]': paymentMethodId
+        'params[COURSE_ID]': Number(courseId),
+        'params[PAYMENT_METHOD_ID]': Number(paymentMethodId),
+        ...(PACK !== undefined && { 'params[PACK]': Number(PACK) })
     }
 
     try {

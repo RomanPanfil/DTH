@@ -104,6 +104,8 @@ export default defineEventHandler(async (event) => {
     const iblockId = Number(query.iblockId) || 13;
     const limit = Number(body?.params?.pager?.limit) || Number(query.limit) || 12;
     const getAllFiles = query.GET_ALL_FILES || 'Y';
+    const mainLesson = query.PROPERTY_MAIN_LESSON;
+    const isFree = query.PROPERTY_IS_FREE;
 
     const requestBody = {
         key: apiKey,
@@ -126,6 +128,18 @@ export default defineEventHandler(async (event) => {
         });
     }
 
+    if (mainLesson && mainLesson === '1') {
+        Object.assign(requestBody, {
+            'params[filter][PROPERTY_MAIN_LESSON]': 1,
+        });
+    }
+
+    if (isFree && isFree === '1') {
+        Object.assign(requestBody, {
+            'params[filter][PROPERTY_IS_FREE]': 1,
+        });
+    }
+
     // Добавляем фильтр по ID, если указан в body.params.filter.ID
     let courseIds = [];
     if (body?.params?.filter?.ID) {
@@ -135,7 +149,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Логируем courseIds для отладки
-    console.log('Course IDs for filtering:', courseIds);
+    // console.log('Course IDs for filtering:', courseIds);
 
     if (courseIds.length > 0) {
         courseIds.forEach((id, index) => {
@@ -154,7 +168,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        console.log('Request body:', requestBody);
+        // console.log('Request body:', requestBody);
         const response = await $fetch(`${apiUrl}?method=items&act=get`, {
             method: 'POST',
             headers: {
