@@ -29,11 +29,11 @@
                                     <NuxtIcon name="planet" class="event-props-item-icon" filled />
                                     {{ event.PROPS.LANG.VALUE }}
                                 </div>
-                                <div v-if="event.PROPS?.SERTIFICATE?.VALUE === 'Да'" class="event-props-item">
+                                <div v-if="event?.PROPS?.SERTIFICATE?.VALUE === 'Да'" class="event-props-item">
                                     <NuxtIcon name="award" class="event-props-item-icon" filled />
                                     {{ event?.PROPS?.SERTIFICATE?.NAME}}
                                 </div>
-                                <div v-if="event.PROPS?.RECORDING_AVAILABLE?.VALUE" class="event-props-item">
+                                <div v-if="event?.PROPS?.RECORDING_AVAILABLE?.VALUE" class="event-props-item">
                                     <NuxtIcon name="play-circle" class="event-props-item-icon" filled />
                                     {{ event.PROPS.RECORDING_AVAILABLE.VALUE }}
                                 </div>
@@ -43,26 +43,13 @@
                                     <span class="event-share-head-title">{{ $t('news.share')}}</span>
                                     <NuxtIcon name="share" class="event-props-share-icon" filled />
                                 </div>
-                                <div v-show="isShareLinksShow" class="event-share-links">
-                                    <a href="#" class="event-share-link">
-                                        <NuxtIcon name="vk-color" class="event-share-link-icon" filled />
-                                    </a>
-                                    <a href="#" class="event-share-link">
-                                        <NuxtIcon name="tg-color" class="event-share-link-icon" filled />
-                                    </a>
-                                    <a href="#" class="event-share-link">
-                                        <NuxtIcon name="fb-color" class="event-share-link-icon" filled />
-                                    </a>
-                                    <a href="#" class="event-share-link">
-                                        <NuxtIcon name="ok-color" class="event-share-link-icon" filled />
-                                    </a>
-                                    <a href="#" class="event-share-link">
-                                        <NuxtIcon name="twitter-color" class="event-share-link-icon" filled />
-                                    </a>
-                                    <a href="#" class="event-share-link">
-                                        <NuxtIcon name="link-color" class="event-share-link-icon" filled />
-                                    </a>
-                                </div>
+                                <EventsShareLinks
+                                    :is-show="isShareLinksShow"
+                                    :url="currentUrl"
+                                    :title="shareTitle"
+                                    :description="shareDescription"
+                                    :image="shareImage"
+                                />
                             </div>
                         </div>
                     </div>
@@ -74,11 +61,16 @@
                 <div class="event-wrapper">
                     <div class="event-main">
                         <!-- Блок Видео -->
-                        <div v-if="(event?.PROPS?.AFISHA_VIDEO_FILE?.VALUE_PATH || event?.PROPS?.AFISHA_VIDEO_LINK?.VALUE) && isCourseAccessStatus" class="video-section">
+                        <div v-if="(event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH || event?.PROPS?.PLAYER_CODE?.VALUE) && isCourseAccessStatus" class="video-section">
+<!--                            <Video-->
+<!--                                :preview="event.PROPS.AFISHA_IMG?.VALUE_RESIZE ? `${baseUrl}${event.PROPS.AFISHA_IMG.VALUE_RESIZE}` : ''"-->
+<!--                                :file="event.PROPS.AFISHA_VIDEO_FILE?.VALUE_PATH ? `${baseUrl}${event.PROPS.AFISHA_VIDEO_FILE.VALUE_PATH}` : ''"-->
+<!--                                :code="event.PROPS.AFISHA_VIDEO_LINK?.VALUE || ''"-->
+<!--                            />-->
                             <Video
-                                :preview="event.PROPS.AFISHA_IMG?.VALUE_RESIZE ? `${baseUrl}${event.PROPS.AFISHA_IMG.VALUE_RESIZE}` : ''"
-                                :file="event.PROPS.AFISHA_VIDEO_FILE?.VALUE_PATH ? `${baseUrl}${event.PROPS.AFISHA_VIDEO_FILE.VALUE_PATH}` : ''"
-                                :code="event.PROPS.AFISHA_VIDEO_LINK?.VALUE || ''"
+                                :preview="event?.PROPS?.VIDEO_PREVIEW?.VALUE ? `${baseUrl}${event.PROPS?.VIDEO_PREVIEW?.VALUE}` : ''"
+                                :file="event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH ? `${baseUrl}${event.PROPS?.PLAYER_VIDEO.VALUE_PATH}` : ''"
+                                :code="event?.PROPS?.PLAYER_CODE?.VALUE || ''"
                             />
                         </div>
                         <!-- Блок Лекторы -->
@@ -370,7 +362,8 @@
         <div>Loading...</div>
     </div>
     <!--    хардкод-->
-    <EducationCards />
+<!--    <EducationCards />-->
+    <CourcesColored :courses="featuredWebinars"/>
 
     <!-- Модальное окно -->
     <ModalsTooltipModal
@@ -389,7 +382,7 @@
 
 <script setup lang="ts">
 import {ref, computed, onMounted} from 'vue';
-import { useRoute, useRouter } from 'nuxt/app';
+import { useRoute, useRouter, useRequestURL } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
 import { useModalsStore } from '~/stores/modals';
 import { useI18n } from 'vue-i18n';
@@ -435,6 +428,32 @@ const mapLongitude = ref(27.557088);
 const isCoursePaid = ref<boolean | null>(null);
 const isCourseAccessStatus = ref<boolean | null>(null);
 
+// Текущий URL страницы
+const currentUrl = computed(() => {
+    const requestUrl = useRequestURL();
+    return requestUrl.href;
+});
+
+// Заголовок новости для шаринга
+const shareTitle = computed(() => {
+    return event.value?.NAME || 'Курс';
+});
+
+// Описание для шаринга
+const shareDescription = computed(() => {
+    return (
+        event.value?.IPROPERTY_VALUES?.ELEMENT_META_DESCRIPTION ||
+        event.value?.DETAIL_TEXT?.substring(0, 200) ||
+        ''
+    );
+});
+
+// Изображение для шаринга
+const shareImage = computed(() => {
+    return event.value?.PREVIEW_PICTURE
+        ? `${imageBaseUrl}${event.value.PREVIEW_PICTURE}`
+        : `${baseUrl}/images/logo.svg`;
+});
 
 const openMapModal = () => {
     if (event.value?.PROPS?.WHEN_MAP?.VALUE) {
@@ -1050,6 +1069,78 @@ const closeTooltipModal = () => {
     isTooltipModalOpen.value = false;
     tooltipContent.value = '';
 };
+
+// слайдер курсов внизу
+const { data: webinarsData, error: webinarsError } = await useAsyncData('featuredWebinars', async () => {
+    try {
+        const { data } = await useFetch('/api/events', {
+            query: {
+                iblockId: '13',
+                GET_ALL_FILES: 'Y',
+                isFeatured: '1',
+            },
+            method: 'POST',
+            body: {
+                params: {
+                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PROPERTY_*'],
+                },
+            },
+        });
+
+        if (!data.value || !data.value.events || !Array.isArray(data.value.events)) {
+            console.error('Неверная структура ответа:', data.value);
+            return [];
+        }
+
+        const allLectorIds = new Set<number>();
+        data.value.events.forEach(event => {
+            const lectorSet = event.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                lectorSet.forEach(lector => {
+                    const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                    if (id) allLectorIds.add(id);
+                });
+            }
+        });
+
+        let profiles = {};
+        if (allLectorIds.size > 0) {
+            profiles = await fetchLectors([...allLectorIds]);
+        }
+
+        const processedEvents = data.value.events.map(event => {
+            const processedEvent = { ...event };
+            const lectorSet = processedEvent.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                processedEvent.lectors = lectorSet
+                    .map(lector => {
+                        const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                        return {
+                            id,
+                            name: profiles[id]
+                                ? `${profiles[id].NAME} ${profiles[id].LAST_NAME || ''}`.trim()
+                                : 'Неизвестный лектор',
+                        };
+                    })
+                    .filter(lector => lector.id);
+            } else {
+                processedEvent.lectors = [];
+            }
+            return processedEvent;
+        });
+
+        return processedEvents;
+    } catch (err) {
+        console.error('Ошибка при загрузке избранных курсов:', err);
+        return [];
+    }
+});
+
+const featuredWebinars = ref(webinarsData.value || []);
+
+if (webinarsError.value) {
+    console.error('Ошибка useAsyncData для событий:', WebinarsError.value);
+}
 </script>
 
 <style scoped lang="scss">

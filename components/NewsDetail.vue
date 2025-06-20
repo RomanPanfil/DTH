@@ -70,26 +70,33 @@
                             <span class="news-share-head-title">{{ $t('news.share') }}</span>
                             <NuxtIcon name="share" class="news-share-head-icon" filled />
                         </div>
-                        <div v-show="isShareLinksShow" class="news-share-links">
-                            <a href="#" class="news-share-link">
-                                <NuxtIcon name="vk-color" class="news-share-link-icon" filled />
-                            </a>
-                            <a href="#" class="news-share-link">
-                                <NuxtIcon name="tg-color" class="news-share-link-icon" filled />
-                            </a>
-                            <a href="#" class="news-share-link">
-                                <NuxtIcon name="fb-color" class="news-share-link-icon" filled />
-                            </a>
-                            <a href="#" class="news-share-link">
-                                <NuxtIcon name="ok-color" class="news-share-link-icon" filled />
-                            </a>
-                            <a href="#" class="news-share-link">
-                                <NuxtIcon name="twitter-color" class="news-share-link-icon" filled />
-                            </a>
-                            <a href="#" class="news-share-link">
-                                <NuxtIcon name="link-color" class="news-share-link-icon" filled />
-                            </a>
-                        </div>
+<!--                        <div v-show="isShareLinksShow" class="news-share-links">-->
+<!--                            <a href="#" class="news-share-link">-->
+<!--                                <NuxtIcon name="vk-color" class="news-share-link-icon" filled />-->
+<!--                            </a>-->
+<!--                            <a href="#" class="news-share-link">-->
+<!--                                <NuxtIcon name="tg-color" class="news-share-link-icon" filled />-->
+<!--                            </a>-->
+<!--                            <a href="#" class="news-share-link">-->
+<!--                                <NuxtIcon name="fb-color" class="news-share-link-icon" filled />-->
+<!--                            </a>-->
+<!--                            <a href="#" class="news-share-link">-->
+<!--                                <NuxtIcon name="ok-color" class="news-share-link-icon" filled />-->
+<!--                            </a>-->
+<!--                            <a href="#" class="news-share-link">-->
+<!--                                <NuxtIcon name="twitter-color" class="news-share-link-icon" filled />-->
+<!--                            </a>-->
+<!--                            <a href="#" class="news-share-link">-->
+<!--                                <NuxtIcon name="link-color" class="news-share-link-icon" filled />-->
+<!--                            </a>-->
+<!--                        </div>-->
+                        <NewsShareLinks
+                            :is-show="isShareLinksShow"
+                            :url="currentUrl"
+                            :title="shareTitle"
+                            :description="shareDescription"
+                            :image="shareImage"
+                        />
                     </div>
                 </div>
             </div>
@@ -114,7 +121,8 @@
         />
     </div>
 <!--    хардкод-->
-    <EducationCards />
+    <WebinarsShort :webinars="featuredWebinars" />
+<!--    <EducationCards />-->
 </template>
 
 <script setup lang="ts">
@@ -129,6 +137,8 @@ import Video from '~/components/Video.vue';
 import Report from '~/components/Report.vue';
 import GalleryPopup from '~/components/GalleryPopup.vue';
 import VideoPopup from '~/components/VideoPopup.vue';
+import {computed} from "vue";
+import {useRequestURL} from "nuxt/app";
 
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
@@ -163,6 +173,33 @@ const currentCaptions = ref<string[]>([]);
 const currentSlideIndex = ref(0);
 const currentVideo = ref<{ file: string; code: string } | null>(null);
 const popupType = ref<'report' | 'gall' | 'report-gallery' | 'video'>('report');
+
+// Текущий URL страницы
+const currentUrl = computed(() => {
+    const requestUrl = useRequestURL();
+    return requestUrl.href;
+});
+
+// Заголовок новости для шаринга
+const shareTitle = computed(() => {
+    return newsItem.value?.[locale.value]?.NAME || 'Новость';
+});
+
+// Описание для шаринга
+const shareDescription = computed(() => {
+    return (
+        newsItem.value?.[locale.value]?.IPROPERTY_VALUES?.ELEMENT_META_DESCRIPTION ||
+        newsItem.value?.[locale.value]?.DETAIL_TEXT?.substring(0, 200) ||
+        ''
+    );
+});
+
+// Изображение для шаринга
+const shareImage = computed(() => {
+    return newsItem.value?.[locale.value]?.PREVIEW_PICTURE
+        ? `${imageBaseUrl}${newsItem.value[locale.value].PREVIEW_PICTURE}`
+        : `${baseUrl}/images/logo.svg`;
+});
 
 const { data, error } = await useFetch(`/api/news/${newsCode}`, {
     method: 'GET',
@@ -494,7 +531,7 @@ const closePopup = () => {
 
 // Устанавливаем метатеги и микроразметку
 if (newsItem.value) {
-    const meta = newsItem.value.RU?.IPROPERTY_VALUES || {};
+    const meta = newsItem.value[locale.value].IPROPERTY_VALUES || {};
     const news = newsItem.value[locale.value];
     const ogImage = news?.PREVIEW_PICTURE ? `${imageBaseUrl}${news.PREVIEW_PICTURE}` : `${baseUrl}/images/logo.svg`;
     const galleryImages = newsBlocks.value
@@ -550,6 +587,101 @@ const formatDate = (dateString: string, loc = 'ru-RU') => {
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     return date.toLocaleDateString(loc, options);
 };
+
+// вебинары для нижнего слайдера
+const fetchLectors = async (lectorIds: number[]) => {
+    if (!lectorIds || lectorIds.length === 0) return {};
+    try {
+        const requestBody = {
+            params: {
+                USER_IDS: lectorIds,
+            },
+        };
+        const response = await $fetch('/api/getprofilesbyids', {
+            method: 'POST',
+            body: requestBody,
+        });
+        if (!response || Object.keys(response).length === 0) {
+            throw new Error('Нет данных о лекторах');
+        }
+        return response;
+    } catch (error) {
+        console.error('Ошибка получения лекторов:', error);
+        throw new Error(`Не удалось загрузить лекторов: ${error.message || 'Неизвестная ошибка'}`);
+    }
+};
+
+const { data: webinarsData, error: webinarsError } = await useAsyncData('featuredWebinars', async () => {
+    try {
+        const { data } = await useFetch('/api/events', {
+            query: {
+                iblockId: '19',
+                GET_ALL_FILES: 'Y',
+                isFeatured: '1',
+                PROPERTY_MAIN_LESSON: 1
+            },
+            method: 'POST',
+            body: {
+                params: {
+                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PROPERTY_*'],
+                },
+            },
+        });
+
+        if (!data.value || !data.value.events || !Array.isArray(data.value.events)) {
+            console.error('Неверная структура ответа:', data.value);
+            return [];
+        }
+
+        const allLectorIds = new Set<number>();
+        data.value.events.forEach(event => {
+            const lectorSet = event.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                lectorSet.forEach(lector => {
+                    const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                    if (id) allLectorIds.add(id);
+                });
+            }
+        });
+
+        let profiles = {};
+        if (allLectorIds.size > 0) {
+            profiles = await fetchLectors([...allLectorIds]);
+        }
+
+        const processedEvents = data.value.events.map(event => {
+            const processedEvent = { ...event };
+            const lectorSet = processedEvent.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                processedEvent.lectors = lectorSet
+                    .map(lector => {
+                        const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                        return {
+                            id,
+                            name: profiles[id]
+                                ? `${profiles[id].NAME} ${profiles[id].LAST_NAME || ''}`.trim()
+                                : 'Неизвестный лектор',
+                        };
+                    })
+                    .filter(lector => lector.id);
+            } else {
+                processedEvent.lectors = [];
+            }
+            return processedEvent;
+        });
+
+        return processedEvents;
+    } catch (err) {
+        console.error('Ошибка при загрузке избранных курсов:', err);
+        return [];
+    }
+});
+
+const featuredWebinars = ref(webinarsData.value || []);
+
+if (webinarsError.value) {
+    console.error('Ошибка useAsyncData для событий:', eventsError.value);
+}
 </script>
 
 <style scoped lang="scss">

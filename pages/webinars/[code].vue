@@ -69,6 +69,13 @@
                                         <NuxtIcon name="link-color" class="event-share-link-icon" filled />
                                     </a>
                                 </div>
+                                <EventsShareLinks
+                                    :is-show="isShareLinksShow"
+                                    :url="currentUrl"
+                                    :title="shareTitle"
+                                    :description="shareDescription"
+                                    :image="shareImage"
+                                />
                             </div>
                         </div>
                     </div>
@@ -307,7 +314,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'nuxt/app';
+import { useRoute, useRouter, useRequestURL } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
 import { useModalsStore } from '~/stores/modals';
 import { useI18n } from 'vue-i18n';
@@ -354,6 +361,31 @@ const mapLongitude = ref(27.557088);
 
 const isCoursePaid = ref<boolean | null>(null);
 const isCourseAccessStatus = ref<boolean | null>(null);
+
+// Текущий URL страницы
+const currentUrl = computed(() => {
+    const requestUrl = useRequestURL();
+    return requestUrl.href;
+});
+
+// Заголовок новости для шаринга
+const shareTitle = computed(() => {
+    return event.value?.NAME || 'Курс';
+});
+
+// Описание для шаринга
+const shareDescription = computed(() => {
+    return (
+        event.value?.PREVIEW_TEXT || ''
+    );
+});
+
+// Изображение для шаринга
+const shareImage = computed(() => {
+    return event.value?.PREVIEW_PICTURE
+        ? `${imageBaseUrl}${event.value.PREVIEW_PICTURE}`
+        : `${baseUrl}/images/logo.svg`;
+});
 
 const toggleSpoiler = () => {
     isSpoilerOpen.value = !isSpoilerOpen.value;
@@ -829,6 +861,7 @@ fetchEventData();
 // Логика для "липкого" поведения event-aside
 const eventAside = ref<HTMLElement | null>(null);
 onMounted(async () => {
+    console.log(currentUrl.value)
     const handleStickyAside = () => {
         if (!eventAside.value) return;
         const asideWrapper = eventAside.value.parentElement;
