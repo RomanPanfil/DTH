@@ -87,7 +87,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        console.log('Request body:', JSON.stringify(requestBody, null, 2));
+        // console.log('Request body:', JSON.stringify(requestBody, null, 2));
         const response = await $fetch(`${apiUrl}?method=GetLectorWebinarsList&act=auth`, {
             method: 'POST',
             headers: {

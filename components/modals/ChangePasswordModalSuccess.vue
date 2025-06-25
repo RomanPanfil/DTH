@@ -1,11 +1,12 @@
 <template>
     <div class="login-modal">
-        <h2 class="login-modal-title">{{ $t('recover.title') }}</h2>
+        <h2 class="login-modal-title">{{ $t('titles.changePassword') }}</h2>
         <p class="login-modal-text">
-            На указанный вами email <span class="color-primary">{{ authStore?.userProfile?.EMAIL }}</span> отправлено письмо для смены пароля.
+            На указанный вами email <span class="color-primary">{{ authStore?.userProfile?.EMAIL }}</span> отправлено письмо с уведомлением о смене пароля.
         </p>
         <p>
-            Пожалуйста, не забудьте проверить спам и мусорную корзину, если вы не можете найти письмо.
+            Если вы сменили пароль случайно и/или не запомнили новый установленный пароль,
+            то вы всегда можете сменить его через функцию восстановления забытого пароля.
         </p>
     </div>
 </template>

@@ -120,6 +120,10 @@ const slideNext = () => swiperInstance.value?.slideNext();
     gap: p2r(24);
     margin-bottom: p2r(30);
 
+    @media(max-width: 599px) {
+      margin-bottom: p2r(24);
+    }
+
     &-text {
       display: flex;
       flex-wrap: wrap;
@@ -261,7 +265,7 @@ const slideNext = () => swiperInstance.value?.slideNext();
 }
 :deep(.swiper-pagination) {
   bottom: p2r(0);
-  left: 50%;
+  left: 50% !important;
   transform: translateX(-50%);
   z-index: 2;
   display: none;

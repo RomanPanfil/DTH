@@ -22,7 +22,7 @@ const props = defineProps({
     photos: Array,
 });
 
-console.log('Report props:', props);
+// console.log('Report props:', props);
 
 defineEmits(['open-popup']);
 </script>

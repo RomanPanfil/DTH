@@ -264,7 +264,7 @@ export const useAuthStore = defineStore('auth', {
     },
     actions: {
         login(email: string, userId: number, token: string, expires: string) {
-            console.log('Login called with:', { email, userId, token, expires })
+            // console.log('Login called with:', { email, userId, token, expires })
             try {
                 const expiresDate = new Date(expires)
                 if (isNaN(expiresDate.getTime())) {

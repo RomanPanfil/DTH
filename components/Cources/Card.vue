@@ -200,12 +200,13 @@ const handleRemoveFav = async () => {
 
         @media(max-width: 599px) {
             margin-bottom: p2r(32);
+            //padding-bottom: p2r(32);
             height: calc(100% - 2rem);
         }
 
         @media(max-width: 420px) {
-            margin-bottom: p2r(24);
-            height: calc(100% - 1.5rem);
+            //margin-bottom: p2r(24);
+            //height: calc(100% - 1.5rem);
         }
 
         &-image {

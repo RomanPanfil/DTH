@@ -5,7 +5,8 @@
                 <MainSlider />
             </div>
             <div class="col-md-3">
-                <MainBanner />
+<!--                <MainBanner />-->
+                <MainBannerSlider />
             </div>
         </div>
         <MainAdvantages />
@@ -197,19 +198,22 @@ useHead({
 </script>
 
 <style scoped lang="scss">
-.slider {
-    margin-bottom: p2r(70);
-
-    @media (max-width: 1280px) {
-        margin-bottom: p2r(50);
-    }
-    @media (max-width: 1024px) {
-        margin-bottom: p2r(40);
-    }
-    @media (max-width: 599px) {
-        margin-bottom: p2r(24);
-    }
-}
+//.slider {
+//    margin-bottom: p2r(70);
+//
+//    @media (max-width: 1280px) {
+//        margin-bottom: p2r(50);
+//    }
+//  @media (max-width: 1140px) {
+//    margin-bottom: p2r(42);
+//  }
+//    @media (max-width: 1024px) {
+//        margin-bottom: p2r(32);
+//    }
+//    @media (max-width: 599px) {
+//        margin-bottom: p2r(10);
+//    }
+//}
 
 .banner {
     margin-bottom: p2r(70);

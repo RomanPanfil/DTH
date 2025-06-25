@@ -126,13 +126,30 @@ const getDecodedHTML = (text) => {
 .slider {
     position: relative;
 
-    @media(max-width: 599px) {
-        margin-left: p2r(-30);
-        margin-right: p2r(-30);
+    //@media(max-width: 599px) {
+    //    margin-left: p2r(-30);
+    //    margin-right: p2r(-30);
+    //}
+    //@media(max-width: 420px) {
+    //    margin-left: p2r(-20);
+    //    margin-right: p2r(-20);
+    //}
+    margin-bottom: p2r(70);
+
+    @media (max-width: 1280px) {
+        margin-bottom: p2r(50);
     }
-    @media(max-width: 420px) {
-        margin-left: p2r(-20);
-        margin-right: p2r(-20);
+    @media (max-width: 1140px) {
+        margin-bottom: p2r(42);
+    }
+    @media (max-width: 1024px) {
+        margin-bottom: p2r(32);
+    }
+    @media (max-width: 992px) {
+        margin-bottom: p2r(24);
+    }
+    @media (max-width: 599px) {
+        margin-bottom: p2r(10);
     }
 
     &-cards {
@@ -148,6 +165,10 @@ const getDecodedHTML = (text) => {
         aspect-ratio: 1229/440;
         border-radius: p2r(8);
         background-color: $primary;
+
+        @media(max-width: 1024px) {
+            aspect-ratio: 728/400;
+        }
 
         @media(max-width: 599px) {
             aspect-ratio: 360/440;
@@ -223,6 +244,10 @@ const getDecodedHTML = (text) => {
     z-index: 2;
     display: flex;
     gap: p2r(2);
+
+    @media (max-width: 599px) {
+        bottom: p2r(32);
+    }
 }
 
 :deep(.swiper-pagination-bullet) {

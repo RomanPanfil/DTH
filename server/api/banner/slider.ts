@@ -6,16 +6,14 @@ export default defineEventHandler(async (event) => {
     const apiUrl = config.private.bitrixApiUrl;
 
     const query = getQuery(event);
-    const iblockId = Number(query.iblockId) || 16; // Используем IBLOCK_ID 16 для баннеров
+    const iblockId = Number(query.iblockId) || 16;
     const getAllFiles = query.GET_ALL_FILES || 'Y';
 
     const requestBody = {
         key: apiKey,
         'params[filter][IBLOCK_ID]': iblockId,
         'params[filter][ACTIVE]': 'Y',
-        // 'params[sort][RAND]': 'RAND', // Случайная сортировка
-        // 'params[pager][start]': 1,    // Начало выборки
-        // 'params[pager][limit]': 1,    // Ограничение на 1 баннер
+        'params[sort][SORT]': 'ASC',
     };
 
     Object.assign(requestBody, {
@@ -42,19 +40,19 @@ export default defineEventHandler(async (event) => {
             body: new URLSearchParams(requestBody).toString(),
         });
 
-        // console.log('Banners API Response:', JSON.stringify(response, null, 2));
+        // console.log('Slides API Response:', JSON.stringify(response, null, 2));
 
         if (!response.RESULT || !response.RESULT.ITEMS || !response.RESULT.ITEMS.RU) {
             throw new Error('Неверная структура ответа API');
         }
 
         return {
-            banners: response.RESULT.ITEMS.RU || [],
+            slides: response.RESULT.ITEMS.RU || [],
         };
     } catch (error) {
-        console.error('Ошибка при запросе баннеров:', error);
+        console.error('Ошибка при запросе слайдов:', error);
         return {
-            error: 'Не удалось загрузить баннеры',
+            error: 'Не удалось загрузить слайды',
             details: error.message,
         };
     }

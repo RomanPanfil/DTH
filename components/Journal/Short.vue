@@ -154,6 +154,10 @@ const slideNext = () => swiperInstance.value?.slideNext();
         gap: p2r(24);
         margin-bottom: p2r(30);
 
+        @media(max-width: 599px) {
+            margin-bottom: p2r(24);
+        }
+
         &-title {
             margin-bottom: 0;
 

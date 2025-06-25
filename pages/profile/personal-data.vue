@@ -205,7 +205,7 @@
                             class="ui-input"
                             disabled
                         />
-                        <button type="button" class="change-password">
+                        <button type="button" class="change-password" @click="changePasswordClick">
                             <NuxtIcon name="edit" filled class="change-password-icon" />
                         </button>
                     </div>
@@ -315,6 +315,16 @@ import { useModalsStore } from '~/stores/modals';
 
 const modalsStore = useModalsStore();
 
+const isMenuOpen = ref(false);
+
+watch(isMenuOpen, (newValue) => {
+    if (newValue === true) {
+        document.body.classList.add('non-scroll');
+    } else {
+        document.body.classList.remove('non-scroll');
+    }
+});
+
 // Определение кастомного правила валидации для проверки заполненности маски
 defineRule('phoneMaskComplete', (value: string) => {
     if (phoneMask.value && !phoneMask.value.masked.isComplete) {
@@ -356,7 +366,7 @@ const profilerForm = reactive<{
     city: '',
     phone: '',
     email: '',
-    password: '',
+    password: '******',
     telegram: '',
     viber: '',
     whatsApp: ''
@@ -697,6 +707,11 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
             dropdownStates[key] = false;
         });
     }
+};
+
+const changePasswordClick = () => {
+    modalsStore.openModal('changePassword');
+    isMenuOpen.value = false;
 };
 </script>
 

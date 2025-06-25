@@ -62,11 +62,7 @@
                     <div class="event-main">
                         <!-- Блок Видео -->
                         <div v-if="(event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH || event?.PROPS?.PLAYER_CODE?.VALUE) && isCourseAccessStatus" class="video-section">
-<!--                            <Video-->
-<!--                                :preview="event.PROPS.AFISHA_IMG?.VALUE_RESIZE ? `${baseUrl}${event.PROPS.AFISHA_IMG.VALUE_RESIZE}` : ''"-->
-<!--                                :file="event.PROPS.AFISHA_VIDEO_FILE?.VALUE_PATH ? `${baseUrl}${event.PROPS.AFISHA_VIDEO_FILE.VALUE_PATH}` : ''"-->
-<!--                                :code="event.PROPS.AFISHA_VIDEO_LINK?.VALUE || ''"-->
-<!--                            />-->
+
                             <Video
                                 :preview="event?.PROPS?.VIDEO_PREVIEW?.VALUE ? `${baseUrl}${event.PROPS?.VIDEO_PREVIEW?.VALUE}` : ''"
                                 :file="event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH ? `${baseUrl}${event.PROPS?.PLAYER_VIDEO.VALUE_PATH}` : ''"
@@ -218,12 +214,20 @@
                                         :loop="event.PROPS?.WHEN_GALL?.VALUE_PATH?.length > 3"
                                         class="when-gallery-swiper"
                                     >
-                                        <SwiperSlide v-for="(image, index) in event.PROPS?.WHEN_GALL?.VALUE_PATH" :key="index">
-                                            <img :src="image ? `${baseUrl}${image}` : ''" alt="Gallery image" class="when-gallery-image" />
+                                        <SwiperSlide v-for="(image, index) in event.PROPS?.WHEN_GALL?.VALUE_RESIZE" :key="index">
+                                            <img :src="image ? `${baseUrl}${image}` : ''" alt="Gallery image" class="when-gallery-image" @click="openGalleryPopup(index)" />
                                         </SwiperSlide>
                                         <div class="swiper-pagination"></div>
                                     </Swiper>
                                 </div>
+
+                                <GalleryPopup
+                                    v-if="isImagesPopupOpen"
+                                    :images="event.PROPS?.WHEN_GALL?.VALUE_PATH?.map(path => `${baseUrl}${path}`)"
+                                    :initial-index="currentSlideIndex"
+                                    :captions="whenGalleryCaptions"
+                                    @close="closeGalleryPopup"
+                                />
 
                             </div>
                             <div class="when-description" v-html="getDecodedHTML(event.PROPS?.WHEN_DESCRIPTION?.VALUE?.TEXT || '')"></div>
@@ -568,7 +572,23 @@ const formatEventDates = (dateStrings: string[]) => {
 };
 
 const isPopupOpen = ref(false);
+const isImagesPopupOpen = ref(false);
 const currentSlideIndex = ref(0);
+
+const openGalleryPopup = (index) => {
+    currentSlideIndex.value = index;
+    isImagesPopupOpen.value = true;
+};
+
+const closeGalleryPopup = () => {
+    isImagesPopupOpen.value = false;
+    currentSlideIndex.value = 0;
+};
+
+const whenGalleryCaptions = computed(() => {
+    if (!event.value?.PROPS?.WHEN_GALL?.DESCRIPTION) return [];
+    return event.value.PROPS.WHEN_GALL.DESCRIPTION.map(desc => desc || '');
+});
 
 const reportGalleryThumbs = computed(() => {
     if (!event.value?.PROPS?.REPORT_GALL?.VALUE_RESIZE) return [];

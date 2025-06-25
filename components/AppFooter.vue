@@ -73,18 +73,22 @@
         <div class="footer-indent" :class="{'search':isSearchShow}"></div>
     </footer>
     <div class="mobile-nav">
+        <div v-if="isSearchShow" class="mobile-nav-top">
+            <div class="container">
+                <form class="mobile-nav-search" @submit.prevent="handleSearch">
+                    <input
+                        v-model="searchQuery"
+                        type="search"
+                        :placeholder="$t('header.searchPlaceholder')"
+                        class="ui-input ui-input__search"
+                    >
+                    <button class="mobile-nav-search-btn" type="submit">
+                        <NuxtIcon name="search" class="icon" filled />
+                    </button>
+                </form>
+            </div>
+        </div>
         <div class="container">
-            <form v-if="isSearchShow" class="mobile-nav-search" @submit.prevent="handleSearch">
-                <input
-                    v-model="searchQuery"
-                    type="search"
-                    :placeholder="$t('header.searchPlaceholder')"
-                    class="ui-input ui-input__search"
-                >
-                <button class="mobile-nav-search-btn" type="submit">
-                    <NuxtIcon name="search" class="icon" filled />
-                </button>
-            </form>
             <div class="mobile-nav-links">
                 <button class="mobile-nav-link" :class="{'active': isSearchShow}" @click="toggleShowSearch">
                     <img src="/images/search.svg" alt="search" class="mobile-nav-link-icon">
@@ -396,6 +400,7 @@
         left: 0;
         right: 0;
         background-color: $bgc;
+        box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
         z-index: 1000;
 
     }
@@ -451,6 +456,11 @@
             margin-bottom: p2r(2);
             transition: filter 0.3s;
         }
+    }
+
+    &-top {
+        border-bottom: 1px solid $border;
+        padding-bottom: p2r(12);
     }
 
     &-search {

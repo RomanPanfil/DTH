@@ -103,7 +103,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        console.log('Отправляемый requestBody:', requestBody.toString());
+        // console.log('Отправляемый requestBody:', requestBody.toString());
 
         const response = await $fetch(`${apiUrl}?method=GetUserCoursesList&act=auth`, {
             method: 'POST',
@@ -114,7 +114,7 @@ export default defineEventHandler(async (event) => {
             body: requestBody.toString(),
         });
 
-        console.log('Полный ответ API:', JSON.stringify(response, null, 2));
+        // console.log('Полный ответ API:', JSON.stringify(response, null, 2));
 
         if (response.RESULT) {
             const result = {

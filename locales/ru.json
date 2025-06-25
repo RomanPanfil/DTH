@@ -49,7 +49,9 @@
     "loginEmail": "Логин (email)",
     "password": "Пароль",
     "passwordRepeat": "Повторите пароль",
+    "passwordNewRepeat": "Повторите новый пароль",
     "newPassword": "Новый пароль",
+    "oldPassword": "Старый пароль",
     "newPasswordRepeat": "Повторите новый пароль",
     "birthday": "День рождения",
     "country": "Страна проживания",
@@ -95,6 +97,8 @@
     "send": "отправлено письмо для смены пароля.",
     "changePassTitle": "Смена пароля",
     "savePass": "Сохранить пароль",
+    "changePass": "Сменить пароль",
+    "cancel": "Отменить",
     "resetSuccess": "Отличная работа! Вы успешно сменили пароль и можете попробовать",
     "resetSuccessLogin": "войти на сайт",
     "goToMain": "Перейти на главную"
@@ -119,7 +123,11 @@
     "phoneRequired": "Поле \"Телефон\" обязательно",
     "updateFailed": "Не удалось обновить профиль",
     "invalidPhotoType": "Недопустимый тип файла (только JPEG, PNG, GIF)",
-    "photoTooLarge": "Файл превышает 5 МБ"
+    "photoTooLarge": "Файл превышает 5 МБ",
+    "ERROR_CURRENT_PASSWORD": "Текущий пароль указан неверно",
+    "ERROR_FIELD_REQUIRED": "Одно из обязательных полей не заполнено",
+    "ERROR_INVALID_TOKEN": "Неверный или истекший токен",
+    "unknownError": "Ошибка"
   },
   "account": {
     "agree": "Я согласен участвовать в промо-акциях ресурса",
@@ -230,5 +238,8 @@
   "share": {
     "linkCopied": "Ссылка скопирована",
     "linkCopyError": "Ошибка при копровании ссылки"
+  },
+  "titles": {
+    "changePassword": "Смена пароля"
   }
 }

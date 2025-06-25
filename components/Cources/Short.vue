@@ -97,8 +97,8 @@ const slideNext = () => swiperInstance.value?.slideNext();
     }
 
     @media(max-width: 599px) {
-        padding-top: p2r(40);
-        padding-bottom: p2r(6);
+        padding-top: p2r(12);
+        padding-bottom: p2r(24);
     }
 
     &-head {
@@ -107,6 +107,10 @@ const slideNext = () => swiperInstance.value?.slideNext();
         align-items: center;
         gap: p2r(24);
         margin-bottom: p2r(30);
+
+        @media(max-width: 599px) {
+            margin-bottom: p2r(24);
+        }
 
         &-title {
             margin-bottom: 0;
@@ -194,6 +198,7 @@ const slideNext = () => swiperInstance.value?.slideNext();
 
     @media(max-width: 599px) {
         display: flex;
+        bottom: p2r(0);
     }
 }
 
