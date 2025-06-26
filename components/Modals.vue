@@ -28,6 +28,7 @@ import LoginModal from '~/components/modals/LoginModal.vue'
 import RecoverModal from "~/components/modals/RecoverModal.vue";
 import ChangePasswordModal from "~/components/modals/ChangePasswordModal.vue";
 import ChangePasswordModalSuccess from "~/components/modals/ChangePasswordModalSuccess.vue";
+import TeachRequestModal from "~/components/modals/TeachRequestModal.vue";
 
 const modalsStore = useModalsStore()
 
@@ -37,6 +38,7 @@ const modalComponents: Record<string, any> = {
     recover: RecoverModal,
     changePassword: ChangePasswordModal,
     changePasswordSuccess: ChangePasswordModalSuccess,
+    teachRequest:TeachRequestModal,
 }
 
 const modalComponent = computed(() => {
@@ -86,6 +88,12 @@ onUnmounted(() => {
 
     &.modal-login {
         max-width: p2r(500); // Ширина для модалки login
+        @media(max-width: 599px) {
+            max-width: 100%;
+        }
+    }
+    &.modal-teachRequest {
+        max-width: p2r(500);
         @media(max-width: 599px) {
             max-width: 100%;
         }

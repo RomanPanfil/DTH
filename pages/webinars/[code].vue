@@ -255,11 +255,11 @@
                                     </div>
                                 </div>
                                 <div v-if="event?.PROPS?.PRICE?.VALUE" class="event-card-price">
-                                    <div v-if="isMainLesson" class="event-card-price-value">
-                                        <span>{{ event.PROPS.PRICE_FOR_ALL?.VALUE }}</span> {{ $t('courses.currency') }}
-                                    </div>
-                                    <div v-else-if="isFree" class="event-card-price-value">
+                                    <div v-if="isFree" class="event-card-price-value">
                                         <span>{{ event.PROPS.IS_FREE?.NAME }}</span>
+                                    </div>
+                                    <div v-else-if="isMainLesson" class="event-card-price-value">
+                                        <span>{{ event.PROPS.PRICE_FOR_ALL?.VALUE }}</span> {{ $t('courses.currency') }}
                                     </div>
                                     <div v-else class="event-card-price-value">
                                         <span>{{ event.PROPS.PRICE?.VALUE }}</span> {{ $t('courses.currency') }}
@@ -1260,6 +1260,14 @@ const declineWord = (number: number, words: [string, string, string]): string =>
     font-size: p2r(14);
     padding-top: p2r(6);
     padding-bottom: p2r(6);
+
+    span {
+        &:not(:last-child) {
+            &::after {
+                height: p2r(10);
+            }
+        }
+    }
 }
 .container {
     @media (min-width: 1367px) {
@@ -1487,7 +1495,7 @@ const declineWord = (number: number, words: [string, string, string]): string =>
 
     &-aside {
         margin-top: p2r(-424);
-        padding: p2r(20);
+        padding: p2r(20) p2r(20) p2r(38) p2r(20);
         background-color: $bgc;
         box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
         border-radius: p2r(8);
@@ -1604,6 +1612,11 @@ const declineWord = (number: number, words: [string, string, string]): string =>
                 width: p2r(52);
                 flex: 0 0 p2r(52);
                 cursor: pointer;
+
+                @media (max-width: 599px) {
+                    width: p2r(48);
+                    flex: 0 0 p2r(48);
+                }
 
                 .icon {
                     font-size: p2r(28);
@@ -2313,5 +2326,16 @@ const declineWord = (number: number, words: [string, string, string]): string =>
 :deep(.swiper-pagination-bullet-active) {
     background-color: $primary;
     width: p2r(48);
+}
+
+:deep(.breadcrumbs-item) {
+    &:last-child {
+        display: none;
+    }
+    &:nth-last-child(2) {
+        .breadcrumbs-separator {
+            display: none;
+        }
+    }
 }
 </style>

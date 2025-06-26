@@ -225,6 +225,50 @@ table {
   position: relative;
 }
 
+.ui-textarea {
+  display: block;
+  height: 100%;
+  line-height: 1;
+  width: 100%;
+  max-width: 100%;
+  background: $bgc-input;
+  padding: p2r(17) p2r(40) p2r(18) p2r(16);
+  color: $font;
+  border: 1px solid $border;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: .3s border, .3s color, .3s padding;
+  border-radius: p2r(4);
+  outline: 0;
+  resize: none;
+
+  @media(max-width: 1280px) {
+    font-size: p2r(14);
+  }
+
+  @media (max-width: 599px) {
+    padding: p2r(12) p2r(32) p2r(12) p2r(10);
+    //height: p2r(48);
+  }
+
+  &.active {
+    padding: p2r(25) p2r(14) p2r(10) p2r(16);
+  }
+
+  &::placeholder {
+    color: $font;
+  }
+
+  &:focus {
+    background-color: $bgc;
+  }
+
+  &.error {
+    border-color: $error;
+  }
+}
+
 .ui-input {
   display: block;
   height: p2r(56);
@@ -476,12 +520,25 @@ table {
   &__dark {
     color: $font-white;
     background-color: $font;
+    border-color: $font;
 
     span {
+      position: relative;
       &:not(:last-child) {
         padding-right: p2r(6);
         margin-right: p2r(6);
-        border-right: 1px solid $font-white;
+        //border-right: 1px solid $font-white;
+
+        &::after {
+          position: absolute;
+          top: 50%;
+          right: 0;
+          transform: translate(0, -50%);
+          content: '';
+          background-color: $font-white;
+          width: 1px;
+          height: p2r(8);
+        }
       }
     }
   }

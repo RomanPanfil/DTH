@@ -63,10 +63,10 @@
                                 </button>
                             </nav>
                             <div class="sidebar-help">
-                                <button class="ui-btn ui-btn__transparent ui-btn__block sidebar-btn">
+                                <NuxtLink to="/support" class="ui-btn ui-btn__transparent ui-btn__block sidebar-btn">
                                     <NuxtIcon name="help" filled class="sidebar-icon" />
                                     Помощь
-                                </button>
+                                </NuxtLink>
                             </div>
                         </div>
                     </aside>
@@ -467,6 +467,13 @@ watch(() => authStore.userProfile, (newProfile) => {
                 }
             }
         }
+    }
+
+    &-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $font;
     }
 }
 

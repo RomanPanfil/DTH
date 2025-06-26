@@ -3,7 +3,7 @@
         <img src="/public/images/join-bg-img.svg" alt="tooth" class="join-image">
         <div class="container">
             <div class="join-content">
-                <div v-if="settingsError && itemsError" class="error-message">
+                <div v-if="settingsStore.error && itemsError" class="error-message">
                     Не удалось загрузить данные
                 </div>
                 <div v-else class="join-header">
@@ -37,7 +37,7 @@
                             <button
                                 :href="item.PROPS?.BTN_LINK?.VALUE || '#'"
                                 class="ui-btn ui-btn__primary join-card-btn"
-                                @click="handleRegister"
+                                @click="handleRegister(`${item.PROPS?.BTN_LINK?.VALUE}`)"
                             >
                                 {{ item.PROPS?.BTN_TEXT?.VALUE }}
                             </button>
@@ -51,12 +51,16 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
+import { useModalsStore } from '~/stores/modals';
+import { useSettingsStore } from '~/stores/settings';
 import { computed } from 'vue';
 import { useLocaleStore } from '~/stores/locale';
 import { useRouter } from 'nuxt/app';
-
+const { $toast } = useNuxtApp()
 const router = useRouter();
 const authStore = useAuthStore();
+const modalsStore = useModalsStore();
+const settingsStore = useSettingsStore();
 
 const runtimeConfig = useRuntimeConfig();
 const imageBaseUrl = runtimeConfig.public.imageBaseUrl;
@@ -65,18 +69,11 @@ const localeStore = useLocaleStore();
 const locale = computed(() => localeStore.locale);
 
 const mainTitle = computed(() => {
-    const localeSuffix = locale.value?.toUpperCase() || 'RU';
-    return settings.value?.MAIN_TITLE_BLOCK?.[`VALUE_${localeSuffix}`] || '';
+    return settingsStore.getSetting('MAIN_TITLE_BLOCK', locale.value);
 });
 
 const mainSubtitle = computed(() => {
-    const localeSuffix = locale.value?.toUpperCase() || 'RU';
-    return settings.value?.MAIN_TITLE_DESC?.[`VALUE_${localeSuffix}`] || '';
-});
-
-const { data: settings, error: settingsError } = await useFetch('/api/settings', {
-    method: 'POST',
-    body: {},
+    return settingsStore.getSetting('MAIN_TITLE_DESC', locale.value);
 });
 
 const { data: itemsData, error: itemsError } = await useFetch('/api/join', {
@@ -94,16 +91,21 @@ const getImageUrl = (path: string) => {
     return path ? `${imageBaseUrl}${path}` : '/public/images/belcart.svg';
 };
 
-if (settingsError.value) {
-    console.error('Failed to fetch settings:', settingsError.value);
-}
 if (itemsError.value) {
     console.error('Failed to fetch items:', itemsError.value);
 }
 
-const handleRegister = () => {
-    if (!authStore.token) {
-        router.push('/register');
+const handleRegister = (type) => {
+    if(type === 'register') {
+        if (!authStore.token) {
+            router.push('/register');
+        } else {
+            $toast.success('У вас уже есть учетная запись!')
+        }
+    }
+
+    if(type === 'teach-request') {
+        modalsStore.openModal('teachRequest');
     }
 }
 </script>

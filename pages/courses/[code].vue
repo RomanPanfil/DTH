@@ -353,7 +353,7 @@
                                         />
                                     </button>
                                 </div>
-                                <button class="event-card-more cost-group-btn" @click="openTooltipModal(null)">Подробнее об оплате</button>
+                                <button class="event-card-more cost-group-btn" @click="openTooltipModal(costGroup)">Подробнее об оплате</button>
                             </div>
                         </div>
                     </div>
@@ -1394,7 +1394,7 @@ if (webinarsError.value) {
 
     &-aside {
         margin-top: p2r(-354);
-        padding: p2r(20);
+        padding: p2r(20) p2r(20) p2r(38) p2r(20);
         background-color: $bgc;
         box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);
         border-radius: p2r(8);
@@ -1505,6 +1505,11 @@ if (webinarsError.value) {
                 width: p2r(52);
                 flex: 0 0 p2r(52);
                 cursor: pointer;
+
+                @media (max-width: 599px) {
+                    width: p2r(48);
+                    flex: 0 0 p2r(48);
+                }
 
                 .icon {
                     font-size: p2r(28);
@@ -2037,5 +2042,16 @@ if (webinarsError.value) {
 :deep(.swiper-pagination-bullet-active) {
     background-color: $primary;
     width: p2r(48);
+}
+
+:deep(.breadcrumbs-item) {
+    &:last-child {
+        display: none;
+    }
+    &:nth-last-child(2) {
+        .breadcrumbs-separator {
+            display: none;
+        }
+    }
 }
 </style>

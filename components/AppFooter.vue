@@ -393,7 +393,7 @@
 .mobile-nav {
     display: none;
 
-    @media (max-width: 1024px) {
+    @media (max-width: 960px) {
         display: block;
         position: fixed;
         bottom: 0;

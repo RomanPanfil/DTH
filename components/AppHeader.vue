@@ -28,7 +28,7 @@
                 </form>
                 <button @click="handleAccountClick" class="header-account">
                     <NuxtIcon name="user" class="header-account-icon" filled />
-                    {{ $t('header.account') }}
+                    <span class="header-account-text">{{ $t('header.account') }}</span>
                 </button>
                 <button @click="toggleMenu" :class="burgerClasses" class="header-burger">
                     <div class="header-burger-icon">
@@ -151,7 +151,11 @@
             margin-right: p2r(16);
         }
 
-        @media(max-width: 1024px) {
+        //@media(max-width: 1024px) {
+        //    display: none;
+        //}
+
+        @media(max-width: 960px) {
             display: none;
         }
         &-link {
@@ -196,6 +200,21 @@
         }
 
         @media(max-width: 1024px) {
+            width: p2r(48);
+            height: p2r(48);
+            flex: 0 0 p2r(48);
+            border-radius: 50%;
+            padding-right: p2r(0);
+            padding-left: p2r(0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &-text {
+                display: none;
+            }
+        }
+
+        @media(max-width: 960px) {
             display: none;
         }
 
@@ -218,6 +237,17 @@
                 flex: 0 0 p2r(20);
                 font-size: p2r(16);
             }
+
+            @media(max-width: 1024px) {
+                background: none;
+                color: $font-white;
+                font-size: p2r(24);
+                line-height: p2r(20);
+                width: p2r(24);
+                height: p2r(24);
+                flex: 0 0 p2r(24);
+                margin-right: 0;
+            }
         }
     }
 
@@ -235,7 +265,11 @@
             margin-right: p2r(20);
         }
 
-        @media(max-width: 1024px) {
+        //@media(max-width: 1024px) {
+        //    display: none;
+        //}
+
+        @media(max-width: 960px) {
             display: none;
         }
 
@@ -273,7 +307,7 @@
         border: none;
         position: relative;
 
-        @media(max-width: 1024px) {
+        @media(max-width: 960px) {
             display: flex;
             flex-direction: column;
             align-items: center;

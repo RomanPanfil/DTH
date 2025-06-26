@@ -178,9 +178,9 @@ const computedBreadcrumbs = computed(() => {
         crumbs.push({ name: t('breadcrumbs.courses'), path: '/courses' });
 
         // Добавляем название конкретного мероприятия, если есть eventTitle
-        // if (eventTitle && route.path !== '/courses') {
-        //     crumbs.push({ name: eventTitle, path: route.path });
-        // }
+        if (eventTitle && route.path !== '/courses') {
+            crumbs.push({ name: eventTitle, path: route.path });
+        }
 
         return crumbs;
     }
@@ -190,9 +190,9 @@ const computedBreadcrumbs = computed(() => {
         crumbs.push({ name: t('breadcrumbs.webinars'), path: '/webinars' });
 
         // Добавляем название конкретного мероприятия, если есть eventTitle
-        // if (eventTitle && route.path !== '/webinars') {
-        //     crumbs.push({ name: eventTitle, path: route.path });
-        // }
+        if (eventTitle && route.path !== '/webinars') {
+            crumbs.push({ name: eventTitle, path: route.path });
+        }
 
         return crumbs;
     }
