@@ -674,17 +674,17 @@ table {
     }
 
     @media(max-width: 599px) {
-      margin-left: p2r(-30);
-      margin-right: p2r(-30);
-      padding-left: p2r(30);
-      padding-right: p2r(30);
-    }
-
-    @media(max-width: 420px) {
       margin-left: p2r(-20);
       margin-right: p2r(-20);
       padding-left: p2r(20);
       padding-right: p2r(20);
+    }
+
+    @media(max-width: 420px) {
+      margin-left: p2r(-10);
+      margin-right: p2r(-10);
+      padding-left: p2r(10);
+      padding-right: p2r(10);
     }
 
     &-item {

@@ -576,8 +576,4 @@ const handleAccountClick = () => {
     }
     isMenuOpen.value = false;
 };
-
-watch(() => route.query.query, (newQuery) => {
-    console.log('Current search query:', newQuery);
-});
 </script>

@@ -94,7 +94,7 @@ const { data: eventsData, refresh: refreshEvents } = await useAsyncData(
                 method: 'POST',
                 body: {
                     TOKEN: authStore.token,
-                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PREVIEW_PICTURE', 'PROPERTY_*'],
+                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PREVIEW_PICTURE', 'CODE', 'PROPERTY_*'],
                     resize: [390, 242, true],
                     GET_ALL_FILES: 'Y',
                     pager: { start: currentPage.value, limit: 12 },

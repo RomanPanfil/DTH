@@ -114,7 +114,6 @@ const { data: coursesData, refresh: refreshCourses } = await useAsyncData(
                     : [];
             });
 
-            // console.log('Courses loaded for locale', locale.value, ':', courses);
             isLoadedCourses.value = true;
             return { courses, pagination };
         } catch (error: any) {

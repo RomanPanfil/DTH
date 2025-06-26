@@ -48,17 +48,6 @@ const journalFetch = fetchCategoryData('journal', journalPage);
 const coursesFetch = fetchCategoryData('courses', coursesPage);
 const webinarsFetch = fetchCategoryData('webinars', webinarsPage);
 
-// Обработка ошибок и отладка
-watch(journalFetch.data, (newVal) => {
-    console.log('Journal searchResults:', newVal);
-});
-watch(coursesFetch.data, (newVal) => {
-    console.log('Courses searchResults:', newVal);
-});
-watch(webinarsFetch.data, (newVal) => {
-    console.log('Webinars searchResults:', newVal);
-});
-
 if (journalFetch.error.value) console.error('Ошибка (journal):', journalFetch.error.value);
 if (coursesFetch.error.value) console.error('Ошибка (courses):', coursesFetch.error.value);
 if (webinarsFetch.error.value) console.error('Ошибка (webinars):', webinarsFetch.error.value);
@@ -77,10 +66,6 @@ const filteredData = (category: string) => {
         };
     });
 
-    watch(result, (newVal) => {
-        console.log(`filteredData(${category}):`, newVal);
-    }, { immediate: true });
-
     return result;
 };
 
@@ -96,6 +81,5 @@ watch(searchQuery, (newQuery) => {
     journalPage.value = 1;
     coursesPage.value = 1;
     webinarsPage.value = 1;
-    console.log('Search query changed:', newQuery);
 });
 </script>

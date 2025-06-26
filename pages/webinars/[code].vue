@@ -317,6 +317,7 @@ import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue';
 import { useRoute, useRouter, useRequestURL } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
 import { useModalsStore } from '~/stores/modals';
+import { useSettingsStore } from '~/stores/settings';
 import { useI18n } from 'vue-i18n';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Navigation as SwiperNavigation, Pagination } from 'swiper/modules';
@@ -331,6 +332,7 @@ const { t } = useI18n();
 
 const modalsStore = useModalsStore();
 const authStore = useAuthStore();
+const settingsStore = useSettingsStore();
 
 const localeStore = useLocaleStore();
 const locale = computed(() => localeStore.locale);
@@ -409,38 +411,17 @@ const isFavorite = computed(() => {
     if (!event.value?.ID || !authStore.favorites.length) return false;
     const eventId = Number(event.value.ID);
     const isInFavorites = authStore.favorites.includes(eventId);
-    console.log('isFavorite computed:', {
-        eventId,
-        favorites: authStore.favorites,
-        isInFavorites
-    });
     return isInFavorites;
 });
 
-const tooltipTitlePay = ref<string | null>(null)
-const tooltipTitleDiscount = ref<string | null>(null)
-const { data: settings, error: settingsError } = await useFetch('/api/settings', {
-    method: 'POST',
-    body: {},
-})
-if (settings.value) {
-    // Устанавливаем значения для заголовков подсказок
-    tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE || settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || 'Оплата'
-    tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || 'Скидка'
+const tooltipTitlePay = ref('Оплата');
+const tooltipTitleDiscount = ref('Скидка');
 
-    // Динамическая выборка в зависимости от языка
-    if (locale.value === 'RU') {
-        tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || settings.value.TOOLTIP_TITLE_PAY?.VALUE || 'Оплата'
-        tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || 'Скидка'
-    } else {
-        tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE || settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || 'Оплата'
-        tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || 'Скидка'
-    }
-} else if (settingsError.value) {
-    console.error('Ошибка загрузки настроек:', settingsError.value)
-    // Устанавливаем значения по умолчанию в случае ошибки
-    tooltipTitlePay.value = 'Оплата'
-    tooltipTitleDiscount.value = 'Скидка'
+if (settingsStore.settings) {
+    tooltipTitlePay.value = settingsStore.getSetting('TOOLTIP_TITLE_PAY', locale.value) || 'Оплата';
+    tooltipTitleDiscount.value = settingsStore.getSetting('TOOLTIP_TITLE_DISCOUNT', locale.value) || 'Скидка';
+} else if (settingsStore.error) {
+    console.error('Ошибка загрузки настроек:', settingsStore.error);
 }
 
 const getImageUrl = (path) => {
@@ -608,37 +589,6 @@ const reportUrl = computed(() => {
 });
 
 // Функция для получения дочерних уроков
-// const fetchChildLessons = async (parentCourseId: number) => {
-//     if (!event.value?.ID) {
-//         console.error('fetchChildLessons: Event ID not found');
-//         return;
-//     }
-//
-//     try {
-//         const response = await $fetch('/api/webinars/getlessons', {
-//             method: 'POST',
-//             body: {
-//                 COURSE_ID: !parentCourseId ? Number(event.value.ID) : parentCourseId,
-//                 TOKEN: authStore.token || undefined // Передаём токен, если пользователь авторизован
-//             }
-//         });
-//
-//         if (response && response.ITEMS && response.ITEMS[locale.value]) {
-//             childLessons.value = response.ITEMS[locale.value];
-//             console.log('Child Lessons:', childLessons.value);
-//         } else {
-//             console.warn('No child lessons found or invalid response structure');
-//             childLessons.value = [];
-//         }
-//     } catch (error) {
-//         console.error('Ошибка при загрузке дочерних уроков:', error);
-//         const errorMessage = error.data?.message || error.statusMessage || 'Неизвестная ошибка';
-//         console.error('Подробности ошибки:', errorMessage);
-//         childLessons.value = [];
-//     }
-// };
-
-// Функция для получения дочерних уроков
 const fetchChildLessons = async (parentCourseId: number) => {
     if (!event.value?.ID) {
         console.error('fetchChildLessons: Event ID not found');
@@ -653,7 +603,6 @@ const fetchChildLessons = async (parentCourseId: number) => {
 
     // Добавляем TOKEN, только если пользователь авторизован
     if (authStore.token) {
-        console.log('token')
         requestBody.TOKEN = authStore.token;
     }
 
@@ -700,8 +649,6 @@ const fetchParentLesson = async () => {
 
         if (response && response.ITEM && response.ITEM[locale.value]) {
             const parentLesson = response.ITEM[locale.value];
-            console.log('Parent Lesson:', parentLesson);
-            console.log("Parent Lesson Id:", parentLesson.ID);
 
             // Проверка валидности ID родительского курса
             const parentCourseId = Number(parentLesson.ID);
@@ -861,7 +808,6 @@ fetchEventData();
 // Логика для "липкого" поведения event-aside
 const eventAside = ref<HTMLElement | null>(null);
 onMounted(async () => {
-    console.log(currentUrl.value)
     const handleStickyAside = () => {
         if (!eventAside.value) return;
         const asideWrapper = eventAside.value.parentElement;

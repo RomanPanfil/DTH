@@ -335,17 +335,25 @@ import { useRoute, useRouter } from 'nuxt/app';
 import { Field } from 'vee-validate';
 import { useI18n } from 'vue-i18n';
 import { useLocaleStore } from '~/stores/locale';
+import {useSettingsStore} from '~/stores/settings';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 
 const localeStore = useLocaleStore();
+const settingsStore = useSettingsStore();
 const locale = computed(() => localeStore.locale);
 
 const coursesDescription = computed(() => {
-    const localeSuffix = locale.value.toUpperCase();
-    return settings.value?.COURSES_DESCRIPTION?.[`VALUE_${localeSuffix}`] || '';
+    return settingsStore.getSetting('COURSES_DESCRIPTION', locale.value) || '';
+});
+
+// Гарантируем загрузку настроек при монтировании компонента
+onMounted(async () => {
+    if (!settingsStore.settings && !settingsStore.isLoading) {
+        await settingsStore.fetchSettings();
+    }
 });
 
 const config = useRuntimeConfig();
@@ -747,8 +755,8 @@ const scrollToTop = () => {
     }, 100);
 };
 
-const { data: settings, error: settingsError } = await useFetch('/api/settings', { method: 'POST', body: {} });
-if (settingsError.value) console.error('Failed to fetch settings:', settingsError.value);
+// const { data: settings, error: settingsError } = await useFetch('/api/settings', { method: 'POST', body: {} });
+// if (settingsError.value) console.error('Failed to fetch settings:', settingsError.value);
 
 const resetFilters = () => {
     isFree.value = false;

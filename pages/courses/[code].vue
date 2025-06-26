@@ -326,10 +326,13 @@
                                     {{ event.PROPS.TYPE?.VALUE || 'Без категории' }}
                                 </div>
                                 <div v-if="event?.PROPS?.PRICE?.VALUE || event?.PROPS?.SEATS?.VALUE" class="event-card-price">
-                                    <div v-if="event?.PROPS?.PRICE?.VALUE" class="event-card-price-value">
+                                    <div v-if="isFree" class="event-card-price-value">
+                                        <span>{{ event.PROPS.IS_FREE?.NAME }}</span>
+                                    </div>
+                                    <div v-else-if="event?.PROPS?.PRICE?.VALUE" class="event-card-price-value">
                                         <span>{{ event.PROPS.PRICE?.VALUE }}</span> бел.руб.
                                     </div>
-                                    <div v-if="event?.PROPS?.SEATS?.VALUE" class="event-card-seats">
+                                    <div v-if="event?.PROPS?.SEATS?.VALUE && event?.PROPS?.NO_LIMIT?.VALUE !== 'Да'" class="event-card-seats">
                                         <div class="event-card-seats-title">Осталось мест:</div>
                                         {{ Math.max(0, event.PROPS.SEATS?.VALUE - (event.PROPS.REGISTERED?.VALUE || 0)) }}
                                         из {{ event.PROPS.SEATS?.VALUE }}
@@ -353,7 +356,7 @@
                                         />
                                     </button>
                                 </div>
-                                <button class="event-card-more cost-group-btn" @click="openTooltipModal(costGroup)">Подробнее об оплате</button>
+                                <button class="event-card-more cost-group-btn" @click="openTooltipModal(null)">Подробнее об оплате</button>
                             </div>
                         </div>
                     </div>
@@ -385,14 +388,15 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue';
-import { useRoute, useRouter, useRequestURL } from 'nuxt/app';
-import { useAuthStore } from '~/stores/auth';
-import { useModalsStore } from '~/stores/modals';
-import { useI18n } from 'vue-i18n';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation as SwiperNavigation, Pagination } from 'swiper/modules';
-import { useLocaleStore } from '~/stores/locale';
+import {computed, onMounted, ref} from 'vue';
+import {useRequestURL, useRoute, useRouter} from 'nuxt/app';
+import {useAuthStore} from '~/stores/auth';
+import {useModalsStore} from '~/stores/modals';
+import {useSettingsStore} from '~/stores/settings';
+import {useI18n} from 'vue-i18n';
+import {Swiper, SwiperSlide} from 'swiper/vue';
+import {Navigation as SwiperNavigation, Pagination} from 'swiper/modules';
+import {useLocaleStore} from '~/stores/locale';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -403,6 +407,7 @@ const { t } = useI18n();
 
 const modalsStore = useModalsStore();
 const authStore = useAuthStore();
+const settingsStore = useSettingsStore();
 
 const localeStore = useLocaleStore();
 const locale = computed(() => localeStore.locale);
@@ -476,39 +481,17 @@ const closeMapModal = () => {
 const isFavorite = computed(() => {
     if (!event.value?.ID || !authStore.favorites.length) return false;
     const eventId = Number(event.value.ID);
-    const isInFavorites = authStore.favorites.includes(eventId);
-    console.log('isFavorite computed:', {
-        eventId,
-        favorites: authStore.favorites,
-        isInFavorites
-    });
-    return isInFavorites;
+    return authStore.favorites.includes(eventId);
 });
 
-const tooltipTitlePay = ref<string | null>(null)
-const tooltipTitleDiscount = ref<string | null>(null)
-const { data: settings, error: settingsError } = await useFetch('/api/settings', {
-    method: 'POST',
-    body: {},
-})
-if (settings.value) {
-    // Устанавливаем значения для заголовков подсказок
-    tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE || settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || 'Оплата'
-    tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || 'Скидка'
+const tooltipTitlePay = ref('Оплата');
+const tooltipTitleDiscount = ref('Скидка');
 
-    // Динамическая выборка в зависимости от языка
-    if (locale.value === 'RU') {
-        tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || settings.value.TOOLTIP_TITLE_PAY?.VALUE || 'Оплата'
-        tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || 'Скидка'
-    } else {
-        tooltipTitlePay.value = settings.value.TOOLTIP_TITLE_PAY?.VALUE || settings.value.TOOLTIP_TITLE_PAY?.VALUE_RU || 'Оплата'
-        tooltipTitleDiscount.value = settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE || settings.value.TOOLTIP_TITLE_DISCOUNT?.VALUE_RU || 'Скидка'
-    }
-} else if (settingsError.value) {
-    console.error('Ошибка загрузки настроек:', settingsError.value)
-    // Устанавливаем значения по умолчанию в случае ошибки
-    tooltipTitlePay.value = 'Оплата'
-    tooltipTitleDiscount.value = 'Скидка'
+if (settingsStore.settings) {
+    tooltipTitlePay.value = settingsStore.getSetting('TOOLTIP_TITLE_PAY', locale.value) || 'Оплата';
+    tooltipTitleDiscount.value = settingsStore.getSetting('TOOLTIP_TITLE_DISCOUNT', locale.value) || 'Скидка';
+} else if (settingsStore.error) {
+    console.error('Ошибка загрузки настроек:', settingsStore.error);
 }
 
 const getImageUrl = (path) => {
@@ -895,7 +878,6 @@ onMounted(() => {
 
 const addToFav = async () => {
     if (!authStore.isAuthenticated) {
-        console.log('addToFav: User not authenticated, opening login modal');
         modalsStore.openModal('login');
         return;
     }
@@ -1056,7 +1038,6 @@ const takePart = async () => {
             // toast.error(userFriendlyMessage);
         }
     } else {
-        console.log('not free');
         router.push({
             path: '/payment',
             query: { code: eventCode },

@@ -88,7 +88,6 @@ const { data: amountData, refresh: refreshAmount } = await useAsyncData(
                 throw new Error(response.error);
             }
 
-            console.log('Полученная сумма дохода:', response); // Для отладки
             return response.amount || 0;
         } catch (error: any) {
             console.error('Ошибка загрузки суммы дохода:', error);
@@ -139,7 +138,6 @@ const { data: ordersData, refresh: refreshOrders } = await useAsyncData(
                 throw new Error(response.error);
             }
 
-            console.log('Полученные заказы:', response); // Для отладки
             return {
                 orders: response.orders || [],
                 pagination: response.pagination || { PAGE: 1, LIMIT: 6, TOTAL: 0 },

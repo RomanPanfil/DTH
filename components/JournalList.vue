@@ -306,13 +306,6 @@ onMounted(() => {
     }
 });
 
-// onBeforeUnmount(() => {
-//     console.log('beforeUnmount triggered');
-//     console.log('rubricsData:', rubricsData.value);
-//     console.log('newsData:', newsData.value);
-//     console.log('currentRubric:', currentRubric.value);
-// });
-
 const getItemUrl = (item) => {
     const sectionId = item.IBLOCK_SECTION_ID;
     const rubric = rubrics.value.find(r => r.ID === String(sectionId));

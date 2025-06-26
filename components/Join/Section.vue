@@ -50,12 +50,13 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth';
-import { useModalsStore } from '~/stores/modals';
-import { useSettingsStore } from '~/stores/settings';
-import { computed } from 'vue';
-import { useLocaleStore } from '~/stores/locale';
-import { useRouter } from 'nuxt/app';
+import {useAuthStore} from '~/stores/auth';
+import {useModalsStore} from '~/stores/modals';
+import {useSettingsStore} from '~/stores/settings';
+import {computed} from 'vue';
+import {useLocaleStore} from '~/stores/locale';
+import {useRouter} from 'nuxt/app';
+
 const { $toast } = useNuxtApp()
 const router = useRouter();
 const authStore = useAuthStore();
@@ -82,9 +83,7 @@ const { data: itemsData, error: itemsError } = await useFetch('/api/join', {
 });
 
 const items = computed(() => {
-    const itemList = itemsData.value?.items || [];
-    console.log('Computed items:', JSON.stringify(itemList, null, 2));
-    return itemList;
+    return itemsData.value?.items || [];
 });
 
 const getImageUrl = (path: string) => {

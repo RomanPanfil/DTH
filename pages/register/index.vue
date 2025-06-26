@@ -154,7 +154,7 @@
                                     />
                                     <span class="checkbox-indicator"></span>
                                     <label for="agreement" class="checkbox-label">
-                                        {{ $t('register.agree') }} <a href="/terms" target="_blank">{{ $t('register.userAgreement') }}</a> {{ $t('register.and') }} <a href="/privacy" target="_blank">{{ $t('register.politics') }}</a>
+                                        {{ $t('register.agree') }} <NuxtLink to="/user-agreement">{{ $t('register.userAgreement') }}</NuxtLink> {{ $t('register.and') }} <NuxtLink to="/politics">{{ $t('register.politics') }}</NuxtLink>
                                     </label>
                                 </div>
                                 <span v-if="errors.agreement" class="error-message">{{ errors.agreement }}</span>

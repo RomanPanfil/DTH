@@ -131,7 +131,6 @@ const getEventUrl = (event: any) => {
 
 const handleRemoveFav = async () => {
     if (!authStore.isAuthenticated) {
-        console.log('handleRemoveFav: User not authenticated, opening login modal');
         modalsStore.openModal('login');
         return;
     }
@@ -145,7 +144,6 @@ const handleRemoveFav = async () => {
 
     try {
         const eventId = Number(props.event.ID);
-        console.log('handleRemoveFav: Removing from favorites, ID:', eventId, 'Current favorites:', authStore.favorites);
 
         await $fetch('/api/favorites/remove', {
             method: 'POST',

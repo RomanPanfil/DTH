@@ -33,6 +33,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useLocaleStore } from '~/stores/locale';
+import { useSettingsStore } from '~/stores/settings';
 import { useCookie } from '#imports';
 
 const order = ref<any>(null);
@@ -42,6 +43,7 @@ const eripSuccessText = ref<string | null>(null);
 const freeSuccessText = ref<string | null>(null);
 
 const localeStore = useLocaleStore();
+const settingsStore = useSettingsStore();
 const locale = computed(() => localeStore.locale);
 
 // Чтение данных из куки
@@ -51,25 +53,22 @@ const orderCookie = useCookie('orderData', {
     sameSite: 'lax',
 });
 
-onMounted(() => {
+onMounted(async () => {
     order.value = orderCookie.value || null;
-});
-
-const { data: settings, error: settingsError } = await useFetch('/api/settings', {
-    method: 'POST',
-    body: {},
-});
-
-if (settings.value) {
-    if (locale.value === 'RU') {
-        cardSuccessText.value = settings.value.CARD_SUCCESS?.VALUE_RU;
-        cashlessSuccessText.value = settings.value.CASHLESS_SUCCESS?.VALUE_RU;
-        eripSuccessText.value = settings.value.ERIP_SUCCESS?.VALUE_RU;
-        freeSuccessText.value = settings.value.FREE_SUCCESS?.VALUE_RU;
+    // Гарантируем загрузку настроек, если они еще не загружены
+    if (!settingsStore.settings && !settingsStore.isLoading) {
+        await settingsStore.fetchSettings();
     }
-} else if (settingsError.value) {
-    console.error('Ошибка загрузки настроек:', settingsError.value);
-}
+    // Устанавливаем значения текстов для всех методов оплаты
+    cardSuccessText.value = settingsStore.getSetting('CARD_SUCCESS', locale.value);
+    cashlessSuccessText.value = settingsStore.getSetting('CASHLESS_SUCCESS', locale.value);
+    eripSuccessText.value = settingsStore.getSetting('ERIP_SUCCESS', locale.value);
+    freeSuccessText.value = settingsStore.getSetting('FREE_SUCCESS', locale.value);
+
+    if (settingsStore.error) {
+        console.error('Ошибка загрузки настроек:', settingsStore.error);
+    }
+});
 
 // Универсальный парсер для всех типов оплаты
 const parsedSuccessText = computed(() => {

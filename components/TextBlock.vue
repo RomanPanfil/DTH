@@ -9,7 +9,6 @@ const props = defineProps({
     content: String,
 });
 
-console.log('TextBlock props:', props);
 </script>
 
 <style scoped lang="scss">

@@ -209,7 +209,6 @@ if (error.value) {
     newsError.value = error.value.data;
 } else if (data.value?.item) {
     newsItem.value = data.value.item;
-    console.log('News item PROPS:', newsItem.value?.[locale.value]?.PROPS);
 } else {
     newsError.value = { details: 'Новость не найдена' };
 }
@@ -232,7 +231,6 @@ const galleries = computed(() => {
             };
         }
     }
-    console.log('Galleries:', result);
     return result;
 });
 
@@ -326,7 +324,6 @@ const newsBlocks = computed(() => {
                 photos: props.REPORT_FOTOS?.VALUE_PATH?.map((photo: string) => `${imageBaseUrl}${photo}`) || [],
                 galleryType: 'report',
             };
-            console.log('REPORT block:', reportBlock);
             blocks.push(reportBlock);
         }
         // Обработка advantages
@@ -367,7 +364,6 @@ const newsBlocks = computed(() => {
 
         i++;
     }
-    console.log('News blocks:', blocks);
     return blocks;
 });
 

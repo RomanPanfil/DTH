@@ -15,8 +15,6 @@ const props = defineProps({
     title: String,
     items: Array,
 });
-
-console.log('Advantages props:', props);
 </script>
 
 <style scoped lang="scss">

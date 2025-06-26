@@ -105,12 +105,10 @@ const fetchProfile = async () => {
     }
 
     try {
-        // console.log('fetchProfile: Sending request to /api/auth/profile with token:', authStore.token)
         const response = await $fetch('/api/auth/profile', {
             method: 'POST',
             body: { token: authStore.token }
         })
-        // console.log('fetchProfile: Received response:', JSON.stringify(response, null, 2))
         userProfile.value = response
         isLector.value = response.IS_LECTOR === 'Y'
     } catch (error) {

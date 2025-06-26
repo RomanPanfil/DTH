@@ -75,7 +75,6 @@ const formatDate = (dateString: string) => {
 const fetchOrders = async (page: number) => {
     isLoading.value = true;
     if (!authStore.isAuthenticated || !authStore.token) {
-        console.log('Пользователь не авторизован или токен отсутствует');
         isLoading.value = false;
         return;
     }
@@ -98,9 +97,6 @@ const fetchOrders = async (page: number) => {
             orders.value = data.value.orders || [];
             pagination.value.total = data.value.pagenav?.TOTAL || 0;
             pagination.value.limit = data.value.pagenav?.LIMIT || 10;
-            console.log('Полученные заказы:', data.value);
-        } else {
-            console.log('Заказы не найдены');
         }
     } catch (err) {
         console.error('Неожиданная ошибка при запросе заказов:', err);

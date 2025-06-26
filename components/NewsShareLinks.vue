@@ -84,11 +84,6 @@ const copyLink = async () => {
         alert(t('share.linkCopyError'));
     }
 };
-// Отслеживание кликов по шарингу (для аналитики)
-const trackShare = (platform: string) => {
-    console.log(`Shared on ${platform}`);
-    // Здесь можно добавить интеграцию с аналитикой, например, gtag
-};
 </script>
 
 <style scoped lang="scss">

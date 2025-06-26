@@ -97,7 +97,7 @@ const videoId = (code) => {
     if (!code) return '';
     const match = code.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?/]+)/);
     const id = match ? match[1] : code.split('/').pop();
-    console.log('Parsed YouTube videoId:', id, 'from code:', code);
+
     return id;
 };
 
@@ -138,7 +138,6 @@ const initPlyr = async (element, isYouTube = false) => {
         };
 
         player = new Plyr(element, options);
-        console.log('Plyr initialized for:', element.tagName, 'isYouTube:', isYouTube);
     } catch (error) {
         console.error('Error initializing Plyr:', error);
     }
@@ -149,7 +148,6 @@ const destroyPlyr = () => {
         try {
             player.destroy();
             player = null;
-            console.log('Plyr destroyed');
         } catch (error) {
             console.warn('Error destroying Plyr:', error);
         }
@@ -166,7 +164,6 @@ const onSlideChange = async (swiper) => {
         const element = videoRefs.value[currentIndex.value];
         if (element) {
             const isYouTube = !currentItem.file && currentItem.code;
-            console.log('Attempting to initialize Plyr for index:', currentIndex.value, 'isYouTube:', isYouTube);
             setTimeout(() => initPlyr(element, isYouTube), isYouTube ? 100 : 0);
         } else {
             console.warn('No video element found for index:', currentIndex.value);
@@ -190,7 +187,6 @@ onMounted(() => {
             const element = videoRefs.value[props.initialIndex];
             if (element) {
                 const isYouTube = !props.items[props.initialIndex].file && props.items[props.initialIndex].code;
-                console.log('Initial Plyr setup for index:', props.initialIndex, 'isYouTube:', isYouTube);
                 setTimeout(() => initPlyr(element, isYouTube), isYouTube ? 100 : 0);
             } else {
                 console.warn('No initial video element found for index:', props.initialIndex);

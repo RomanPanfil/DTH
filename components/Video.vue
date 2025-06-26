@@ -605,6 +605,21 @@ onUnmounted(() => {
             width: p2r(100);
             height: p2r(100);
 
+            @media (max-width: 1280px) {
+                width: p2r(80);
+                height: p2r(80);
+            }
+
+            @media (max-width: 768px) {
+                width: p2r(60);
+                height: p2r(60);
+            }
+
+            @media (max-width: 599px) {
+                width: p2r(50);
+                height: p2r(50);
+            }
+
             &:hover {
                 background: $primary;
             }
@@ -616,6 +631,21 @@ onUnmounted(() => {
                 left: 50%;
                 top: 50%;
                 transform: translate(-38%, -50%);
+
+                @media (max-width: 1280px) {
+                    width: p2r(32);
+                    height: p2r(32);
+                }
+
+                @media (max-width: 768px) {
+                    width: p2r(24);
+                    height: p2r(24);
+                }
+
+                @media (max-width: 599px) {
+                    width: p2r(20);
+                    height: p2r(20);
+                }
             }
         }
 

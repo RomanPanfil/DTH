@@ -97,10 +97,6 @@ if (rubricsError.value) {
     console.error('Error loading rubrics:', rubricsError.value);
 }
 
-watch(rubrics, (newVal) => {
-    console.log('Rubrics loaded:', newVal);
-}, { immediate: true });
-
 // Исходный массив табов
 const tabs = computed(() => [
     { id: 'courses', text: 'Курсы', count: props.courses.value?.items?.length || 0 },
@@ -135,18 +131,6 @@ const scrollToTabsContent = () => {
         tabsHeaderRef.value?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
 };
-
-watch(() => props.journal, (newVal) => {
-    console.log('Journal prop value:', newVal.value);
-}, { immediate: true });
-
-watch(() => props.courses, (newVal) => {
-    console.log('Courses prop value:', newVal.value);
-}, { immediate: true });
-
-watch(() => props.webinars, (newVal) => {
-    console.log('Webinars prop value:', newVal.value);
-}, { immediate: true });
 </script>
 
 <style scoped lang="scss">
