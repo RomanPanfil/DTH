@@ -193,6 +193,13 @@
             color: $font-white;
             margin-right: p2r(36);
             text-decoration: none;
+            transition: opacity 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    opacity: 0.8;
+                }
+            }
 
             @media(max-width: 1680px) {
                 font-size: p2r(16);
@@ -230,6 +237,14 @@
             flex: 0 0 p2r(32);
             border-radius: 50%;
             background-color: #323232;
+            border: 1px solid #323232;
+            transition: background-color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    background-color: transparent;
+                }
+            }
 
             &-icon {
                 font-size: p2r(22);
@@ -303,6 +318,13 @@
         &-link {
             font-size: p2r(16);
             color: $font-white-dark;
+            transition: opacity 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    opacity: 0.8;
+                }
+            }
 
             &:last-child {
                 @media(max-width: 599px) {
@@ -368,6 +390,13 @@
             position: relative;
             color: $font-white;
             padding-left: p2r(34);
+            transition: opacity 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    opacity: 0.8;
+                }
+            }
         }
 
         &-icon {

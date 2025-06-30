@@ -145,6 +145,13 @@ const slideNext = () => swiperInstance.value?.slideNext();
       font-size: p2r(18);
       color: #D9F0E8;
       border-bottom: 1px solid #D9F0E8;
+      transition: border-bottom-color 0.3s;
+
+      @media (hover: hover) and (pointer: fine) {
+         &:hover {
+           border-color: transparent;
+         }
+      }
 
       @media(max-width: 599px) {
         font-size: p2r(14);

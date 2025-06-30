@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1 class="page-title">Избранное</h1>
+        <h1 class="page-title">{{ $t('accountSidebar.favorites') }}</h1>
         <div v-if="pending" class="loading">
             {{ t('page.loading') }}
         </div>
@@ -93,6 +93,7 @@ const loadServerProfile = async () => {
         return response;
     } catch (error) {
         console.error('Server profile fetch failed:', error);
+        console.log(error.data)
         return null;
     }
 };
@@ -254,6 +255,14 @@ watch(() => route.query.tab, (newTab) => {
     if (newTab && newTab !== activeTab.value) {
         activeTab.value = newTab as string;
     }
+});
+
+useHead({
+    title: t('accountSidebar.favorites'),
+    meta: [
+        { name: 'keywords', content: t('accountSidebar.favorites') },
+        { name: 'description', content: t('accountSidebar.favorites') },
+    ],
 });
 </script>
 

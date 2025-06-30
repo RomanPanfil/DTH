@@ -165,6 +165,13 @@ const itemUrl = computed(() => {
       font-size: p2r(20);
       line-height: p2r(26);
       margin-bottom: p2r(20);
+      transition: color 0.3s;
+
+      @media (hover: hover) and (pointer: fine) {
+         &:hover {
+           color: $primary;
+         }
+      }
 
         @media(max-width: 599px) {
             font-size: p2r(16);

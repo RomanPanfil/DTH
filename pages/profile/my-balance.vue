@@ -52,12 +52,14 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
+import { useModalsStore } from '~/stores/modals';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const modalsStore = useModalsStore();
 
 const isLoading = ref(true);
 const ordersError = ref(null);
@@ -91,6 +93,12 @@ const { data: amountData, refresh: refreshAmount } = await useAsyncData(
             return response.amount || 0;
         } catch (error: any) {
             console.error('Ошибка загрузки суммы дохода:', error);
+
+            if(error.data?.message === 'ERROR_INVALID_TOKEN') {
+                authStore.logout();
+                await router.push('/');
+                modalsStore.openModal('login');
+            }
             amountError.value = {
                 statusMessage: error.message || t('orders.amountError'),
                 statusCode: error.statusCode || 400,
@@ -217,6 +225,14 @@ onMounted(async () => {
 
         onUnmounted(() => clearInterval(checkInterval));
     }
+});
+
+useHead({
+    title: t('accountSidebar.myBalance'),
+    meta: [
+        { name: 'keywords', content: t('accountSidebar.myBalance') },
+        { name: 'description', content: t('accountSidebar.myBalance') },
+    ],
 });
 </script>
 

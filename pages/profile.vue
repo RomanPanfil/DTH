@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div v-if="isAuthChecked && authStore.isAuthenticated" class="container">
         <Breadcrumbs />
         <div class="profile">
             <div class="row">
@@ -80,6 +80,13 @@
             </div>
         </div>
     </div>
+    <!-- Можно добавить лоадер пока идет проверка авторизации -->
+    <div v-else-if="!isAuthChecked" class="loading-container">
+        <div class="container">
+            <!-- Здесь может быть спиннер или индикатор загрузки -->
+            <div class="loading">Загрузка...</div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -93,6 +100,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const userProfile = ref(null);
 const isLector = ref<boolean>(false);
+const isAuthChecked = ref(false);
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
 
@@ -131,14 +139,29 @@ const logout = () => {
     modalsStore.openModal('login')
 };
 
-onMounted(() => {
-    fetchProfile()
+onMounted(async () => {
+    // Проверяем авторизацию
+    if (!authStore.isAuthenticated) {
+        // console.log('User not authenticated, redirecting to home');
+        await router.replace('/');
+        return;
+    }
+
+    isAuthChecked.value = true;
+
+    await fetchProfile();
 });
 
-// Синхронизация с userProfile из authStore
 watch(() => authStore.userProfile, (newProfile) => {
     userProfile.value = newProfile;
 }, { immediate: true });
+
+watch(() => authStore.isAuthenticated, (isAuth) => {
+    if (!isAuth && isAuthChecked.value) {
+        console.log('User logged out, redirecting to home');
+        router.replace('/');
+    }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -472,6 +495,13 @@ watch(() => authStore.userProfile, (newProfile) => {
         align-items: center;
         justify-content: center;
         color: $font;
+        transition: color 0.3s;
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                color: $primary;
+            }
+        }
     }
 }
 

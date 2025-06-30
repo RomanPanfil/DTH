@@ -4,7 +4,7 @@
             <div class="education-head">
                 <div class="education-head-text">
                     <h2 class="education-head-title">Наши Курсы</h2>
-                    <NuxtLink to="/webinars" class="education-head-more">Смотреть все</NuxtLink>
+                    <NuxtLink to="/courses" class="education-head-more">Смотреть все</NuxtLink>
                 </div>
                 <div v-if="showNavigation" class="slider-btns" >
                     <button class="slider-btn slider-prev education-slider-prev" :disabled="isBeginning" @click="slidePrev">
@@ -141,6 +141,13 @@ const slideNext = () => swiperInstance.value?.slideNext();
       font-size: p2r(18);
       color: #D9F0E8;
       border-bottom: 1px solid #D9F0E8;
+      transition: border-color 0.3s;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          border-color: transparent;
+        }
+      }
 
       @media(max-width: 599px) {
         font-size: p2r(14);
@@ -231,9 +238,18 @@ const slideNext = () => swiperInstance.value?.slideNext();
     align-items: center;
     justify-content: center;
 
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        .slider-icon {
+           color: $primary;
+        }
+      }
+    }
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      pointer-events: none;
     }
 
     &:hover:not(:disabled) {
@@ -245,6 +261,7 @@ const slideNext = () => swiperInstance.value?.slideNext();
     font-size: p2r(26);
     line-height: p2r(22);
     color: $font;
+    transition: color 0.3s;
   }
 }
 

@@ -51,11 +51,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
 import { useLocaleStore } from '~/stores/locale';
+import { useModalsStore } from '~/stores/modals';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const localeStore = useLocaleStore();
+const modalsStore = useModalsStore();
+const { t } = useI18n();
 
 const eventsError = ref(null);
 const currentPage = computed(() => Number(route.query.page) || 1);
@@ -161,6 +165,12 @@ const { data: eventsData, refresh: refreshEvents } = await useAsyncData(
             return { courses: enrichedCourses, pagination };
         } catch (error) {
             console.error('Ошибка загрузки курсов:', error);
+            if(error.data?.data?.error === 'ERROR_INVALID_TOKEN') {
+                authStore.logout();
+                await router.push('/');
+                modalsStore.openModal('login');
+            }
+
             eventsError.value = { details: error.message || 'Неизвестная ошибка' };
             isLoadedCourses.value = true;
             return { courses: [], pagination: { currentPage: 1, limit: 12, total: 0 } };
@@ -203,6 +213,14 @@ onMounted(async () => {
 });
 
 let checkInterval: NodeJS.Timeout | null = null;
+
+useHead({
+    title: t('courses.title'),
+    meta: [
+        { name: 'keywords', content: t('courses.title') },
+        { name: 'description', content: t('courses.title') },
+    ],
+});
 </script>
 
 <style scoped lang="scss">

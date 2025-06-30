@@ -317,6 +317,10 @@ table {
     padding-right: p2r(64);
     height: p2r(48);
     background-color: $bgc;
+
+    &::placeholder {
+      color: $placeholder;
+    }
   }
 
   &.error {
@@ -407,8 +411,10 @@ table {
     background-color: $primary;
     color: $font-white;
 
-    &:hover {
-      opacity: 0.9;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background-color: $primary_hover;
+      }
     }
   }
 
@@ -556,6 +562,7 @@ table {
   display: flex;
   align-items: center;
   position: relative;
+  cursor: pointer;
 }
 
 .custom-checkbox input {

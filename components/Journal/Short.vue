@@ -183,6 +183,13 @@ const slideNext = () => swiperInstance.value?.slideNext();
             font-size: p2r(18);
             color: $font;
             border-bottom: 1px solid $border;
+            transition: border-bottom-color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    border-color: transparent;
+                }
+            }
 
             @media(max-width: 599px) {
                 font-size: p2r(14);
@@ -207,11 +214,18 @@ const slideNext = () => swiperInstance.value?.slideNext();
         height: p2r(44);
         border: none;
         border-radius: 50%;
-        background: $primary;
+        background-color: $primary;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: background-color 0.3s;
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                background-color: $primary_hover;
+            }
+        }
 
         &:disabled {
             opacity: 0.5;

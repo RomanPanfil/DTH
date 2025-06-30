@@ -61,13 +61,15 @@
                 <div class="event-wrapper">
                     <div class="event-main">
                         <!-- Блок Видео -->
-                        <div v-if="(event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH || event?.PROPS?.PLAYER_CODE?.VALUE) && isCourseAccessStatus" class="video-section">
-
+                        <div v-if="event?.PROPS?.AFISHA_VIDEO_FILE?.VALUE_PATH || event?.PROPS?.AFISHA_VIDEO_LINK?.VALUE" class="video-section">
                             <Video
-                                :preview="event?.PROPS?.VIDEO_PREVIEW?.VALUE ? `${baseUrl}${event.PROPS?.VIDEO_PREVIEW?.VALUE}` : ''"
-                                :file="event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH ? `${baseUrl}${event.PROPS?.PLAYER_VIDEO.VALUE_PATH}` : ''"
-                                :code="event?.PROPS?.PLAYER_CODE?.VALUE || ''"
+                                :preview="event?.PROPS?.AFISHA_IMG?.VALUE_PATH ? `${baseUrl}${event?.PROPS?.AFISHA_IMG?.VALUE_PATH}` : ''"
+                                :file="event?.PROPS?.AFISHA_VIDEO_FILE?.VALUE_PATH ? `${baseUrl}${event?.PROPS?.AFISHA_VIDEO_FILE.VALUE_PATH}` : ''"
+                                :code="event?.PROPS?.AFISHA_VIDEO_LINK?.VALUE || ''"
                             />
+                        </div>
+                        <div v-else-if="event?.PROPS?.AFISHA_IMG?.VALUE_PATH">
+                            <img :src="`${baseUrl}${event?.PROPS?.AFISHA_IMG?.VALUE_PATH}`" :alt="event?.PROPS?.AFISHA_IMG?.NAME">
                         </div>
                         <!-- Блок Лекторы -->
                         <div v-if="event.PROPS?.LECTOR_SET?.VALUE?.length" class="ui-section lectors-section">
@@ -233,11 +235,25 @@
                             <div class="when-description" v-html="getDecodedHTML(event.PROPS?.WHEN_DESCRIPTION?.VALUE?.TEXT || '')"></div>
                         </div>
 
-                        <div v-if="event?.PROPS?.PLAYER_DATE_VIDEO_ACCESS?.VALUE" class="broadcast">
-                            <NuxtIcon name="device-monitor" class="broadcast-icon" filled />
-                            <div class="broadcast-title">
-                                онлайн-трансляция начнется<br>
-                                <span>{{ formatDate(event.PROPS.PLAYER_DATE_VIDEO_ACCESS.VALUE) }}</span>
+                        <div v-if="event?.PROPS?.PLAYER_DATE_START?.VALUE && showBroadcastInfo" class="broadcast-info">
+                           <NuxtIcon name="device-monitor" class="broadcast-icon" filled />
+                              <div class="broadcast-title">
+                                 онлайн-трансляция начнется<br>
+                              <span>{{ formatDate(event.PROPS.PLAYER_DATE_START.VALUE) }}</span>
+                           </div>
+                        </div>
+                        <div v-if="showBroadcastPlayer && isCourseAccessStatus" class="broadcast-player">
+                           Плеер трансляции<br>
+                           Дата и время показа плеера {{ formatDate(event?.PROPS?.PLAYER_DATE_SHOW.VALUE) }}<br>
+                           Дата и время начала трансляции {{ formatDate(event?.PROPS?.PLAYER_DATE_START.VALUE) }}<br>
+                           Запись будет доступна до {{ formatDate(event?.PROPS?.PLAYER_DATE_VIDEO_ACCESS.VALUE) }}
+                            <div v-if="event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH || event?.PROPS?.PLAYER_CODE?.VALUE" style="width: 100%">
+
+                                <Video
+                                    :preview="event?.PROPS?.VIDEO_PREVIEW?.VALUE ? `${baseUrl}${event.PROPS?.VIDEO_PREVIEW?.VALUE}` : ''"
+                                    :file="event?.PROPS?.PLAYER_VIDEO?.VALUE_PATH ? `${baseUrl}${event.PROPS?.PLAYER_VIDEO.VALUE_PATH}` : ''"
+                                    :code="event?.PROPS?.PLAYER_CODE?.VALUE || ''"
+                                />
                             </div>
                         </div>
 
@@ -348,13 +364,8 @@
                                         <template v-else-if="isFree">{{ $t('courses.takePart') }}</template>
                                         <template v-else>{{ $t('courses.payPart') }}</template>
                                     </button>
-                                    <button class="event-card-fav-btn" @click="addToFav">
-                                        <NuxtIcon
-                                            :name="isAddingToFav ? 'heart' : (isFavorite ? 'heart-filled' : 'heart')"
-                                            class="icon"
-                                            filled
-                                        />
-                                    </button>
+
+
                                 </div>
                                 <button class="event-card-more cost-group-btn" @click="openTooltipModal(null)">Подробнее об оплате</button>
                             </div>
@@ -404,6 +415,7 @@ import 'swiper/css/pagination';
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
+const { $toast } = useNuxtApp();
 
 const modalsStore = useModalsStore();
 const authStore = useAuthStore();
@@ -436,6 +448,44 @@ const mapLongitude = ref(27.557088);
 
 const isCoursePaid = ref<boolean | null>(null);
 const isCourseAccessStatus = ref<boolean | null>(null);
+
+const showBroadcastInfo = ref(true);
+const showBroadcastPlayer = ref(false);
+
+// Принудительное обновление токена каждые 5 минут
+useTokenRefresh({
+    customInterval: 3,
+    forceInterval: true
+})
+
+// Функция для проверки времени показа плеера
+const checkBroadcastTime = () => {
+    if (!event.value?.PROPS?.PLAYER_DATE_SHOW?.VALUE) {
+        showBroadcastInfo.value = true;
+        showBroadcastPlayer.value = false;
+        return;
+    }
+
+    const showDate = new Date(event.value.PROPS.PLAYER_DATE_SHOW.VALUE);
+    const accessDate = event.value?.PROPS?.PLAYER_DATE_VIDEO_ACCESS?.VALUE
+        ? new Date(event.value.PROPS.PLAYER_DATE_VIDEO_ACCESS.VALUE)
+        : null;
+    const now = new Date();
+
+    if (now < showDate) {
+        // До времени показа плеера
+        showBroadcastInfo.value = true;
+        showBroadcastPlayer.value = false;
+    } else if (accessDate && now > accessDate) {
+        // После времени окончания доступа
+        showBroadcastInfo.value = false;
+        showBroadcastPlayer.value = false;
+    } else {
+        // В период между началом показа и окончанием доступа
+        showBroadcastInfo.value = false;
+        showBroadcastPlayer.value = true;
+    }
+};
 
 // Текущий URL страницы
 const currentUrl = computed(() => {
@@ -722,6 +772,9 @@ const fetchEventData = async () => {
         });
 
         eventError.value = null;
+
+        // Проверяем время показа плеера сразу после загрузки данных
+        checkBroadcastTime();
     } catch (error) {
         eventError.value = { details: error.message || 'Ошибка загрузки мероприятия' };
     }
@@ -738,6 +791,12 @@ const fetchEventData = async () => {
         })
 
         if (error.value) {
+            if(error.value.data?.data?.error === 'ERROR_INVALID_TOKEN') {
+                authStore.logout();
+                await router.push('/');
+                modalsStore.openModal('login');
+            }
+
             console.error('Ошибка проверки оплаты:', error.value)
             isCoursePaid.value = false // По умолчанию считаем не оплаченным при ошибке
         } else if (data.value?.PAY_EXISTS === 1) {
@@ -762,6 +821,11 @@ const fetchEventData = async () => {
         })
 
         if (error.value) {
+            if(error.value.data?.data?.error === 'ERROR_INVALID_TOKEN') {
+                authStore.logout();
+                await router.push('/');
+                modalsStore.openModal('login');
+            }
             console.error('Ошибка проверки доступа:', error.value)
             isCourseAccessStatus.value = false
         } else if (data.value?.ACCESS === 1) {
@@ -801,7 +865,12 @@ fetchEventData();
 
 // Логика для "липкого" поведения event-aside (без изменений)
 const eventAside = ref<HTMLElement | null>(null);
+// Периодическая проверка времени
+let broadcastInterval = null;
 onMounted(async () => {
+    checkBroadcastTime();
+    // Запускаем периодическую проверку каждые 60 секунд
+    broadcastInterval = setInterval(checkBroadcastTime, 60 * 1000);
     const handleStickyAside = () => {
         if (!eventAside.value) return;
         const asideWrapper = eventAside.value.parentElement;
@@ -850,6 +919,13 @@ onMounted(async () => {
 });
 
 const isCoursePaidComputed = computed(() => isCoursePaid.value !== null ? isCoursePaid.value : false);
+
+onUnmounted(() => {
+    // Очищаем интервал при размонтировании компонента
+    if (broadcastInterval) {
+        clearInterval(broadcastInterval);
+    }
+})
 
 // Устанавливаем метатеги
 onMounted(() => {
@@ -987,7 +1063,10 @@ const takePart = async () => {
             };
 
             // toast.success('Заказ успешно создан!');
-            router.push('/payment/success'); // Перенаправление на страницу курсов
+            // router.push('/payment/success');
+            $toast.success('Успешно! Курс будет добавлен в личном кабинете');
+            isCoursePaid.value = true;
+            isCourseAccessStatus.value = true;
 
             // router.push('/profile/courses'); // Перенаправление на страницу курсов
         } catch (error) {
@@ -1328,6 +1407,7 @@ if (webinarsError.value) {
             &-icon {
                 font-size: p2r(20);
                 color: $font;
+                transition: color 0.3s;
             }
         }
     }
@@ -1336,9 +1416,22 @@ if (webinarsError.value) {
         &-head {
             cursor: pointer;
 
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    .event-share-head-title {
+                        color: $primary;
+                        border-color: $primary;
+                    }
+                    .event-props-share-icon {
+                        color: $primary;
+                    }
+                }
+            }
+
             &-title {
                 border-bottom: 1px dotted $font;
                 margin-right: p2r(8);
+                transition: color 0.3s, border-color 0.3s;
             }
         }
 
@@ -1369,6 +1462,7 @@ if (webinarsError.value) {
                 display: block;
                 font-size: p2r(48);
                 line-height: p2r(32);
+                transition: color 0.3s;
             }
         }
     }
@@ -1846,29 +1940,58 @@ if (webinarsError.value) {
 }
 
 .broadcast {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: p2r(56);
-    border: p2r(2) dashed $border;
-    border-radius: p2r(8);
-    background-color: $bgc;
-    margin-bottom: p2r(40);
+    &-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: p2r(56);
+        border: p2r(2) dashed $border;
+        border-radius: p2r(8);
+        background-color: $bgc;
+        margin-bottom: p2r(40);
 
-    @media (max-width: 1024px) {
-        padding: p2r(40);
+        @media (max-width: 1024px) {
+            padding: p2r(40);
+        }
+
+        @media (max-width: 768px) {
+            padding: p2r(32);
+        }
+
+        @media (max-width: 599px) {
+            padding: p2r(24);
+        }
+
+        @media (max-width: 420px) {
+            padding: p2r(20);
+        }
     }
 
-    @media (max-width: 768px) {
-        padding: p2r(32);
-    }
+    &-player {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: p2r(56);
+        border: p2r(2) dashed $border;
+        border-radius: p2r(8);
+        background-color: $bgc;
+        margin-bottom: p2r(40);
 
-    @media (max-width: 599px) {
-        padding: p2r(24);
-    }
+        @media (max-width: 1024px) {
+            padding: p2r(40);
+        }
 
-    @media (max-width: 420px) {
-        padding: p2r(20);
+        @media (max-width: 768px) {
+            padding: p2r(32);
+        }
+
+        @media (max-width: 599px) {
+            padding: p2r(24);
+        }
+
+        @media (max-width: 420px) {
+            padding: p2r(20);
+        }
     }
 
     &-icon {
@@ -1957,6 +2080,13 @@ if (webinarsError.value) {
             color: $primary;
             border-bottom: 1px dotted $primary;
             cursor: pointer;
+            transition: border-color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    border-color: transparent;
+                }
+            }
         }
     }
 }

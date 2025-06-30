@@ -35,12 +35,14 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const localeStore = useLocaleStore();
+import { useModalsStore } from '~/stores/modals';
 
 const locale = computed(() => localeStore.locale);
 const coursesError = ref(null);
 const currentPage = computed(() => Number(route.query.page) || 1);
 const topRef = ref(null);
 const isLoadedCourses = ref(false);
+const modalsStore = useModalsStore();
 
 const { data: coursesData, refresh: refreshCourses } = await useAsyncData(
     'lectorCourses',
@@ -118,6 +120,12 @@ const { data: coursesData, refresh: refreshCourses } = await useAsyncData(
             return { courses, pagination };
         } catch (error: any) {
             console.error('Ошибка в useAsyncData:', error);
+
+            if(error.data?.error) {
+                authStore.logout();
+                await router.push('/');
+                modalsStore.openModal('login');
+            }
             coursesError.value = {
                 statusMessage: error.message || t('courses.error'),
                 statusCode: error.statusCode || 400,
@@ -157,6 +165,14 @@ onMounted(async () => {
 
         onUnmounted(() => clearInterval(checkInterval));
     }
+});
+
+useHead({
+    title: t('accountSidebar.myWebinars'),
+    meta: [
+        { name: 'keywords', content: t('accountSidebar.myWebinars') },
+        { name: 'description', content: t('accountSidebar.myWebinars') },
+    ],
 });
 </script>
 

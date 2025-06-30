@@ -14,7 +14,7 @@
                     <span v-if="event.PROPS.VIDEO_LONG?.VALUE">{{ event.PROPS.VIDEO_LONG?.VALUE }}</span>
                 </div>
             </div>
-            <NuxtLink to="/">
+            <NuxtLink :to="getEventUrl(event)">
                 <h4 class="education-card-title">{{ event.NAME }}</h4>
             </NuxtLink>
             <div v-if="event.lectors" class="education-card-names">{{ getLectorNames(event.lectors) }}</div>
@@ -184,6 +184,7 @@ const handleRemoveFav = async () => {
 
         &-badges {
             display: flex;
+            flex-wrap: wrap;
             gap: p2r(4);
             margin-bottom: p2r(20);
         }
@@ -194,6 +195,13 @@ const handleRemoveFav = async () => {
             line-height: 1.3;
             color: $font;
             margin-bottom: p2r(20);
+            transition: color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    color: $primary;
+                }
+            }
         }
 
         &-names {

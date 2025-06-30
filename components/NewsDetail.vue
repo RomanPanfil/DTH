@@ -797,6 +797,18 @@ if (webinarsError.value) {
     &-share {
         transition: position 0.3s;
 
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                .news-share-head-title {
+                    color: $primary;
+                    border-color: $primary;
+                }
+                .news-share-head-icon {
+                    color: $primary;
+                }
+            }
+        }
+
         @media (max-width: 1024px) {
            position: static !important;
         }
@@ -812,11 +824,13 @@ if (webinarsError.value) {
             &-title {
                 border-bottom: 1px dotted $font;
                 margin-right: p2r(8);
+                transition: color 0.3s;
             }
             &-icon {
                 font-size: p2r(24);
                 line-height: p2r(18);
                 color: $font-black;
+                transition: color 0.3s;
             }
         }
 

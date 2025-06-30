@@ -83,8 +83,11 @@
                         </div>
                     </div>
                     <div v-if="event?.PROPS?.PRICE?.VALUE || event?.PROPS?.SEATS?.VALUE" class="event-card-price">
-                        <div v-if="event.PROPS.PRICE?.VALUE" class="event-card-price-value">
-                            <span>{{ event.PROPS.PRICE.VALUE }}</span> бел.руб.
+                        <div v-if="isMainLesson" class="event-card-price-value">
+                            <span>{{ event.PROPS.PRICE_FOR_ALL?.VALUE }}</span> {{ $t('courses.currency') }}
+                        </div>
+                        <div v-else-if="event.PROPS.PRICE?.VALUE" class="event-card-price-value">
+                            <span>{{ event.PROPS.PRICE.VALUE }}</span> {{ $t('courses.currency') }}
                         </div>
                         <div v-if="event.PROPS.SEATS?.VALUE" class="event-card-seats">
                             <div class="event-card-seats-title">Осталось мест:</div>

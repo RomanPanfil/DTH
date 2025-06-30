@@ -109,7 +109,11 @@
                                             :disabled="!hasAvailableSeats || isCoursePaidComputed || isCourseAccessStatus"
                                             @click="takePart"
                                         >
-                                            {{ $t('webinars.payAccess') }}
+<!--                                            {{ $t('webinars.payAccess') }}-->
+                                            <template v-if="!hasAvailableSeats">{{ $t('webinars.noSeats')}}</template>
+                                            <template v-else-if="isFree">{{ $t('webinars.getAccess') }}</template>
+<!--                                            <template v-else-if="isMainLesson">{{ $t('webinars.payAll') }}</template>-->
+                                            <template v-else>{{ $t('webinars.payAccess') }}</template>
                                         </button>
                                     </div>
                                 </div>
@@ -125,7 +129,7 @@
                                         <div class="video-preview-image" :class="{ active: lesson?.CODE === eventCode }">
                                             <div class="video-preview-badge">
                                                 <div class="video-preview-badge-item">
-                                                    урок {{ index + 1}}
+                                                    {{ $t('webinars.webinar') }} {{ index + 1}}
                                                 </div>
                                                 <div v-if="lesson?.PROPS?.VIDEO_LONG?.VALUE" class="video-preview-badge-item">
                                                     {{ lesson.PROPS.VIDEO_LONG.VALUE}}
@@ -271,7 +275,7 @@
                                         :disabled="!hasAvailableSeats || isCoursePaidComputed || isCourseAccessStatus"
                                         @click="takePart"
                                     >
-                                        <template v-if="!hasAvailableSeats">Мест нет</template>
+                                        <template v-if="!hasAvailableSeats">{{ $t('webinars.noSeats')}}</template>
                                         <template v-else-if="isFree">{{ $t('webinars.getAccess') }}</template>
                                         <template v-else-if="isMainLesson">{{ $t('webinars.payAll') }}</template>
                                         <template v-else>{{ $t('webinars.payPart') }}</template>
@@ -296,7 +300,8 @@
         <div>Loading...</div>
     </div>
     <!-- хардкод -->
-    <EducationCards />
+<!--    <EducationCards />-->
+    <WebinarsShort :webinars="featuredWebinars"/>
     <!-- Модальное окно -->
     <ModalsTooltipModal
         :is-open="isTooltipModalOpen"
@@ -329,6 +334,7 @@ import 'swiper/css/pagination';
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
+const { $toast } = useNuxtApp();
 
 const modalsStore = useModalsStore();
 const authStore = useAuthStore();
@@ -363,6 +369,12 @@ const mapLongitude = ref(27.557088);
 
 const isCoursePaid = ref<boolean | null>(null);
 const isCourseAccessStatus = ref<boolean | null>(null);
+
+// Принудительное обновление токена каждые 5 минут
+useTokenRefresh({
+    customInterval: 3,
+    forceInterval: true
+})
 
 // Текущий URL страницы
 const currentUrl = computed(() => {
@@ -740,6 +752,11 @@ const fetchEventData = async () => {
             })
 
             if (error.value) {
+                if(error.value.data?.data?.error === 'ERROR_INVALID_TOKEN') {
+                    authStore.logout();
+                    await router.push('/');
+                    modalsStore.openModal('login');
+                }
                 console.error('Ошибка проверки оплаты:', error.value)
                 isCoursePaid.value = false
             } else if (data.value?.PAY_EXISTS === 1) {
@@ -764,6 +781,11 @@ const fetchEventData = async () => {
             })
 
             if (error.value) {
+                if(error.value.data?.data?.error === 'ERROR_INVALID_TOKEN') {
+                    authStore.logout();
+                    await router.push('/');
+                    modalsStore.openModal('login');
+                }
                 console.error('Ошибка проверки доступа:', error.value)
                 isCourseAccessStatus.value = false
             } else if (data.value?.ACCESS === 1) {
@@ -1084,7 +1106,9 @@ const takePart = async () => {
                 paymentMethod: 4
             };
 
-            router.push('/payment/success');
+            // router.push('/payment/success');
+            $toast.success('Успешно! Вебинар будет добавлен в личном кабинете');
+            isCourseAccessStatus.value = true;
         } catch (error) {
             console.error('Ошибка при создании заказа:', error);
             const errorMessage = error.data?.error || error.statusMessage || 'Произошла ошибка';
@@ -1186,6 +1210,78 @@ const declineWord = (number: number, words: [string, string, string]): string =>
     }
     return words[2];
 };
+
+const { data: webinarsData, error: webinarsError } = await useAsyncData('featuredWebinars', async () => {
+    try {
+        const { data } = await useFetch('/api/events', {
+            query: {
+                iblockId: '19',
+                GET_ALL_FILES: 'Y',
+                isFeatured: '1',
+                PROPERTY_MAIN_LESSON: 1
+            },
+            method: 'POST',
+            body: {
+                params: {
+                    select: ['NAME', 'IBLOCK_ID', 'ID', 'PROPERTY_*'],
+                },
+            },
+        });
+
+        if (!data.value || !data.value.events || !Array.isArray(data.value.events)) {
+            console.error('Неверная структура ответа:', data.value);
+            return [];
+        }
+
+        const allLectorIds = new Set<number>();
+        data.value.events.forEach(event => {
+            const lectorSet = event.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                lectorSet.forEach(lector => {
+                    const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                    if (id) allLectorIds.add(id);
+                });
+            }
+        });
+
+        let profiles = {};
+        if (allLectorIds.size > 0) {
+            profiles = await fetchLectors([...allLectorIds]);
+        }
+
+        const processedEvents = data.value.events.map(event => {
+            const processedEvent = { ...event };
+            const lectorSet = processedEvent.PROPS?.LECTOR_SET?.VALUE;
+            if (Array.isArray(lectorSet)) {
+                processedEvent.lectors = lectorSet
+                    .map(lector => {
+                        const id = Number(lector.SUB_VALUES?.LECTORS?.VALUE);
+                        return {
+                            id,
+                            name: profiles[id]
+                                ? `${profiles[id].NAME} ${profiles[id].LAST_NAME || ''}`.trim()
+                                : 'Неизвестный лектор',
+                        };
+                    })
+                    .filter(lector => lector.id);
+            } else {
+                processedEvent.lectors = [];
+            }
+            return processedEvent;
+        });
+
+        return processedEvents;
+    } catch (err) {
+        console.error('Ошибка при загрузке избранных курсов:', err);
+        return [];
+    }
+});
+
+const featuredWebinars = ref(webinarsData.value || []);
+
+if (webinarsError.value) {
+    console.error('Ошибка useAsyncData для событий:', eventsError.value);
+}
 </script>
 
 <style scoped lang="scss">
@@ -1400,6 +1496,13 @@ const declineWord = (number: number, words: [string, string, string]): string =>
     &-share {
         &-head {
             cursor: pointer;
+            transition: opacity 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    opacity: 0.8;
+                }
+            }
 
             &-title {
                 color: var(--header-color);
@@ -1590,7 +1693,7 @@ const declineWord = (number: number, words: [string, string, string]): string =>
     }
 
     &-preview {
-        color: $font-white;
+        color: var(--header-color);
         display: flex;
         align-items: center;
         gap: p2r(8);
@@ -2030,6 +2133,13 @@ const declineWord = (number: number, words: [string, string, string]): string =>
             color: $primary;
             border-bottom: 1px dotted $primary;
             cursor: pointer;
+            transition: border-color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    border-color: transparent;
+                }
+            }
         }
     }
 }

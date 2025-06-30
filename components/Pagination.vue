@@ -93,10 +93,22 @@ const changePage = (page: number) => {
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: border-color 0.3s;
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                border-color: $primary;
+
+                .pagination-icon {
+                    color: $primary;
+                }
+            }
+        }
 
         &:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            pointer-events: none;
         }
 
         &:hover:not(:disabled) {
@@ -108,6 +120,7 @@ const changePage = (page: number) => {
         font-size: p2r(22);
         line-height: p2r(18);
         color: $font;
+        transition: color 0.3s;
     }
 
     &-link {
@@ -124,11 +137,21 @@ const changePage = (page: number) => {
         border: none;
         background: none;
         cursor: pointer;
+        transition: color 0.3s;
+
+        @media (hover: hover) and (pointer: fine) {
+            &:not(.active) {
+                &:hover {
+                    color: $primary;
+                }
+            }
+        }
 
         &.active {
             background-color: $primary;
             color: $font-white;
             border-color: $primary;
+            pointer-events: none;
         }
 
         &:hover:not(.active) {

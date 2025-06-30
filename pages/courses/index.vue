@@ -837,12 +837,12 @@ const resetFilters = () => {
 };
 
 useHead({
-    title: 'Мероприятия DTH',
+    title: 'Курсы DTH',
     meta: [
-        { name: 'keywords', content: 'мероприятия dth, события, курсы' },
-        { name: 'description', content: 'Мероприятия и курсы от Dental Training House' },
-        { property: 'og:title', content: 'Мероприятия DTH' },
-        { property: 'og:description', content: 'Мероприятия и курсы от Dental Training House' },
+        { name: 'keywords', content: 'курсы dth' },
+        { name: 'description', content: 'курсы от Dental Training House' },
+        { property: 'og:title', content: 'Курсы DTH' },
+        { property: 'og:description', content: 'Курсы от Dental Training House' },
         { property: 'og:image', content: `${baseUrl}/images/logo.png` },
         { property: 'og:url', content: `${baseUrl}/courses` },
         { property: 'og:type', content: 'website' },
@@ -1204,6 +1204,13 @@ if (webinarsError.value) {
             margin-bottom: p2r(14);
             color: $bgc-dark;
             cursor: pointer;
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    .filter-icon {
+                        color: $primary;
+                    }
+                }
+            }
             @media (max-width: 1366px) {
                 font-size: p2r(16);
                 margin-bottom: p2r(12);
@@ -1212,7 +1219,7 @@ if (webinarsError.value) {
                 font-size: p2r(14);
                 line-height: p2r(12);
                 color: #8a8a8a;
-                transition: transform 0.3s;
+                transition: transform 0.3s, color 0.3s;
                 transform: translateX(p2r(4));
                 &.down {
                     transform: rotate(180deg);
@@ -1244,9 +1251,13 @@ if (webinarsError.value) {
                     cursor: pointer;
                     border-radius: p2r(4);
                     transition: all 0.3s ease;
-                    &:hover {
-                        background-color: rgba(40, 167, 69, 0.1);
+
+                    @media (hover: hover) and (pointer: fine) {
+                        &:hover {
+                            color: $primary;
+                        }
                     }
+
                     &.active {
                         color: $primary;
                         font-weight: 500;
@@ -1295,6 +1306,14 @@ if (webinarsError.value) {
         padding: p2r(2) 0;
         font-size: p2r(16);
         margin-bottom: p2r(10);
+        transition: color 0.3s;
+        cursor: pointer;
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                color: $primary;
+            }
+        }
 
         @media(max-width: 1024px) {
             margin-bottom: 0;

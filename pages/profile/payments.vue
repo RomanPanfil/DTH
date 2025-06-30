@@ -6,6 +6,7 @@
         <div v-else class="table-wrapper">
             <div class="orders-table">
                 <div class="orders-table-header">
+                    <div class="header-cell">Заказ №</div>
                     <div class="header-cell">Дата и время</div>
                     <div class="header-cell">Сумма</div>
                     <div class="header-cell">Метод оплаты</div>
@@ -13,6 +14,7 @@
                 </div>
                 <div class="orders-table-body">
                     <div v-for="order in orders" :key="order.ID" class="order-row">
+                        <div class="cell">{{ order.ID }}</div>
                         <div class="cell" v-html="formatDate(order.CREATED)"></div>
                         <div class="cell">{{ order.AMOUNT }} BYN</div>
                         <div class="cell">{{ order.PAYMENT_METHOD }}</div>
@@ -34,12 +36,16 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'nuxt/app';
 import { useAuthStore } from '~/stores/auth';
+import { useModalsStore } from '~/stores/modals';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const orders = ref([]);
 const isLoading = ref(true);
+const { t } = useI18n();
+const modalsStore = useModalsStore();
 
 const currentPage = computed(() => Number(route.query.page) || 1);
 const pagination = ref({ total: 0, limit: 10 });
@@ -93,6 +99,12 @@ const fetchOrders = async (page: number) => {
 
         if (error.value) {
             console.error('Ошибка при получении заказов:', error.value);
+
+            if(error.value.data?.data?.error === 'ERROR_INVALID_TOKEN') {
+                authStore.logout();
+                await router.push('/');
+                modalsStore.openModal('login');
+            }
         } else if (data.value) {
             orders.value = data.value.orders || [];
             pagination.value.total = data.value.pagenav?.TOTAL || 0;
@@ -124,6 +136,14 @@ onMounted(async () => {
     }, 100);
 
     onUnmounted(() => clearInterval(checkInterval));
+});
+
+useHead({
+    title: t('accountSidebar.paymentHistory'),
+    meta: [
+        { name: 'keywords', content: t('accountSidebar.paymentHistory') },
+        { name: 'description', content: t('accountSidebar.paymentHistory') },
+    ],
 });
 </script>
 
@@ -161,7 +181,7 @@ onMounted(async () => {
 
 .orders-table-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 2fr 3fr;
+    grid-template-columns: 1fr 2fr 1fr 2fr 3fr;
     color: $font-dark-green;
 }
 
@@ -184,7 +204,7 @@ onMounted(async () => {
 
 .orders-table-body {
     display: grid;
-    grid-template-columns: 2fr 1fr 2fr 3fr;
+    grid-template-columns: 1fr 2fr 1fr 2fr 3fr;
     border: 1px solid $border;
     border-radius: p2r(6);
     box-shadow: 0 4px 35px rgba(114, 142, 174, 0.1);

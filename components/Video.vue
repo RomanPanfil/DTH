@@ -59,7 +59,7 @@ let styleCheckInterval = null
 
 const watermarkText = computed(() => {
     return authStore?.userProfile
-        ? `dht.by ${authStore?.userProfile?.LAST_NAME_EN} ${authStore?.userProfile?.NAME_EN} ${authStore?.userProfile?.ID}`
+        ? `dht.by ${authStore?.userProfile?.LAST_NAME} ${authStore?.userProfile?.NAME} ${authStore?.userProfile?.ID}`
         : 'dht.by'
 })
 
@@ -622,6 +622,10 @@ onUnmounted(() => {
 
             &:hover {
                 background: $primary;
+
+                svg {
+                    fill: $bgc !important;
+                }
             }
 
             svg {

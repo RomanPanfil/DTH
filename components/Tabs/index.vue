@@ -12,10 +12,10 @@
         </div>
         <div class="tabs-content">
             <div v-if="activeTab === 'journal'">
-                <div v-if="props.journal.value.items.length === 0" class="no-results">
-                    Нет элементов в журнале
-                </div>
-                <div v-else class="row">
+<!--                <div v-if="props.journal.value.items.length === 0" class="no-results">-->
+<!--                    Нет элементов в журнале-->
+<!--                </div>-->
+                <div class="row">
                     <div
                         v-for="item in props.journal.value.items"
                         :key="item.ID"
@@ -32,18 +32,16 @@
                 />
             </div>
             <div v-else-if="activeTab === 'webinars'">
-                <div v-if="props.webinars.value.items.length === 0" class="no-results">
-                    Нет вебинаров
-                </div>
-                <div v-else class="row">
+<!--                <div v-if="props.webinars.value.items.length === 0" class="no-results">-->
+<!--                    Нет вебинаров-->
+<!--                </div>-->
+                <div class="row">
                     <div
                         v-for="item in props.webinars.value.items"
                         :key="item.ID"
                         class="col-lg-3 col-sm-6"
                     >
-                        <div class="placeholder-card">
-                            {{ item.NAME || 'Вебинар без названия' }}
-                        </div>
+                        <WebinarsCard :event="item" />
                     </div>
                 </div>
                 <Pagination
@@ -54,10 +52,10 @@
                 />
             </div>
             <div v-else-if="activeTab === 'courses'">
-                <div v-if="props.courses.value.items.length === 0" class="no-results">
-                    Нет курсов
-                </div>
-                <div v-else class="row">
+<!--                <div v-if="props.courses.value.items.length === 0" class="no-results">-->
+<!--                    Нет курсов-->
+<!--                </div>-->
+                <div class="row">
                     <div
                         v-for="item in props.courses.value.items"
                         :key="item.ID"

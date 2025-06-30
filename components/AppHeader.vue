@@ -166,6 +166,13 @@
             margin-right: p2r(36);
             text-decoration: none;
             white-space: nowrap;
+            transition: color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    color: $primary;
+                }
+            }
 
             @media(max-width: 1680px) {
                 font-size: p2r(16);
@@ -183,7 +190,7 @@
         color: $font-white;
         height: p2r(48);
         line-height: p2r(44);
-        background: $primary;
+        background-color: $primary;
         border: 2px solid $primary;
         border-radius: p2r(4);
         padding-left: p2r(20);
@@ -192,6 +199,14 @@
         align-items: center;
         white-space: nowrap;
         cursor: pointer;
+        transition: background-color 0.3s, border-color 0.3s;
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                background-color: $primary_hover;
+                border-color: $primary_hover;
+            }
+        }
 
         @media(max-width: 1280px) {
             font-size: p2r(14);
@@ -284,6 +299,15 @@
             padding-right: p2r(20);
             color: $font;
             cursor: pointer;
+            transition: color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    .header-search-btn-icon {
+                        color: $primary;
+                    }
+                }
+            }
 
             &-icon {
                 font-size: p2r(22);
@@ -445,7 +469,7 @@
         height: p2r(48);
         width: 100%;
         line-height: p2r(44);
-        background: $primary;
+        background-color: $primary;
         border: 2px solid $primary;
         border-radius: p2r(4);
         padding-left: p2r(20);
@@ -477,7 +501,7 @@
 </style>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { useLocaleStore } from '~/stores/locale';
 import { useAuthStore } from '~/stores/auth';
 import { useModalsStore } from '~/stores/modals';
@@ -510,6 +534,21 @@ watch(isMenuOpen, (newValue) => {
 // Поиск
 const searchQuery = ref('');
 
+// Устанавливаем значение из URL при загрузке компонента
+onMounted(() => {
+    if (route.path === '/search-result' && route.query.query) {
+        searchQuery.value = String(route.query.query);
+    }
+});
+
+watch(() => route.query.query, (newQuery) => {
+    if (route.path === '/search-result' && newQuery) {
+        searchQuery.value = String(newQuery);
+    } else if (route.path !== '/search-result') {
+        searchQuery.value = '';
+    }
+});
+
 const handleSearch = async () => {
     if (searchQuery.value.trim()) {
         const query = searchQuery.value.trim();
@@ -531,8 +570,6 @@ const handleSearch = async () => {
                     query: { query: query }
                 });
             }
-
-            searchQuery.value = '';
         } catch (error) {
             console.error('Ошибка при навигации:', error);
         }

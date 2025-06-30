@@ -3,26 +3,26 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     const apiFetch = $fetch.create({
         async onResponseError({ response, request }) {
-            console.log('onResponseError triggered:', {
-                url: request.url || request,
-                status: response.status,
-                statusText: response.statusText,
-                responseData: response._data
-            })
+            // console.log('onResponseError triggered:', {
+            //     url: request.url || request,
+            //     status: response.status,
+            //     statusText: response.statusText,
+            //     responseData: response._data
+            // })
 
             if (request.url.includes('/api/auth/refresh')) {
-                console.log('onResponseError: Skipping /api/auth/refresh')
+                // console.log('onResponseError: Skipping /api/auth/refresh')
                 return
             }
 
             if (response.status === 401 && authStore.token) {
                 try {
-                    console.log('Interceptor: Attempting token refresh')
+                    // console.log('Interceptor: Attempting token refresh')
                     const refreshResponse = await $fetch('/api/auth/refresh', {
                         method: 'POST',
                         body: { token: authStore.token }
                     })
-                    console.log('Interceptor: Refresh response:', refreshResponse)
+                    // console.log('Interceptor: Refresh response:', refreshResponse)
 
                     if (refreshResponse.TOKEN && refreshResponse.EXPIRES) {
                         authStore.token = refreshResponse.TOKEN

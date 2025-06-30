@@ -58,6 +58,13 @@ defineEmits(['open-popup']);
     line-height: p2r(18);
     color: $font;
     border-bottom: 1px solid $border-grey;
+    transition: background-color 0.3s;
+
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            border-color: transparent;
+        }
+    }
 
     @media (max-width: 599px) {
         font-size: p2r(14);

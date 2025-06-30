@@ -684,7 +684,8 @@ onMounted(() => {
             authStore.userProfile = response;
         }).catch(error => {
             console.error('personal-data: Failed to load profile:', error);
-            if (error.data?.error === 'ERROR_INVALID_TOKEN') {
+
+            if (error.data?.error) {
                 authStore.logout();
                 router.push('/');
                 modalsStore.openModal('login');
@@ -713,6 +714,14 @@ const changePasswordClick = () => {
     modalsStore.openModal('changePassword');
     isMenuOpen.value = false;
 };
+
+useHead({
+    title: t('account.personalData'),
+    meta: [
+        { name: 'keywords', content: t('account.personalData') },
+        { name: 'description', content: t('account.personalData') },
+    ],
+});
 </script>
 
 <style lang="scss" scoped>

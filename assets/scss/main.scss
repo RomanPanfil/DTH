@@ -24,6 +24,7 @@ html {
   height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-gutter: stable;
 }
 body {
   margin: 0;
@@ -287,9 +288,45 @@ footer {
 }
 
 :root {
-  --plyr-color-main: #009865; /* Основной цвет (кнопки, прогресс-бар) */
-  --plyr-video-control-color: #009865; /* Цвет иконок */
-  --plyr-video-control-color-hover: #fff;
+  --plyr-color-main: #fff; /* Основной цвет (кнопки, прогресс-бар) */
+  --plyr-video-control-color: #fff; /* Цвет иконок */
+  --plyr-video-control-color-hover: #009865;
   --plyr-video-control-bg-hover: rgba(255, 87, 34, 0.8);
   --plyr-video-progress-buffered-background: rgba(255, 255, 255, 0.25);
 }
+
+.plyr__control--overlaid svg {
+  fill: #009865 !important;
+}
+
+.plyr {
+  /* WebKit (Chrome, Safari, Edge) */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #009865 !important;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  /* Firefox */
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #009865 !important;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Edge (старая версия) */
+  input[type="range"]::-ms-thumb {
+    width: 16px;
+    height: 16px;
+    background: #009865 !important;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+}
+

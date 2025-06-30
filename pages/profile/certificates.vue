@@ -28,8 +28,11 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useAuthStore } from '~/stores/auth';
 import { useI18n } from 'vue-i18n';
 import { useLocaleStore } from '~/stores/locale';
+import { useRouter } from 'vue-router';
+import { useModalsStore } from '~/stores/modals';
 
 const { t } = useI18n();
+const router = useRouter();
 
 const config = useRuntimeConfig();
 const imageBaseUrl = config.public.imageBaseUrl;
@@ -38,6 +41,7 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const authStore = useAuthStore();
 const localeStore = useLocaleStore();
+const modalsStore = useModalsStore();
 const locale = computed(() => localeStore.locale);
 const certificates = ref<any[]>([]);
 
@@ -75,6 +79,12 @@ const loadCertificates = async () => {
         error.value = err.statusMessage || err.message || 'Произошла ошибка при загрузке сертификатов';
         console.error('Error fetching certificates:', err);
         certificates.value = [];
+
+        if(err.data?.data?.error === 'ERROR_INVALID_TOKEN') {
+            authStore.logout();
+            await router.push('/');
+            modalsStore.openModal('login');
+        }
     } finally {
         loading.value = false;
     }
@@ -113,6 +123,14 @@ const getBaseUrl = (path: string) => {
 // Экспортируем функцию для внешнего вызова (если нужно)
 defineExpose({
     loadCertificates
+});
+
+useHead({
+    title: t('accountSidebar.certificates'),
+    meta: [
+        { name: 'keywords', content: t('accountSidebar.certificates') },
+        { name: 'description', content: t('accountSidebar.certificates') },
+    ],
 });
 </script>
 
@@ -175,6 +193,13 @@ defineExpose({
             font-size: p2r(18);
             line-height: 1.3;
             margin-bottom: p2r(20);
+            transition: color 0.3s;
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    color: $primary;
+                }
+            }
         }
     }
 
